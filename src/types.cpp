@@ -4,6 +4,9 @@
 #include"heaps.hpp"
 
 /*O(N), where N is the number of objects involved!*/
+/*necessary for determining the size of the semispace
+to be allocated when sending messages.
+*/
 size_t Generic::total_size(void){
 	ToPointerLock toptrs;
 	std::stack<Generic**> s;
