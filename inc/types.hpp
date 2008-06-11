@@ -42,6 +42,11 @@ public:
 		return sizeof(Type);
 	}
 	*/
+
+	/*symbols should change this to check that it's nil*/
+	virtual bool isnil(void) const {return 0;};
+	bool istrue(void) const {return !isnil();};
+
 	virtual ~Generic(){};
 
 	size_t total_size(void);
@@ -159,6 +164,12 @@ public:
 
 class Atom;
 
+#ifdef NIL_ATOM_DECLARE
+Atom* NILATOM;
+#else
+extern Atom* NILATOM;
+#endif
+
 class Sym : public Generic{
 private:
 	boost::shared_ptr<Atom> a;
@@ -184,6 +195,10 @@ public:
 			return sp->a == a;
 		} else return 0;
 	};
+
+	virtual bool isnil(void) const {
+		return a == NILATOM;
+	}
 
 	Sym(boost::shared_ptr<Atom> const& na) : a(na){};
 	virtual ~Sym(){};
