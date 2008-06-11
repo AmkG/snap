@@ -50,6 +50,19 @@ public:
 inline bool is(Generic const* a, Generic const* b){ return a->is(b);}
 inline bool iso(Generic const* a, Generic const* b){ return a->iso(b);}
 
+/*RAII class to handle the to-pointers
+This is used to protect the to-pointers in case of
+an exception.  The invariant is, to-pointers are
+NULL during normal operation.  If to-pointers must
+be used, access to them should be via
+ToPointerLock's, so that the to-pointers are reset
+to NULL once the non-normal operation (GC,
+tracing) are complete.  When the operation
+determines that the to-pointers can be left used
+(i.e. after a GC run) then it can call the clear()
+member function so that it won't bother resetting
+the to-pointers.
+*/
 class ToPointerLock{
 private:
 	std::set<Generic*> enset;
