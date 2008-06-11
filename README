@@ -14,11 +14,13 @@ processing and actor concurrency.
 
 A subgoal is that within a process, anything goes: use functional
 style, or imperative, or whatnot - you can mutate structures within
-a process.  Communication between processes is always copying, so
-each process is reasonably encapsulated from one another.
+a process.  Communication between processes is always copying (from
+the Arc-side, at least), so each process is encapsulated from one
+another.
 
 Another subgoal is to define a "symbolcode", basically a symbolic
-and possibly portable form of bytecode.
+and possibly portable (across architectures, possibly even across
+different Arc implementations) form of bytecode.
 
 Other goals: fast message passing, fast execution, generational
 GC for long-lived processes, trap-exit and process linking
