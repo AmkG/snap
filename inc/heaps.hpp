@@ -34,6 +34,12 @@ public:
 class Heap{
 private:
 	boost::scoped_ptr<Semispace> s;
+	/*conceptually these should be scoped_ptr's, but
+	unfortunately you can't put them in standard
+	containers; we could create our own container type
+	though (immutable singly-linked lists, or even
+	unrolled lists would probably be safest)
+	*/
 	std::vector<boost::shared_ptr<Semispace> > other_spaces;
 	bool tight;
 protected:
