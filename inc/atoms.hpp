@@ -4,6 +4,7 @@
 #include<iostream>
 #include<map>
 #include<boost/shared_ptr.hpp>
+#include"heaps.hpp"
 
 class Atom {
 protected:
@@ -18,7 +19,7 @@ class Globals;
 class GlobalAtom : public Atom {
 private:
 	std::string utf8string;
-	Generic** value;
+	Generic* value;
 public:
 	GlobalAtom(std::string& s) : utf8string(s), value(NULL){};
 	virtual ~GlobalAtom(){};
@@ -34,11 +35,18 @@ public:
 	virtual ~LocalAtom(){};
 };
 
-/*Might need to inherit from Heap at some point*/
-class Globals {
+class Globals : public Heap {
 private:
 	std::map< std::string, boost::shared_ptr<Atom> > string_to_atom;
+	/*insert mutex here*/
+	/*The mutex must be locked for the following cases:
+	1. Setting of global variables
+	2. Garbage collection.  1 & 2 will probably need to be done
+	   right after one another.
+	3. Actual reading of variable (if variable is not in cache)
+	*/
 public:
+	virtual void get_root_set(std::stack<Generic**>&);
 	boost::shared_ptr<Atom> lookup(std::string& s){
 		/*insert locking of string_to_atom table here*/
 		std::map< std::string, boost::shared_ptr<Atom> >::iterator i;
