@@ -4,12 +4,14 @@
 #include<boost/scoped_ptr.hpp>
 
 boost::shared_ptr<Atom> NILATOM;
+boost::shared_ptr<Atom> TATOM;
 
 boost::scoped_ptr<Globals> globals;
 
 int main(int argc, const char* argv[]){
 	globals.reset(new Globals());
 	NILATOM = globals->lookup("nil");
+	TATOM = globals->lookup("t");
 
 	/*tests!*/
 	/*make sure NILATOM is a global atom*/
@@ -36,6 +38,12 @@ int main(int argc, const char* argv[]){
 		}
 	} else {
 		std::cout << "Got NILATOM on lookup again!" << std::endl;
+	}
+	/*make sure NILATOM != TATOM*/
+	if(NILATOM != TATOM){
+		std::cout << "As expected, 'nil is not 't" << std::endl;
+	} else {
+		std::cout << "Not good: 'nil is somehow 't!" << std::endl;
 	}
 }
 
