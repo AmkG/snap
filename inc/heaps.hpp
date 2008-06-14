@@ -51,6 +51,7 @@ public:
 	void dealloc(void*);
 	Generic* transfer(Generic*, Heap&) const;
 	Heap(void) : s(new Semispace(64)), tight(0) {};
+	virtual ~Heap(){};
 };
 
 inline void* operator new(size_t n, Semispace& sp){
