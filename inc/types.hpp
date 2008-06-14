@@ -165,9 +165,9 @@ public:
 class Atom;
 
 #ifdef NIL_ATOM_DECLARE
-Atom* NILATOM;
+boost::shared_ptr<Atom> NILATOM;
 #else
-extern Atom* NILATOM;
+extern boost::shared_ptr<Atom> NILATOM;
 #endif
 
 class Sym : public Generic{
