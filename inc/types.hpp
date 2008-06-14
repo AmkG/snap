@@ -4,6 +4,7 @@
 #include<set>
 #include"heaps.hpp"
 #include"hashes.hpp"
+#include"variables.hpp"
 
 class Semispace;
 void* operator new(size_t, Semispace&);
@@ -166,14 +167,6 @@ public:
 	Generic* getline(void) const {return line;}
 	Generic* getfile(void) const {return file;}
 };
-
-class Atom;
-
-#ifdef NIL_ATOM_DECLARE
-boost::shared_ptr<Atom> NILATOM;
-#else
-extern boost::shared_ptr<Atom> NILATOM;
-#endif
 
 class Sym : public Generic{
 private:
