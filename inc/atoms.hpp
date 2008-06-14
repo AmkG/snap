@@ -13,15 +13,19 @@ public:
 	virtual ~Atom(){};
 };
 
+class Globals;
+
 class GlobalAtom : public Atom {
 private:
 	std::string utf8string;
+	Generic** value;
 public:
-	GlobalAtom(std::string& s) : utf8string(s){};
+	GlobalAtom(std::string& s) : utf8string(s), value(NULL){};
 	virtual ~GlobalAtom(){};
 	void emit(void) const {
 		std::cout << utf8string;
 	};
+	friend class Globals;
 };
 
 /*from (uniq)*/
