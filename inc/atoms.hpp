@@ -45,8 +45,9 @@ private:
 	   right after one another.
 	3. Actual reading of variable (if variable is not in cache)
 	*/
-public:
+protected:
 	virtual void get_root_set(std::stack<Generic**>&);
+public:
 	boost::shared_ptr<Atom> lookup(std::string& s){
 		/*insert locking of string_to_atom table here*/
 		std::map< std::string, boost::shared_ptr<Atom> >::iterator i;
@@ -65,6 +66,7 @@ public:
 		std::string ss(s);
 		return lookup(ss);
 	}
+	virtual ~Globals(){};
 };
 
 #endif //ATOMS_H
