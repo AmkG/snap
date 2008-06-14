@@ -2,6 +2,10 @@
 */
 #include"heaps.hpp"
 
+/*-----------------------------------------------------------------------------
+Semispaces
+-----------------------------------------------------------------------------*/
+
 /*should be used only to make the semispace smaller*/
 void Semispace::resize(size_t nsize){
 	void* nmem = realloc(mem, nsize);
@@ -47,6 +51,7 @@ Semispace::~Semispace(){
 	Generic* gp;
 	char* i;
 	size_t sz;
+	/*Call the dtors for each object*/
 	for(i = (char*)mem; i < allocpt; i += sz){
 		gp = (Generic*)(void*)i;
 		sz = gp->get_size(); // do this before destructing!
@@ -89,6 +94,10 @@ bool Semispace::can_fit(size_t sz) const{
 	return (m + max) >= (a + sz);
 }
 
+/*-----------------------------------------------------------------------------
+Heaps
+-----------------------------------------------------------------------------*/
+
 /*preconditions:
 other_spaces must be locked!
 */
@@ -105,7 +114,6 @@ size_t Heap::get_total_heap_size(void) const{
 static void copy_set(std::stack<Generic**>& tocopy,
 		ToPointerLock& toptrs,
 		Semispace& ns){
-	std::set<Generic**>::iterator i;
 	Generic** gpp;
 	Generic* to;
 	while(!tocopy.empty()){
@@ -161,5 +169,26 @@ void* Heap::alloc(size_t sz){
 }
 void Heap::dealloc(void* check){
 	s->dealloc(check);
+}
+
+Generic* Heap::transfer(Generic* gp, Heap& dest) const {
+	size_t nsz = gp->total_size();/* O(N) */
+	/*create a new semispace for the message, then
+	copy the entire message to the new semispace
+	*/
+	boost::shared_ptr<Semispace> ns(new Semispace(nsz));
+	ToPointerLock toptrs;
+	std::stack<Generic**> tocopy;
+
+	Generic* rgp = gp;
+	gp->get_refs(tocopy);
+	tocopy.push(&rgp);
+	copy_set(tocopy, toptrs, *ns);
+
+	{/*insert mutex locking of dest's other_spaces here*/
+		dest.other_spaces.push_back(ns);
+	}
+	return rgp;
+	/*let ToPointerLock clean up to-pointers*/
 }
 
