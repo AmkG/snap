@@ -152,6 +152,11 @@ public:
 	virtual size_t get_size(void) const {
 		return sizeof(MetadataCons);
 	}
+	virtual void get_refs(std::stack<Generic**>& s){
+		Cons::get_refs(s);
+		s.push(&line);
+		s.push(&file);
+	}
 
 	MetadataCons(Generic* na, Generic* nd, Generic* nline, Generic* nfile)
 		: Cons(na, nd), line(nline), file(nfile){};
