@@ -31,7 +31,7 @@ public:
 	}
 	/*Used in function calls*/
 	void restack(size_t sz){
-		if(num > stack.size()){
+		if(sz > stack.size()){
 			throw ArcError( "internal",
 					"Process stack underflow in restack()");
 		}
@@ -39,6 +39,7 @@ public:
 		/*Not exactly the best way to do it?*/
 		if(sz != 0) stack.erase(stack.begin(), stack.begin() + off);
 	}
+	size_t size(void) const{ return stack.size(); };
 	friend class Process;
 };
 
@@ -49,14 +50,14 @@ private:
 	Generic* queue;//handled by Arc-side code
 protected:
 	virtual void get_root_set(std::stack<Generic**>& s){
-		s.push(&queue);
+		if(queue != NULL) s.push(&queue);
 		for(std::vector<Generic*>::iterator i = mailbox.begin();
 		    i != mailbox.end();
 		    ++i){
 			s.push(&*i);
 		}
 		for(std::vector<Generic*>::iterator i = stack.stack.begin();
-		    i != stack.stack.begin();
+		    i != stack.stack.end();
 		    ++i){
 			s.push(&*i);
 		}
@@ -65,6 +66,7 @@ public:
 	ProcessStack stack;
 	void sendto(Process&, Generic*);
 	virtual ~Process(){};
+	Process() : Heap(), queue(NULL) {};
 };
 
 #endif //PROCESS_H

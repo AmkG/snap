@@ -11,13 +11,14 @@ private:
 	boost::shared_ptr<Atom> type;
 	std::string msg;
 public:
-	explicit ArcError(char* a, char* s) :
+	explicit ArcError(char const * a, char const* s) :
 		std::runtime_error("Arc Error"),
 		type(globals->lookup(a)),
 		msg(a){};
 	virtual const char * what() const throw(){
-		desc.c_str(msg);
+		return msg.c_str();
 	}
+	virtual ~ArcError() throw() {};
 	/*insert code to create Arc tagged object here*/
 };
 

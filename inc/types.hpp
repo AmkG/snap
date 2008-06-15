@@ -48,6 +48,8 @@ public:
 	virtual bool isnil(void) const {return 0;};
 	bool istrue(void) const {return !isnil();};
 
+	virtual void probe(size_t indent) =0;//for debugging
+
 	virtual ~Generic(){};
 
 	size_t total_size(void);
@@ -99,7 +101,7 @@ private:
 	Generic* a;
 	Generic* d;
 protected:
-	Cons(Cons const&){};
+	Cons(Cons const& s) : Generic(), a(s.a), d(s.d){};
 public:
 	/*standard stuff*/
 	virtual size_t hash(void) const {
@@ -130,7 +132,9 @@ public:
 		s.push(&d);
 	}
 
-	Cons(Generic* na, Generic* nd) : a(na), d(nd) {};
+	virtual void probe(size_t);
+
+	Cons(Generic* na, Generic* nd) : Generic(), a(na), d(nd) {};
 	virtual ~Cons(){};
 
 	/*new stuff*/
@@ -145,7 +149,7 @@ private:
 	Generic* line;
 	Generic* file;
 protected:
-	MetadataCons(MetadataCons const&):Cons(*this){};
+	MetadataCons(MetadataCons const& s):Cons(s), line(s.line), file(s.file){};
 public:
 	virtual MetadataCons* clone(Semispace& sp) const{
 		return new(sp) MetadataCons(*this);
@@ -158,6 +162,8 @@ public:
 		s.push(&line);
 		s.push(&file);
 	}
+
+	virtual void probe(size_t);
 
 	MetadataCons(Generic* na, Generic* nd, Generic* nline, Generic* nfile)
 		: Cons(na, nd), line(nline), file(nfile){};
@@ -173,7 +179,7 @@ private:
 	boost::shared_ptr<Atom> a;
 	Sym(void){}; //disallowed!
 protected:
-	Sym(Sym const&){};
+	Sym(Sym const& s) : Generic(), a(s.a){};
 public:
 	/*standard stuff*/
 	virtual size_t hash(void) const{
@@ -198,7 +204,9 @@ public:
 		return a == NILATOM;
 	}
 
-	Sym(boost::shared_ptr<Atom> const& na) : a(na){};
+	virtual void probe(size_t);
+
+	Sym(boost::shared_ptr<Atom> const& na) : Generic(), a(na){};
 	virtual ~Sym(){};
 
 	/*new stuff*/
