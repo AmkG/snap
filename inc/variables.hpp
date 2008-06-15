@@ -25,5 +25,7 @@ EXTERN boost::shared_ptr<Atom> TATOM;	//'t
 /*Should really be Singleton but let's not bother with that*/
 EXTERN boost::scoped_ptr<Globals> globals;
 
+void variables_init(void);
+
 #endif //VARIABLES_H
 
