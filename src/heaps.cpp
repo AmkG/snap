@@ -121,8 +121,6 @@ static void copy_set(std::stack<Generic**>& tocopy,
 	while(!tocopy.empty()){
 		gpp = tocopy.top(); tocopy.pop();
 		to = toptrs.to(*gpp);
-		(*gpp)->probe(0);
-		std::printf("%lx -> %lx\n", *gpp, to);
 		if(to == NULL){
 			to = (*gpp)->clone(ns);
 			toptrs.pointto(*gpp, to);
