@@ -97,12 +97,11 @@ public:
 };
 
 class Cons : public Generic{
-private:
-	Generic* a;
-	Generic* d;
 protected:
 	Cons(Cons const& s) : Generic(), a(s.a), d(s.d){};
 public:
+	Generic* a;
+	Generic* d;
 	/*standard stuff*/
 	virtual size_t hash(void) const {
 		return a->hash() ^ d->hash();
@@ -134,23 +133,17 @@ public:
 
 	virtual void probe(size_t);
 
-	Cons(Generic* na, Generic* nd) : Generic(), a(na), d(nd) {};
+	Cons(void) : Generic() {};
 	virtual ~Cons(){};
 
-	/*new stuff*/
-	Generic* car(void) const {return a;}
-	Generic* cdr(void) const {return d;}
-	Generic* scar(Generic* na) {return a = na;}
-	Generic* scdr(Generic* nd) {return d = nd;}
 };
 
 class MetadataCons : public Cons {
-private:
-	Generic* line;
-	Generic* file;
 protected:
 	MetadataCons(MetadataCons const& s):Cons(s), line(s.line), file(s.file){};
 public:
+	Generic* line;
+	Generic* file;
 	virtual MetadataCons* clone(Semispace& sp) const{
 		return new(sp) MetadataCons(*this);
 	}
@@ -165,13 +158,9 @@ public:
 
 	virtual void probe(size_t);
 
-	MetadataCons(Generic* na, Generic* nd, Generic* nline, Generic* nfile)
-		: Cons(na, nd), line(nline), file(nfile){};
+	MetadataCons() : Cons() {};
 	virtual ~MetadataCons(){};
 
-	/*can't be changed*/
-	Generic* getline(void) const {return line;}
-	Generic* getfile(void) const {return file;}
 };
 
 class Sym : public Generic{
