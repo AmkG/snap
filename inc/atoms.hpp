@@ -66,6 +66,9 @@ public:
 		std::string ss(s);
 		return lookup(ss);
 	}
+	void assign(boost::shared_ptr<Atom> a, Generic* g){
+		a->value = g;
+	}
 	virtual ~Globals(){};
 };
 
