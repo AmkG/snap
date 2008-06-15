@@ -15,9 +15,10 @@ void Globals::get_root_set(std::stack<Generic**>& s){
 		ap = (*i).second;
 		GlobalAtom* gp = dynamic_cast<GlobalAtom*>(&*ap);
 		if(gp == NULL){
-			throw std::runtime_error("Non-global atom in global atoms list");
+			throw std::runtime_error(
+				"Non-global atom in global atoms list");
 		}
-		s.push(&gp->value);
+		if(gp->value != NULL) s.push(&gp->value);
 	}
 }
 
