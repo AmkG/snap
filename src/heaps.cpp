@@ -151,11 +151,11 @@ void Heap::GC(size_t insurance){
 	ns.reset();
 
 	/*determine if resizing necessary*/
-	size_t used = s->used();
+	size_t used = s->used() + insurance;
 	tight = 0;
-	if(used < sz / 4){
+	if(used <= sz / 4){
 		s->resize(sz / 2);
-	} else if(used > (sz * 3) / 4){
+	} else if(used >= (sz * 3) / 4){
 		tight = 1;
 	}
 }
