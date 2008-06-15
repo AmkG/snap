@@ -4,6 +4,7 @@
 #include"errors.hpp"
 #include<vector>
 #include<stack>
+#include<boost/shared_ptr.hpp>
 
 class Process;
 
@@ -43,6 +44,8 @@ public:
 	friend class Process;
 };
 
+class Atom;
+
 class Process : public Heap {
 private:
 	//should also be locked using the other_spaces lock
@@ -64,7 +67,8 @@ protected:
 	}
 public:
 	ProcessStack stack;
-	void sendto(Process&, Generic*);
+	void sendto(Process&, Generic*) const ;
+	void assign(boost::shared_ptr<Atom>, Generic*) const ;
 	virtual ~Process(){};
 	Process() : Heap(), queue(NULL) {};
 };
