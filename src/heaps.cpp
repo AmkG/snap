@@ -18,7 +18,9 @@ void Semispace::resize(size_t nsize){
 		Generic* cur;
 		Generic** gpp;
 		char* i;
-		for(i = (char*)mem; i < allocpt; i += ((Generic*)(void*) i)->get_size()){
+		for(i = (char*)mem;
+		    i < allocpt;
+		    i += ((Generic*)(void*) i)->get_size()){
 			cur = (Generic*)i;
 			cur->get_refs(to_check);
 			while(!to_check.empty()){
