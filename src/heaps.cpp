@@ -173,7 +173,7 @@ void Heap::dealloc(void* check){
 	s->dealloc(check);
 }
 
-Generic* Heap::transfer(Generic* gp, Heap& dest) const {
+boost::shared_ptr<Semispace> Heap::to_new_semispace(Generic*& gp) const {
 	size_t nsz = gp->total_size();/* O(N) */
 	/*create a new semispace for the message, then
 	copy the entire message to the new semispace
@@ -182,15 +182,11 @@ Generic* Heap::transfer(Generic* gp, Heap& dest) const {
 	ToPointerLock toptrs;
 	std::stack<Generic**> tocopy;
 
-	Generic* rgp = gp;
 	gp->get_refs(tocopy);
-	tocopy.push(&rgp);
+	tocopy.push(&gp);
 	copy_set(tocopy, toptrs, *ns);
 
-	{/*insert mutex locking of dest's other_spaces here*/
-		dest.other_spaces.push_back(ns);
-	}
-	return rgp;
+	return ns;
 	/*let ToPointerLock clean up to-pointers*/
 }
 

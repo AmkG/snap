@@ -34,6 +34,8 @@ public:
 class Heap{
 private:
 	boost::scoped_ptr<Semispace> s;
+	bool tight;
+protected:
 	/*conceptually these should be scoped_ptr's, but
 	unfortunately you can't put them in standard
 	containers; we could create our own container type
@@ -41,15 +43,13 @@ private:
 	unrolled lists would probably be safest)
 	*/
 	std::vector<boost::shared_ptr<Semispace> > other_spaces;
-	bool tight;
-protected:
 	virtual void get_root_set(std::stack<Generic**>&) =0;
 	size_t get_total_heap_size(void) const;
 	void GC(size_t);
 public:
 	void* alloc(size_t);
 	void dealloc(void*);
-	Generic* transfer(Generic*, Heap&) const;
+	boost::shared_ptr<Semispace> to_new_semispace(Generic*&) const;
 	Heap(void) : s(new Semispace(64)), tight(0) {};
 	virtual ~Heap(){};
 };

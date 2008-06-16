@@ -66,9 +66,16 @@ public:
 		std::string ss(s);
 		return lookup(ss);
 	}
-	void assign(boost::shared_ptr<Atom> a, Generic* g){
-		a->value = g;
+	/*precondition: lock for this object must be acquired*/
+	void assign(boost::shared_ptr<Atom> a,
+		    boost::shared_ptr<Semispace> ns,
+		    Generic* g){
+		other_spaces.push_back(ns);
+		GlobalAtom* gp = dynamic_cast<GlobalAtom*>(&*a);
+		if(gp == NULL) throw std::runtime_error("write to non-global");
+		gp->value = g;
 	}
+	void GC(void){Heap::GC(0);};
 	virtual ~Globals(){};
 };
 
