@@ -1,12 +1,9 @@
-#define NO_EXTERN
 #include"variables.hpp"
 #include"processes.hpp"
 #include<iostream>
 
 int main(int argc, const char* argv[]){
-	globals.reset(new Globals());
-	NILATOM = globals->lookup("nil");
-	TATOM = globals->lookup("t");
+	variables_init();
 
 	/*tests!*/
 	Process proc;
