@@ -4,6 +4,7 @@
 #include<iostream>
 #include<map>
 #include<boost/shared_ptr.hpp>
+#include<stdexcept>
 #include"heaps.hpp"
 
 class Atom {
