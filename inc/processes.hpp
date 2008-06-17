@@ -40,6 +40,9 @@ public:
 		/*Not exactly the best way to do it?*/
 		if(sz != 0) stack.erase(stack.begin(), stack.begin() + off);
 	}
+	Generic*& operator[](int i){
+		return stack[i];
+	}
 	size_t size(void) const{ return stack.size(); };
 	friend class Process;
 };
