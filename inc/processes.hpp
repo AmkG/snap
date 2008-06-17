@@ -8,7 +8,7 @@
 
 class Process;
 
-/*User our own stack in order to support restack()*/
+/*Use our own stack in order to support restack()*/
 class ProcessStack{
 private:
 	std::vector<Generic*> stack;
