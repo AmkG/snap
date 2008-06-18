@@ -224,7 +224,6 @@ private:
 protected:
 	Closure(Closure const& o) : Generic(), cd(o.cd), vars(o.vars) {}
 public:
-	Executor const& code(void) {return *cd;};
 	/*standard stuff*/
 	virtual size_t hash(void) const{
 		return (size_t) &*cd;
@@ -236,8 +235,15 @@ public:
 		return sizeof(Closure);
 	}
 
+	virtual void probe(size_t);
+
 	Closure(boost::shared_ptr<Executor> c, size_t s) :
-		Generic(), cd(c), vars(s) {}
+		Generic(), cd(c), vars(s) {};
+
+	/*new stuff*/
+	Executor const& code(void) {return *cd;};
+	Generic* & operator[](int i) {return vars[i];}
+	Generic* const & operator[](int i) const {return vars[i];}
 };
 
 #endif //TYPES_H
