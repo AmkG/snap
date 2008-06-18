@@ -2,6 +2,7 @@
 #define TYPES_H
 #include<stack>
 #include<set>
+#include<vector>
 #include"heaps.hpp"
 #include"hashes.hpp"
 #include"variables.hpp"
@@ -22,6 +23,15 @@ public:
 	friend class Semispace;
 	friend class ToPointerLock;
 
+	/*hash should return pretty much just any
+	size_t, provided that an unmutated copy of
+	that object will have the same hash().
+	There is NO NEED TO PROPERLY DISTRIBUTE BITS,
+	and it would probably be better not to: the
+	table lookup function will use several int-
+	to-int hashing functions for the bloom
+	filter.
+	*/
 	virtual size_t hash(void) const =0;
 	virtual Generic* clone(Semispace&) const =0;
 	/* clone should always have the following code:
@@ -172,7 +182,7 @@ protected:
 public:
 	/*standard stuff*/
 	virtual size_t hash(void) const{
-		return distribute_bits((size_t) &(*a));
+		return (size_t) &(*a);
 	}
 	virtual Sym* clone(Semispace& sp) const{
 		return new(sp) Sym(*this);
@@ -200,6 +210,34 @@ public:
 
 	/*new stuff*/
 	Atom& atom(void){return *a;};
+};
+
+class Executor;
+
+class Closure : public Generic {
+private:
+	boost::shared_ptr<Executor> cd;
+	/*possibly add a parallel vector of variable name atoms for
+	debugging?
+	*/
+	std::vector<Generic*> vars;
+protected:
+	Closure(Closure const& o) : Generic(), cd(o.cd), vars(o.vars) {}
+public:
+	Executor const& code(void) {return *cd;};
+	/*standard stuff*/
+	virtual size_t hash(void) const{
+		return (size_t) &*cd;
+	}
+	virtual Closure* clone(Semispace& sp) const{
+		return new(sp) Closure(*this);
+	}
+	virtual size_t get_size(void) const{
+		return sizeof(Closure);
+	}
+
+	Closure(boost::shared_ptr<Executor> c, size_t s) :
+		Generic(), cd(c), vars(s) {}
 };
 
 #endif //TYPES_H
