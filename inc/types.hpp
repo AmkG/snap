@@ -235,6 +235,12 @@ public:
 		return sizeof(Closure);
 	}
 
+	virtual void get_refs(std::stack<Generic**>& s){
+		for(size_t i = 0; i < vars.size(); ++i){
+			s.push(&vars[i]);
+		}
+	}
+
 	virtual void probe(size_t);
 
 	Closure(boost::shared_ptr<Executor> c, size_t s) :
