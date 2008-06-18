@@ -53,3 +53,12 @@ void Sym::probe(size_t ind){
 	else	std::cout << "<uniq>" << std::endl;
 }
 
+void Closure::probe(size_t ind){
+	INDENT(ind); std::cout <<  "CLOSURE: fn@" <<
+			std::hex << ((size_t) &*cd) << " {" << std::endl;
+	for(size_t i = 0; i < vars.size(); ++i){
+		vars[i]->probe(ind+1);
+	}
+	INDENT(ind); std::cout << "}" << std::endl;
+}
+
