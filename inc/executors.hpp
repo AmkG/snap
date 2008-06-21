@@ -35,13 +35,17 @@ call proc.stack.restack(n))
 proc.stack[0] *must* be a Closure with a valid Executor.
 */
 
-class Process, Closure;
+#ifdef _GNUC_
+/*use indirect goto when using GCC*/
+typedef void* _executor_label;
+#define GOTO(x) goto *(x)
 
-class Executor {
-public:
-	virtual void operator()(Process&, Closure&) const =0;
-	virtual ~Executor(){};
-};
+#else //_GNUC_
+/*use an enum when using GCC*/
+typedef enum _e_executor_label _executor_label;
+#define GOTO(x) {pc = (x); goto executor_switch;}
+
+#endif//_GNUC_
 
 #endif //EXECUTORS_H
 
