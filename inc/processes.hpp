@@ -76,5 +76,9 @@ public:
 	Process() : Heap(), queue(NULL) {};
 };
 
+typedef enum _e_ProcessStatus {
+	running, waiting, dead
+} ProcessStatus;
+
 #endif //PROCESS_H
 

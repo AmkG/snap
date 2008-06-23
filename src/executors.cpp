@@ -2,6 +2,7 @@
 #include"executors.hpp"
 #include"atoms.hpp"
 #include"processes.hpp"
+#include<iostream>
 
 ProcessStatus execute(Process& proc, bool init=0){
 	if(init) goto initialize;
@@ -28,6 +29,7 @@ ProcessStatus execute(Process& proc, bool init=0){
 	}
 	return dead;
 initialize:
+	std::cout << WHATIS;
 	return running;
 }
 

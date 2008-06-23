@@ -35,17 +35,70 @@ call proc.stack.restack(n))
 proc.stack[0] *must* be a Closure with a valid Executor.
 */
 
-#ifdef _GNUC_
+#define PASTE_SYMBOLS(x,y) x##y
+
+/*
+Not necessary when using GCC.
+NOTE!  We retain this and even add references to
+an _e_executor_label type so that modders who
+happen to use *only* GCC will remember to update
+the declarations for the benefit of non-GCC
+users.
+*/
+#define DECLARE_EXECUTORS enum _e_executor_label {
+#define AN_EXECUTOR(x)  x,
+#define END_DECLARE_EXECUTORS __null_executor };
+
+/*NOTE!  no ; or : or {} or other markers*/
+DECLARE_EXECUTORS
+	AN_EXECUTOR(arc_executor)
+	AN_EXECUTOR(ccc)
+	AN_EXECUTOR(ccc_helper)
+END_DECLARE_EXECUTORS
+
+
+#ifdef __GNUC__
 /*use indirect goto when using GCC*/
 typedef void* _executor_label;
-#define GOTO(x) goto *(x)
+#define EXECUTOR_GOTO(x) goto *x
+#define DISPATCH_EXECUTORS enum _e_executor_label pc; NEXT_EXECUTOR;
+#define EXECUTOR(x) pc = x; PASTE_SYMBOLS(label_, x)
+#define THE_EXECUTOR(x) new Executor(&&PASTE_SYMBOLS(label_, x))
 
-#else //_GNUC_
-/*use an enum when using GCC*/
+#define WHATIS "GNU"
+
+#else //__GNUC__
+
+#define WHATIS "NONGNU"
+
+/*use an enum when using standard C*/
 typedef enum _e_executor_label _executor_label;
-#define GOTO(x) {pc = (x); goto executor_switch;}
+#define EXECUTOR_GOTO(x) {pc = (x); goto executor_switch;}
+#define DISPATCH_EXECUTORS _executor_label pc; NEXT_EXECUTOR;\
+	executor_switch: switch(pc)
+#define EXECUTOR(x) case x
+#define THE_EXECUTOR(x) new Executor(x)
 
-#endif//_GNUC_
+#endif//__GNUC__
+
+/*TODO: 'call* / 'defcall support*/
+#define NEXT_EXECUTOR { Closure* c = dynamic_cast<Closure*>(proc.stack[0]);\
+	EXECUTOR_GOTO((c->code()).l);}
+
+class Executor{
+public:
+	virtual ~Executor(){};
+	Executor(_executor_label nl) : l(nl) {};
+	_executor_label l;
+};
+class BytecodeSequence;
+class ArcExecutor : public Executor{
+public:
+	virtual ~ArcExecutor(){};
+	boost::shared_ptr<BytecodeSequence> b;
+	ArcExecutor(_executor_label nl, boost::shared_ptr<BytecodeSequence> nb)
+		: Executor(nl), b(nb) {};
+};
 
 #endif //EXECUTORS_H
 

@@ -243,7 +243,7 @@ public:
 
 	virtual void probe(size_t);
 
-	Closure(boost::shared_ptr<Executor> c, size_t s) :
+	Closure(Executor* c, size_t s) :
 		Generic(), cd(c), vars(s) {};
 
 	/*new stuff*/
