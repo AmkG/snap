@@ -14,7 +14,7 @@ some day)
 */
 
 /*parameters are on-stack*/
-inline void cons(Process& proc){
+inline void bytecode_cons(Process& proc){
 	ProcessStack& stack = proc.stack;
 	Cons* cp = new(proc) Cons();
 	cp->a = stack.top(2);
@@ -22,11 +22,11 @@ inline void cons(Process& proc){
 	stack.top(2) = cp;
 	stack.pop();
 }
-inline void sym(Process& proc, boost::shared_ptr<Atom> a){
+inline void bytecode_sym(Process& proc, boost::shared_ptr<Atom> a){
 	ProcessStack& stack = proc.stack;
 	stack.push(new(proc) Sym(a));
 }
-inline void car(Process& proc){
+inline void bytecode_car(Process& proc){
 	ProcessStack& stack = proc.stack;
 	//(car nil) => nil
 	if(stack.top()->istrue()){
@@ -36,7 +36,7 @@ inline void car(Process& proc){
 		stack.top() = cp->a;
 	}
 }
-inline void cdr(Process& proc){
+inline void bytecode_cdr(Process& proc){
 	ProcessStack& stack = proc.stack;
 	//(car nil) => nil
 	if(stack.top()->istrue()){
