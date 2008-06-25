@@ -56,6 +56,15 @@ DECLARE_EXECUTORS
 	AN_EXECUTOR(ccc_helper)
 END_DECLARE_EXECUTORS
 
+#define DECLARE_BYTECODES enum _e_bytecode_label{
+#define A_BYTECODE(x) x,
+#define END_DECLARE_BYTECODES __null_bytecode };
+DECLARE_BYTECODES
+	A_BYTECODE(car)
+	A_BYTECODE(cdr)
+	A_BYTECODE(cons)
+END_DECLARE_BYTECODES
+
 
 #ifdef __GNUC__
 /*use indirect goto when using GCC*/
@@ -64,12 +73,23 @@ typedef void* _executor_label;
 #define DISPATCH_EXECUTORS enum _e_executor_label pc; NEXT_EXECUTOR;
 #define EXECUTOR(x) pc = x; PASTE_SYMBOLS(label_, x)
 #define THE_EXECUTOR(x) new Executor(&&PASTE_SYMBOLS(label_, x))
+#define THE_ARC_EXECUTOR(x,y) new ArcExecutor(&&PASTE_SYMBOLS(label_, x), y)
 
-#define WHATIS "GNU"
+typedef void* _bytecode_label;
+#define DISPATCH_BYTECODES \
+	Closure* clos = dynamic_cast<Closure*>(proc.stack[0]);\
+	ArcExecutor const* e =\
+		dynamic_cast<ArcExecutor const*>(&clos->code());\
+	Bytecode* current_bytecode = &*e->b->head; \
+	enum _e_bytecode_label bpc; NEXT_BYTECODE;
+#define BYTECODE_GOTO(x) goto *x
+#define BYTECODE(x) bpc = x; PASTE_SYMBOLS(label_b_, x)
+#define THE_BYTECODE(x) new Bytecode(&&PASTE_SYMBOLS(label_, x))
+#define THE_INT_BYTECODE(x,y) new IntBytecode(&&PASTE_SYMBOLS(label_, x), y)
+#define THE_SEQ_BYTECODE(x,y) new SeqBytecode(&&PASTE_SYMBOLS(label_, x), y)
+#define THE_ATOM_BYTECODE(x,y) new AtomBytecode(&&PASTE_SYMBOLS(label_, x), y)
 
 #else //__GNUC__
-
-#define WHATIS "NONGNU"
 
 /*use an enum when using standard C*/
 typedef enum _e_executor_label _executor_label;
@@ -78,12 +98,19 @@ typedef enum _e_executor_label _executor_label;
 	executor_switch: switch(pc)
 #define EXECUTOR(x) case x
 #define THE_EXECUTOR(x) new Executor(x)
+#define THE_ARC_EXECUTOR(x,y) new Executor(x, y)
+
+#define BYTECODE_GOTO
+#define THE_BYTECODE(x) new Bytecode(x)
 
 #endif//__GNUC__
 
 /*TODO: 'call* / 'defcall support*/
 #define NEXT_EXECUTOR { Closure* c = dynamic_cast<Closure*>(proc.stack[0]);\
 	EXECUTOR_GOTO((c->code()).l);}
+
+#define NEXT_BYTECODE { current_bytecode = &*current_bytecode->next;\
+	BYTECODE_GOTO(current_bytecode->l);}
 
 class Executor{
 public:
@@ -98,6 +125,61 @@ public:
 	boost::shared_ptr<BytecodeSequence> b;
 	ArcExecutor(_executor_label nl, boost::shared_ptr<BytecodeSequence> nb)
 		: Executor(nl), b(nb) {};
+};
+
+class Bytecode{
+public:
+	virtual ~Bytecode(){};
+	Bytecode(_bytecode_label nl) : l(nl), next() {};
+	_bytecode_label l;
+	boost::scoped_ptr<Bytecode> next;
+};
+
+/*bytecode with an int parameter*/
+class IntBytecode : public Bytecode {
+public:
+	virtual ~IntBytecode(){};
+	IntBytecode(_bytecode_label nl, int nnum) : Bytecode(nl), num(nnum){};
+	int num;
+};
+
+/*bytecode with a bytecode sequence parameter
+(e.g. 'if, 'fn)
+NOTE!  recursive references not allowed!
+*/
+class SeqBytecode : public Bytecode {
+public:
+	virtual ~SeqBytecode(){};
+	SeqBytecode(_bytecode_label nl,
+		    boost::shared_ptr<BytecodeSequence> nseq)
+		: Bytecode(nl), seq(nseq) {};
+	boost::shared_ptr<BytecodeSequence> seq;
+};
+
+/*bytecode with an atom parameter
+(e.g. 'global, 'symbol)
+*/
+class AtomBytecode : public Bytecode{
+public:
+	virtual ~AtomBytecode (){};
+	AtomBytecode(_bytecode_label nl, boost::shared_ptr<Atom> natom)
+		: Bytecode(nl), atom(natom) {};
+	boost::shared_ptr<Atom> atom;
+};
+
+class BytecodeSequence {
+private:
+	Bytecode* tail;
+public:
+	boost::scoped_ptr<Bytecode> head;
+	void append(Bytecode* b){
+		if(tail != NULL){
+			tail->next.reset(b);
+		} else {
+			head.reset(b);
+		}
+		tail = b;
+	}
 };
 
 #endif //EXECUTORS_H

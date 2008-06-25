@@ -2,13 +2,25 @@
 #include"executors.hpp"
 #include"atoms.hpp"
 #include"processes.hpp"
+#include"bytecodes.hpp"
 #include<iostream>
 
 ProcessStatus execute(Process& proc, bool init=0){
 	if(init) goto initialize;
 	DISPATCH_EXECUTORS {
 		EXECUTOR(arc_executor):
-		NEXT_EXECUTOR;
+		{	DISPATCH_BYTECODES{//provides the Closure* clos
+				BYTECODE(car):
+					bytecode_car(proc);
+				NEXT_BYTECODE;
+				BYTECODE(cdr):
+					bytecode_cdr(proc);
+				NEXT_BYTECODE;
+				BYTECODE(cons):
+					bytecode_cons(proc);
+				NEXT_BYTECODE;
+			}
+		} NEXT_EXECUTOR;
 		/*
 		(fn (k#|1|# f#|2|#)
 		  (f k (fn (_ r) (k r))))
@@ -29,7 +41,6 @@ ProcessStatus execute(Process& proc, bool init=0){
 	}
 	return dead;
 initialize:
-	std::cout << WHATIS;
 	return running;
 }
 
