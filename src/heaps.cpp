@@ -119,13 +119,15 @@ static void copy_set(std::stack<Generic**>& tocopy,
 		ToPointerLock& toptrs,
 		Semispace& ns){
 	Generic** gpp;
+	Generic* gp;
 	Generic* to;
 	while(!tocopy.empty()){
 		gpp = tocopy.top(); tocopy.pop();
-		to = toptrs.to(*gpp);
-		if(to == NULL){
-			to = (*gpp)->clone(ns);
-			toptrs.pointto(*gpp, to);
+		gp = *gpp;
+		to = toptrs.to(gp);
+		if(to == NULL || to == gp){
+			to = gp->clone(ns);
+			toptrs.pointto(gp, to);
 			to->get_refs(tocopy);
 		}
 		*gpp = to;
@@ -176,13 +178,14 @@ void Heap::dealloc(void* check){
 }
 
 boost::shared_ptr<Semispace> Heap::to_new_semispace(Generic*& gp) const {
-	size_t nsz = gp->total_size();/* O(N) */
+	/*Determine the size*/
+	ToPointerLock toptrs;
+	std::stack<Generic**> tocopy;
+	size_t nsz = gp->total_size(toptrs, tocopy);
 	/*create a new semispace for the message, then
 	copy the entire message to the new semispace
 	*/
 	boost::shared_ptr<Semispace> ns(new Semispace(nsz));
-	ToPointerLock toptrs;
-	std::stack<Generic**> tocopy;
 
 	gp->get_refs(tocopy);
 	tocopy.push(&gp);

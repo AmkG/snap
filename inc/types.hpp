@@ -6,6 +6,7 @@
 #include"heaps.hpp"
 #include"hashes.hpp"
 #include"variables.hpp"
+#include"executors.hpp"
 
 class Semispace;
 void* operator new(size_t, Semispace&);
@@ -62,7 +63,7 @@ public:
 
 	virtual ~Generic(){};
 
-	size_t total_size(void);
+	size_t total_size(ToPointerLock&, std::stack<Generic**>&);
 };
 
 inline bool is(Generic const* a, Generic const* b){ return a->is(b);}

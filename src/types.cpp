@@ -7,9 +7,7 @@
 /*necessary for determining the size of the semispace
 to be allocated when sending messages.
 */
-size_t Generic::total_size(void){
-	ToPointerLock toptrs;
-	std::stack<Generic**> s;
+size_t Generic::total_size(ToPointerLock& toptrs, std::stack<Generic**>& s){
 	Generic** gpp;
 	Generic* to;
 	size_t rv = get_size();
