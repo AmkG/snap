@@ -31,7 +31,7 @@ size_t Generic::total_size(ToPointerLock& toptrs, std::stack<Generic**>& s){
 #include<iostream>
 #define INDENT(ind)	for(size_t i = 0; i < ind; ++i) std::cout << "\t"
 void Cons::probe(size_t ind){
-	INDENT(ind); std::cout << "CONS cell" << std::endl;
+	INDENT(ind); std::cout << "CONS cell@" << ((size_t)(this)) << std::endl;
 	a->probe(ind+1);
 	d->probe(ind+1);
 }
