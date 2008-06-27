@@ -249,6 +249,11 @@ public:
 
 	/*new stuff*/
 	Executor const& code(void) {return *cd;};
+	/*WARNING
+	arc2c references closure values starting at index 1 (index 0
+	is the function's code itself, and is never used in practice).
+	We will have to translate the numbers properly for some cases
+	*/
 	Generic* & operator[](int i) {return vars[i];}
 	Generic* const & operator[](int i) const {return vars[i];}
 };
