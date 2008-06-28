@@ -54,6 +54,8 @@ DECLARE_EXECUTORS
 	AN_EXECUTOR(arc_executor)
 	AN_EXECUTOR(ccc)
 	AN_EXECUTOR(ccc_helper)
+	AN_EXECUTOR(compile)
+	AN_EXECUTOR(compile_helper)
 END_DECLARE_EXECUTORS
 
 #define DECLARE_BYTECODES enum _e_bytecode_label{
@@ -84,10 +86,7 @@ typedef void* _bytecode_label;
 	enum _e_bytecode_label bpc; NEXT_BYTECODE;
 #define BYTECODE_GOTO(x) goto *x
 #define BYTECODE(x) bpc = x; PASTE_SYMBOLS(label_b_, x)
-#define THE_BYTECODE(x) new Bytecode(&&PASTE_SYMBOLS(label_b_, x))
-#define THE_INT_BYTECODE(x,y) new IntBytecode(&&PASTE_SYMBOLS(label_b_, x), y)
-#define THE_SEQ_BYTECODE(x,y) new SeqBytecode(&&PASTE_SYMBOLS(label_b_, x), y)
-#define THE_ATOM_BYTECODE(x,y) new AtomBytecode(&&PASTE_SYMBOLS(label_b_, x), y)
+#define THE_BYTECODE_LABEL(x) &&PASTE_SYMBOLS(label_b_, x)
 
 #else //__GNUC__
 
@@ -100,6 +99,7 @@ typedef enum _e_executor_label _executor_label;
 #define THE_EXECUTOR(x) new Executor(x)
 #define THE_ARC_EXECUTOR(x,y) new Executor(x, y)
 
+typedef enum _e_bytecode_label _bytecode_label;
 #define BYTECODE_GOTO(x) {bpc = (x); goto bytecode_switch;}
 #define DISPATCH_BYTECODES \
 	Closure* clos = dynamic_cast<Closure*>(proc.stack[0]);\
@@ -109,16 +109,13 @@ typedef enum _e_executor_label _executor_label;
 	enum _e_bytecode_label bpc; NEXT_BYTECODE; \
 	bytecode_switch: switch(bpc)
 #define BYTECODE(x) case x
-#define THE_BYTECODE(x) new Bytecode(x)
-#define THE_INT_BYTECODE(x,y) new IntBytecode(x, y)
-#define THE_SEQ_BYTECODE(x,y) new SeqBytecode(x, y)
-#define THE_ATOM_BYTECODE(x,y) new AtomBytecode(x, y)
+#define THE_BYTECODE_LABEL(x) x
 
 #endif//__GNUC__
 
 /*TODO: 'call* / 'defcall support*/
-#define NEXT_EXECUTOR { Closure* c = dynamic_cast<Closure*>(proc.stack[0]);\
-	EXECUTOR_GOTO((c->code()).l);}
+#define NEXT_EXECUTOR if(--reductions != 0){ Closure* c = dynamic_cast<Closure*>(proc.stack[0]);\
+	EXECUTOR_GOTO((c->code()).l);} else {return running;}
 
 #define NEXT_BYTECODE { current_bytecode = &*current_bytecode->next;\
 	BYTECODE_GOTO(current_bytecode->l);}
@@ -167,6 +164,17 @@ public:
 	boost::shared_ptr<BytecodeSequence> seq;
 };
 
+class IntSeqBytecode : public Bytecode{
+public:
+	virtual ~IntSeqBytecode(){ };
+	SeqBytecode(_bytecode_label nl,
+		    int nnum,
+		    boost::shared_ptr<BytecodeSequence> nseq)
+		: Bytecode(nl), num(nnum), seq(nseq) {};
+	int num;
+	boost::shared_ptr<BytecodeSequence> seq;
+};
+
 /*bytecode with an atom parameter
 (e.g. 'global, 'symbol)
 */
@@ -191,6 +199,7 @@ public:
 		}
 		tail = b;
 	}
+	BytecodeSequence() : tail(NULL), head(NULL) {}
 };
 
 #endif //EXECUTORS_H

@@ -176,7 +176,6 @@ public:
 
 class Sym : public Generic{
 private:
-	boost::shared_ptr<Atom> a;
 	Sym(void){}; //disallowed!
 protected:
 	Sym(Sym const& s) : Generic(), a(s.a){};
@@ -211,6 +210,7 @@ public:
 
 	/*new stuff*/
 	Atom& atom(void){return *a;};
+	boost::shared_ptr<Atom> a;
 };
 
 class Executor;
@@ -252,10 +252,63 @@ public:
 	/*WARNING
 	arc2c references closure values starting at index 1 (index 0
 	is the function's code itself, and is never used in practice).
-	We will have to translate the numbers properly for some cases
+	We will have to translate the numbers properly for those cases
 	*/
 	Generic* & operator[](int i) {return vars[i];}
 	Generic* const & operator[](int i) const {return vars[i];}
+};
+
+class Integer : public Generic {
+private:
+	int val;
+protected:
+	Integer(Integer const& o) : Generic(), val(o.val){}
+public:
+	/*standard stuff*/
+	virtual size_t hash(){
+		return (size_t) val;
+	}
+	virtual Integer clone(Semispace& sp) const{
+		return new(sp) Integer(*this);
+	}
+	virtual size_t get_size(void){
+		return sizeof(Integer);
+	}
+
+	virtual void probe(size_t);
+
+	/*new stuff*/
+	int integer(void){return val;}
+	Integer(int x) : Generic(), val(x) {}
+};
+
+/*Used during compilation to hold a bytecode sequence while
+converting from a symbolcode list to an internal bytecode
+format.
+*/
+class ArcBytecodeSequence : public Generic {
+protected:
+	ArcBytecodeSequence(ArcBytecodeSequence const & o)
+		: Generic(), seq(o.seq) {}
+public:
+	/*standard stuff*/
+	virtual size_t hash(){
+		return (size_t)(void*) &*seq;
+	}
+	virtual ArcBytecodeSequence clone(Semispace& sp) const{
+		return new(sp) ArcBytecodeSequence(*this);
+	}
+	virtual size_t get_size(void){
+		return sizeof(ArcBytecodeSequence);
+	}
+
+
+	/*new stuff*/
+	void append(Bytecode* b){
+		seq->append(b);
+	}
+	boost::shared_ptr<BytecodeSequence> seq;
+	ArcBytecodeSequence(void) : Generic(), seq(new BytecodeSequence()) {}
 };
 
 #endif //TYPES_H
