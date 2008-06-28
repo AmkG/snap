@@ -265,13 +265,13 @@ protected:
 	Integer(Integer const& o) : Generic(), val(o.val){}
 public:
 	/*standard stuff*/
-	virtual size_t hash(){
+	virtual size_t hash() const {
 		return (size_t) val;
 	}
 	virtual Integer clone(Semispace& sp) const{
 		return new(sp) Integer(*this);
 	}
-	virtual size_t get_size(void){
+	virtual size_t get_size(void) const{
 		return sizeof(Integer);
 	}
 
@@ -292,13 +292,13 @@ protected:
 		: Generic(), seq(o.seq) {}
 public:
 	/*standard stuff*/
-	virtual size_t hash(){
+	virtual size_t hash() const{
 		return (size_t)(void*) &*seq;
 	}
 	virtual ArcBytecodeSequence clone(Semispace& sp) const{
 		return new(sp) ArcBytecodeSequence(*this);
 	}
-	virtual size_t get_size(void){
+	virtual size_t get_size(void) const{
 		return sizeof(ArcBytecodeSequence);
 	}
 
