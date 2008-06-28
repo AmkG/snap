@@ -158,7 +158,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 							/*call new closure*/
 							proc.stack[3] = proc.stack[0];
 							proc.stack[4] = clos; // have to save this first!
-							b = proc.stack[5] = new(proc) ArcBytecodeSequence();
+							proc.stack[5] = b = new(proc) ArcBytecodeSequence();
 							proc.restack(4);
 							if(--reductions) goto compile_helper_loop; else return running;
 						} else {
@@ -181,7 +181,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 							Sym* carparam = expect_type<Sym>(param->a,
 								"compile",
 								"Expected bytecode symbol or quote in parameter to bytecode");
-							if(carparam.atom() == QUOTEATOM){
+							if(carparam->a == QUOTEATOM){
 								param = expect_type<Cons>(param->d,
 									"compile",
 									"Expected proper quote-form in symbol-parameter bytecode");
@@ -213,7 +213,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 							(*clos)[i] = proc.stack[i];
 						}
 						proc.stack[1] = clos; // Have to save this first!
-						b = proc.stack[2] = new(proc) ArcBytecodeSequence();
+						proc.stack[2] = b = new(proc) ArcBytecodeSequence();
 						proc.stack[3] = proc.stack.pop();
 						if(--reductions) goto compile_helper_loop; else return running;
 					}
