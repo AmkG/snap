@@ -214,7 +214,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 						}
 						proc.stack[1] = clos; // Have to save this first!
 						proc.stack[2] = b = new(proc) ArcBytecodeSequence();
-						proc.stack[3] = proc.stack.pop();
+						proc.stack[3] = proc.stack.top(); proc.stack.pop();
 						if(--reductions) goto compile_helper_loop; else return running;
 					}
 				}
@@ -262,7 +262,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 		      (%seq-bytecode (%lookup c) (%seq subseq)))
 		    ((%closure-ref clos 0) (%closure-ref clos 1) (%closure-ref clos 2) (%closure-ref clos 3))))
 		*/
-		EXECUTOR():
+		EXECUTOR(compile_seq_bytecode):
 		{	Closure* clos =
 				dynamic_cast<Closure*>(proc.stack[0]);
 			ArcBytecodeSequence* subseq =
