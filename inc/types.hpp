@@ -268,7 +268,7 @@ public:
 	virtual size_t hash() const {
 		return (size_t) val;
 	}
-	virtual Integer clone(Semispace& sp) const{
+	virtual Integer* clone(Semispace& sp) const{
 		return new(sp) Integer(*this);
 	}
 	virtual size_t get_size(void) const{
@@ -295,13 +295,14 @@ public:
 	virtual size_t hash() const{
 		return (size_t)(void*) &*seq;
 	}
-	virtual ArcBytecodeSequence clone(Semispace& sp) const{
+	virtual ArcBytecodeSequence* clone(Semispace& sp) const{
 		return new(sp) ArcBytecodeSequence(*this);
 	}
 	virtual size_t get_size(void) const{
 		return sizeof(ArcBytecodeSequence);
 	}
 
+	virtual void probe(size_t);
 
 	/*new stuff*/
 	void append(Bytecode* b){
