@@ -56,6 +56,8 @@ DECLARE_EXECUTORS
 	AN_EXECUTOR(ccc_helper)
 	AN_EXECUTOR(compile)
 	AN_EXECUTOR(compile_helper)
+	AN_EXECUTOR(compile_intseq_bytecode)
+	AN_EXECUTOR(compile_seq_bytecode)
 END_DECLARE_EXECUTORS
 
 #define DECLARE_BYTECODES enum _e_bytecode_label{
