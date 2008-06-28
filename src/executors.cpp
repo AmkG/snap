@@ -159,7 +159,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 							proc.stack[3] = proc.stack[0];
 							proc.stack[4] = clos; // have to save this first!
 							proc.stack[5] = b = new(proc) ArcBytecodeSequence();
-							proc.restack(4);
+							proc.stack.restack(4);
 							if(--reductions) goto compile_helper_loop; else return running;
 						} else {
 							/*Int*/
