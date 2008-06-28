@@ -167,7 +167,7 @@ public:
 class IntSeqBytecode : public Bytecode{
 public:
 	virtual ~IntSeqBytecode(){ };
-	SeqBytecode(_bytecode_label nl,
+	IntSeqBytecode(_bytecode_label nl,
 		    int nnum,
 		    boost::shared_ptr<BytecodeSequence> nseq)
 		: Bytecode(nl), num(nnum), seq(nseq) {};
