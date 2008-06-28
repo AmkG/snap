@@ -62,7 +62,7 @@ void Closure::probe(size_t ind){
 }
 
 void Integer::probe(size_t ind){
-	INDENT(ind); std::cout << "INTEGER: " << val <<
+	INDENT(ind); std::cout << "INTEGER: " << std::dec << val <<
 			" @" << std::hex << ((size_t)(this)) << std::endl;
 }
 
