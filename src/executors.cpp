@@ -17,8 +17,8 @@ static inline T* expect_type(Generic* g, char const* s1 = "executor-error", char
 	return tmp;
 }
 
-static _bytecode_label bytecodelookup(Atom* a){
-	std::map<Atom*, _bytecode_label>::iterator i = bytetb.find(a);
+static _bytecode_label bytecodelookup(boost::shared_ptr<Atom> a){
+	std::map<Atom*, _bytecode_label>::iterator i = bytetb.find(&*a);
 	if(i == bytetb.end()){
 		return i->second;
 	} else {
@@ -109,7 +109,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 			if(proc.stack[3]->isnil()){
 				/*(k b)*/
 				proc.stack.pop();
-				proc.restack(2);
+				proc.stack.restack(2);
 			} else {
 				/*split l into c and l*/
 				Cons* l = expect_type<Cons>(proc.stack[3],
@@ -129,7 +129,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 						"Expected bytecode symbol");
 					/*(%bytecode-sequence-append ...)*/
 					b->append(new Bytecode(
-							bytetb[c->atom()]));
+							bytecodelookup(c->a)));
 					/*Just pop off c*/
 					proc.stack.pop();
 					if(--reductions) goto compile_helper_loop; else return running;
@@ -170,7 +170,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 								"Expected bytecode symbol "
 								"in int-type bytecode form");
 							/*(%bytecode-sequence-append ...)*/
-							b->append(new IntBytecode(bytetb[c->atom()], param->integer()));
+							b->append(new IntBytecode(bytecodelookup(c->a), param->integer()));
 							/*pop off c, param, and params*/
 							proc.stack.pop(3);
 							if(--reductions) goto compile_helper_loop; else return running;
@@ -188,7 +188,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 								carparam = expect_type<Sym>(param->a,
 									"compile",
 									"Expected symbol in symbol-parameter bytecode");
-								b->append(new AtomBytecode(bytetb[c->atom()], carparam->a));
+								b->append(new AtomBytecode(bytecodelookup(c->a), carparam->a));
 								/*pop off c, param, and params*/
 								proc.stack.pop(3);
 								if(--reductions)goto compile_helper_loop; else return running;
@@ -247,7 +247,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 			Integer* param =
 				dynamic_cast<Integer*>(
 					(*clos)[5]);
-			b->append(new IntSeqBytecode(bytetb[c->atom()], param->integer(), subseq->seq));
+			b->append(new IntSeqBytecode(bytecodelookup(c->a), param->integer(), subseq->seq));
 			/*push the closure elements*/
 			for(int i = 0; i < 4; ++i){
 				proc.stack.push((*clos)[i]);
@@ -276,7 +276,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 				"compile",
 				"Expected bytecode symbol "
 				"in seq bytecode form");
-			b->append(new SeqBytecode(bytetb[c->atom()], subseq->seq));
+			b->append(new SeqBytecode(bytecodelookup(c->a), subseq->seq));
 			/*push the closure elements*/
 			for(int i = 0; i < 4; ++i){
 				proc.stack.push((*clos)[i]);
