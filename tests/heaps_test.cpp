@@ -25,6 +25,11 @@ int main(int argc, const char* argv[]){
 	bytecode_cons(proc);
 	bytecode_cons(proc);
 	bytecode_cons(proc);
+	//int
+	proc.stack.push(new(proc) Integer(1));
+	proc.stack.push(new(proc) Integer(-1));
+	bytecode_cons(proc);
+	bytecode_cons(proc);
 
 	proc.stack.top()->probe(0);
 }
