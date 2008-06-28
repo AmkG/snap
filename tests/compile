@@ -1,0 +1,4 @@
+#!/bin/sh
+
+g++ -g -I../inc/ $1 ../src/atoms.cpp ../src/executors.cpp ../src/heaps.cpp ../src/processes.cpp ../src/types.cpp ../src/variables.cpp
+
