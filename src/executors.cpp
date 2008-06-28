@@ -70,7 +70,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 				ArcBytecodeSequence();
 			proc.stack[0] = c;
 			/*just do type checking*/
-			Cons* cp = expect_type<Closure>(proc.stack[1],
+			Cons* cp = expect_type<Cons>(proc.stack[1],
 					"compile",
 					"Expected bytecode list");
 			proc.stack.push(proc.stack[2]);
