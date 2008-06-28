@@ -31,7 +31,8 @@ size_t Generic::total_size(ToPointerLock& toptrs, std::stack<Generic**>& s){
 #include<iostream>
 #define INDENT(ind)	for(size_t i = 0; i < ind; ++i) std::cout << "\t"
 void Cons::probe(size_t ind){
-	INDENT(ind); std::cout << "CONS cell@" << ((size_t)(this)) << std::endl;
+	INDENT(ind); std::cout << "CONS cell@" <<
+			std::hex << ((size_t)(this)) << std::endl;
 	a->probe(ind+1);
 	d->probe(ind+1);
 }
@@ -58,5 +59,15 @@ void Closure::probe(size_t ind){
 		vars[i]->probe(ind+1);
 	}
 	INDENT(ind); std::cout << "}" << std::endl;
+}
+
+void Integer::probe(size_t ind){
+	INDENT(ind); std::cout << "INTEGER: " << val <<
+			" @" << std::hex << ((size_t)(this)) << std::endl;
+}
+
+void ArcBytecodeSequence::probe(size_t ind){
+	INDENT(ind); std:: cout << "BYTECODE @" <<
+			std::hex << ((size_t) &*seq) << std::endl;
 }
 
