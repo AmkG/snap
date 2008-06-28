@@ -182,6 +182,11 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 								"compile",
 								"Expected bytecode symbol or quote in parameter to bytecode");
 							if(carparam->a == QUOTEATOM){
+								Sym* c = expect_type<Sym>(
+									proc.stack[4],
+									"compile",
+									"Expected bytecode symbol "
+									"in symbol-parameter bytecode form");
 								param = expect_type<Cons>(param->d,
 									"compile",
 									"Expected proper quote-form in symbol-parameter bytecode");
