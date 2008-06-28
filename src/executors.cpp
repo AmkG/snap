@@ -19,7 +19,7 @@ static inline T* expect_type(Generic* g, char const* s1 = "executor-error", char
 
 static _bytecode_label bytecodelookup(Atom* a){
 	std::map<Atom*, _bytecode_label>::iterator i = bytetb.find(a);
-	if(i){
+	if(i == bytetb.end()){
 		return i->second;
 	} else {
 		throw ArcError("compile",
