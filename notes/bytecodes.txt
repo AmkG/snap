@@ -124,8 +124,9 @@ continue
 	; gets the value of the global variable
 
 (global-set 'S)
-	(eval `(set ,S ',(stack!pop)))
+	(eval `(set ,S ',stack!top))
 	; sets the value of the global variable
+	; does not pop
 	; guaranteed to be slow in SNAP
 
 halt
