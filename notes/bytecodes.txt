@@ -113,7 +113,7 @@ continue
 	; (normally at stack[1]) with the specified local
 	; variable
 
-(continue-clos N)
+(continue-on-clos N)
 	((stack.0 N) stack!top)
 	; the intent is that for a nested continuation to
 	; finally continue to the enclosed continuation
