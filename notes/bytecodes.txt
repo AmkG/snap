@@ -1,0 +1,175 @@
+The VM is a combined stack/register machine.
+The stack "registers" are numbered from 0 upwards.
+So if the stack is empty, a push operation on the stack
+creates a new register, stack[0].  A pop operation on
+the stack deletes the highest-numbered register.
+
+For example, assuming the stack is empty:
+	(stack!push 1)   ; now stack[0] = 1
+	(stack!push 's)  ; now stack[1] = 's
+	(stack!pop)      ; stack[1] is now invalid
+
+The calling convention has stack[0] as the closure of
+the function to call.  stack[0] may be a non-closure
+whose type has an entry in the global 'call* table,
+in which case a specific transformation on the stack
+is done.  The calling convention has stack[1] as the
+continuation of the function.  Succeeding entries
+are parameters to the function.
+
+For a function that *is* a continuation, however,
+stack[1] is the return value.
+
+Bytecodes have 5 forms:
+bytecode
+	; these bytecodes have no parameters other than
+	; the stack.
+
+(bytecode N)
+	; these bytecodes have a single integer parameter
+	; this usually refers to a stack[N], except for
+	; the cases which don't ^^
+
+(bytecode . seq)
+	; these bytecodes have another bytecode sequence as
+	; a parameter.  For example:
+	; (if  (local 3) continue)
+
+(bytecode N . seq)
+	; these bytecodes have a single integer parameter
+	; and another bytecode sequence
+
+(bytecode 'S)
+(bytecode (quote S))
+	; these bytecodes have a single symbol parameter
+
+
+Bytecodes:
+
+(apply N)
+	(let (fn . params)
+	     (rev:map [stack!pop] (range 1 N))
+	  (apply fn params))
+	; calls the function or other applicable object
+	; with the specified number of parameters, minus
+	; 1 (i.e. the function itself is counted among
+	; the parameters)
+
+apply-list
+	(withs (l (stack!pop)
+	        k (stack!pop)
+	        f (stack!pop))
+	  (apply f k l))
+	; calls the function with a list of parameters
+
+car
+	(= stack!top (car stack!top))
+
+(car-local N)
+	(= stack.N (car stack.N))
+
+cdr
+	(= stack!top (cdr stack!top))
+
+(cdr-local N)
+	(= stack.N (cdr stack.N))
+
+(check-vars N)
+	(if (isnt (len stack) N)
+	  (err:annotate 'apply "Incorrect number of parameters"))
+	; intended to be used at the start of a function
+	; sequence that accepts a specific number of
+	; arguments.
+
+(closure N . seq)
+	(let params (rev:map [stack!pop] (range 1 N))
+	  (create-closure (compile-seq seq) params))
+	; creates a function object whose bytecode sequence
+	; is seq, and encloses the top N entries of the stack
+	; The closure's enclosed variables are 0-indexed.
+	;
+	; For example the sequence: a b c (closure 3 ...)
+	; will have a accessible via (closure-ref 0), b via
+	; (closure-ref 1), and c via (closure-ref 2)
+	; a b and c are popped from the stack
+
+(closure-ref N)
+	(stack!push (stack.0 N))
+
+cons
+	(withs (d (stack!pop)
+	        a (stack!pop))
+	  (stack!push (cons a d)))
+	; to use: a d cons
+
+continue
+	(stack.1 stack!top)
+	; the intent is to call or return to the continuation
+	; function (normally at stack[1]) with the stack top
+
+(continue-local N)
+	(stack.1 stack.N)
+	; the intent is to call the continuation function
+	; (normally at stack[1]) with the specified local
+	; variable
+
+(continue-clos N)
+	((stack.0 N) stack!top)
+	; the intent is that for a nested continuation to
+	; finally continue to the enclosed continuation
+	; (i.e. for a 'do form to finally continue)
+
+(global 'S)
+	(eval S)
+	; gets the value of the global variable
+
+(global-set 'S)
+	(eval `(set ,S ',(stack!pop)))
+	; sets the value of the global variable
+	; guaranteed to be slow in SNAP
+
+halt
+	(thread-exit stack!top)
+
+(halt-local N)
+	(thread-exit stack.N)
+
+(if . seq)
+	(if (stack!pop)
+	  (goto (compile-seq seq)))
+	; transfers control to the sequence if the popped
+	; stack top is not nil.  The sequence will be
+	; followed completely if the branch is entered.
+	; If the branch is not entered, this bytecode
+	; just pops the stack top and continues to the
+	; next bytecode in sequence.
+
+(if-local N . seq)
+	(if stack.N
+	  (goto (compile-seq seq)))
+	; transfers control to the sequence if the
+	; specified local is not nil.
+
+(int N)
+	(stack!push (coerce N 'int))
+
+(local N)
+	(stack!push stack.N)
+
+(sym 'S)
+	(stack!push (sym S))
+
+(variadic N)
+	(let n (len stack)
+	  (stack!push nil)
+	  (while (> n N)
+	    ; equivalent to bytecode cons
+            (withs (d (stack!pop)
+                    a (stack!pop))
+              (stack!push (cons a d)))
+	    (zap - n 1))
+	  (if (isnt n N)
+	    (err:annotate 'apply "Insufficient number of parameters to variadic function")))
+	; intent is to create a list from a variadic
+	; number of parameters
+
