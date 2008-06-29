@@ -132,8 +132,10 @@ continue
 halt
 	(thread-exit stack!top)
 
-(halt-local N)
+(halt-local-push N)
 	(thread-exit stack.N)
+	; called "push" simply to match names of other bytecode
+	; variants; obviously doesn't push because thread exits
 
 (if . seq)
 	(if (stack!pop)
