@@ -58,6 +58,7 @@ DECLARE_EXECUTORS
 	AN_EXECUTOR(compile_helper)
 	AN_EXECUTOR(compile_intseq_bytecode)
 	AN_EXECUTOR(compile_seq_bytecode)
+	AN_EXECUTOR(to_free_fun)
 END_DECLARE_EXECUTORS
 
 #define DECLARE_BYTECODES enum _e_bytecode_label{
@@ -99,7 +100,7 @@ typedef enum _e_executor_label _executor_label;
 	executor_switch: switch(pc)
 #define EXECUTOR(x) case x
 #define THE_EXECUTOR(x) new Executor(x)
-#define THE_ARC_EXECUTOR(x,y) new Executor(x, y)
+#define THE_ARC_EXECUTOR(x,y) new ArcExecutor(x, y)
 
 typedef enum _e_bytecode_label _bytecode_label;
 #define BYTECODE_GOTO(x) {bpc = (x); goto bytecode_switch;}

@@ -288,6 +288,19 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 			}
 			proc.stack.restack(4);
 		} NEXT_EXECUTOR;
+		/*used to create a free function (no enclosed variables)
+		from a bytecode sequence
+		(fn (self k b)
+		  (k (%closure b)))
+		*/
+		EXECUTOR(to_free_fun):
+		{	ArcBytecodeSequence* b =
+				expect_type<ArcBytecodeSequence>(proc.stack.top());
+			Closure* clos =
+				new(proc) Closure(THE_ARC_EXECUTOR(arc_executor, b->seq), 0);
+			proc.stack[2] = clos;
+			proc.stack.restack(2);
+		} NEXT_EXECUTOR;
 	}
 	return dead;
 initialize:
