@@ -65,14 +65,14 @@ apply-list
 car
 	(= stack!top (car stack!top))
 
-(car-local N)
-	(= stack.N (car stack.N))
+(car-local-push N)
+	(stack!push (car stack.N))
 
 cdr
 	(= stack!top (cdr stack!top))
 
-(cdr-local N)
-	(= stack.N (cdr stack.N))
+(cdr-local-push N)
+	(stack!push (cdr stack.N))
 
 (check-vars N)
 	(if (isnt (len stack) N)
