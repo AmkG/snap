@@ -73,8 +73,17 @@ public:
 		    Generic* g){
 		other_spaces.push_back(ns);
 		GlobalAtom* gp = dynamic_cast<GlobalAtom*>(&*a);
+		/*TODO: allow assignment to a LocalAtom, probably
+		using a vector of LocalAtom's that have ever been
+		assigned to.
+		*/
 		if(gp == NULL) throw std::runtime_error("write to non-global");
 		gp->value = g;
+	}
+	Generic* get(boost::shared_ptr<Atom> a){
+		GlobalAtom* gp = dynamic_cast<GlobalAtom*>(&*a);
+		if(gp == NULL) throw std::runtime_error("read from non-global");
+		return gp->value;
 	}
 	void GC(void){Heap::GC(0);};
 	virtual ~Globals(){};

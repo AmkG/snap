@@ -4,6 +4,7 @@
 #include"errors.hpp"
 #include<vector>
 #include<stack>
+#include<map>
 #include<boost/shared_ptr.hpp>
 
 class Process;
@@ -54,6 +55,7 @@ private:
 	//should also be locked using the other_spaces lock
 	std::vector<Generic*> mailbox;
 	Generic* queue;//handled by Arc-side code
+	std::map<boost::shared_ptr<Atom>, Generic*> global_cache;
 protected:
 	virtual void get_root_set(std::stack<Generic**>& s){
 		if(queue != NULL) s.push(&queue);
@@ -67,11 +69,18 @@ protected:
 		    ++i){
 			s.push(&*i);
 		}
+		for(std::map<boost::shared_ptr<Atom>, Generic* >::iterator i =
+			global_cache.begin();
+		    i != global_cache.end();
+		    ++i){
+			s.push(&(i->second));
+		}
 	}
 public:
 	ProcessStack stack;
 	void sendto(Process&, Generic*) const ;
 	void assign(boost::shared_ptr<Atom>, Generic*) const ;
+	Generic* get(boost::shared_ptr<Atom>);
 	virtual ~Process(){};
 	Process() : Heap(), queue(NULL) {};
 };
