@@ -68,11 +68,17 @@ car
 (car-local-push N)
 	(stack!push (car stack.N))
 
+(car-clos-push N)
+	(stack!push (car (stack.0 N)))
+
 cdr
 	(= stack!top (cdr stack!top))
 
 (cdr-local-push N)
 	(stack!push (cdr stack.N))
+
+(cdr-clos-push N)
+	(stack!push (cdr (stack.0 N)))
 
 (check-vars N)
 	(if (isnt (len stack) N)
@@ -136,6 +142,10 @@ halt
 	(thread-exit stack.N)
 	; called "push" simply to match names of other bytecode
 	; variants; obviously doesn't push because thread exits
+
+(halt-clos-push N)
+	(thread-exit (stack.0 N))
+	; similar
 
 (if . seq)
 	(if (stack!pop)
