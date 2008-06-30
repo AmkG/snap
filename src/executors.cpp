@@ -70,9 +70,11 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 				ArcBytecodeSequence();
 			proc.stack[0] = c;
 			/*just do type checking*/
-			Cons* cp = expect_type<Cons>(proc.stack[1],
-					"compile",
-					"Expected bytecode list");
+			if(proc.stack[1]->istrue()){
+				Cons* cp = expect_type<Cons>(proc.stack[1],
+						"compile",
+						"Expected bytecode list");
+			}
 			proc.stack.push(proc.stack[2]);
 			proc.stack[2] = bseq;
 		} NEXT_EXECUTOR;
@@ -301,13 +303,20 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 			proc.stack[2] = clos;
 			proc.stack.restack(2);
 		} NEXT_EXECUTOR;
+		EXECUTOR(halting_continuation):
+			proc.stack.push(proc.stack[1]);
+			proc.stack.restack(1);
+			return dead;
+		NEXT_EXECUTOR;
 	}
 	return dead;
 initialize:
 	QUOTEATOM = globals->lookup("quote");
+	/*bytecodes*/
 	bytetb[&*globals->lookup("car")] = THE_BYTECODE_LABEL(car);
 	bytetb[&*globals->lookup("cdr")] = THE_BYTECODE_LABEL(cdr);
 	bytetb[&*globals->lookup("cons")] = THE_BYTECODE_LABEL(cons);
+	/*assign some bultin globals*/
 	return running;
 }
 
