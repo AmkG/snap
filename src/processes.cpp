@@ -48,7 +48,7 @@ void Process::assign(boost::shared_ptr<Atom> a, Generic* g) const {
 	}
 	//note: ns and g will be invalid by now
 	/*TODO: notify all other processes that the global
-	has been modified
+	has been modified.  including itself
 	*/
 	/*Yes, assigning to a global variable is expensive!*/
 }
@@ -76,6 +76,7 @@ Generic* Process::get(boost::shared_ptr<Atom> a){
 		{/*insert locking of our own other_spaces*/
 			other_spaces.push_back(ns);
 		}
+		global_cache[a] = src;
 		return src;
 	}
 }
