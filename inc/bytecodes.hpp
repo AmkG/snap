@@ -14,20 +14,18 @@ some day)
 */
 
 /*parameters are on-stack*/
-inline void bytecode_cons(Process& proc){
-	ProcessStack& stack = proc.stack;
+inline void bytecode_cons(Process& proc, ProcessStack& stack){
 	Cons* cp = new(proc) Cons();
 	cp->a = stack.top(2);
 	cp->d = stack.top(1);
 	stack.top(2) = cp;
 	stack.pop();
 }
-inline void bytecode_sym(Process& proc, boost::shared_ptr<Atom> a){
-	ProcessStack& stack = proc.stack;
+inline void bytecode_sym(Process& proc, ProcessStack& stack,
+			boost::shared_ptr<Atom> a){
 	stack.push(new(proc) Sym(a));
 }
-inline void bytecode_car(Process& proc){
-	ProcessStack& stack = proc.stack;
+inline void bytecode_car(ProcessStack& stack){
 	//(car nil) => nil
 	if(stack.top()->istrue()){
 		Cons* cp = dynamic_cast<Cons*>(stack.top());
@@ -36,8 +34,15 @@ inline void bytecode_car(Process& proc){
 		stack.top() = cp->a;
 	}
 }
-inline void bytecode_cdr(Process& proc){
-	ProcessStack& stack = proc.stack;
+inline void bytecode_car_local_push(ProcessStack& stack, int N){
+	if(stack[N]->istrue()){
+		Cons* cp = dynamic_cast<Cons*>(stack[N]);
+		if(cp == NULL) throw ArcError("badargs",
+				"'car expects an argument of type 'cons");
+		stack.push(cp->a);
+	}
+}
+inline void bytecode_cdr(ProcessStack& stack){
 	//(car nil) => nil
 	if(stack.top()->istrue()){
 		Cons* cp = dynamic_cast<Cons*>(stack.top());

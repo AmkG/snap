@@ -48,20 +48,20 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 					/*destructure until stack top is nil*/
 					while(stack.top()->istrue()){
 						tmp = stack.top();
-						bytecode_car();
+						bytecode_car(stack);
 						stack.push(tmp);
-						bytecode_cdr();
+						bytecode_cdr(stack);
 					}
 					stack.pop();
 				} /***/ NEXT_EXECUTOR; /***/
 				BYTECODE(car):
-					bytecode_car(proc);
+					bytecode_car(stack);
 				NEXT_BYTECODE;
 				BYTECODE(cdr):
-					bytecode_cdr(proc);
+					bytecode_cdr(stack);
 				NEXT_BYTECODE;
 				BYTECODE(cons):
-					bytecode_cons(proc);
+					bytecode_cons(proc,stack);
 				NEXT_BYTECODE;
 			}
 		} NEXT_EXECUTOR;
