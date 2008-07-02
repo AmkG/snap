@@ -69,6 +69,8 @@ END_DECLARE_EXECUTORS
 #define A_BYTECODE(x) BYTECODE_ENUM(x),
 #define END_DECLARE_BYTECODES __null_bytecode };
 DECLARE_BYTECODES
+	A_BYTECODE(apply)
+	A_BYTECODE(apply_list)
 	A_BYTECODE(car)
 	A_BYTECODE(cdr)
 	A_BYTECODE(cons)
@@ -212,5 +214,17 @@ public:
 	BytecodeSequence() : tail(NULL), head(NULL) {}
 };
 
+/*Bytecode definition helper macros*/
+#define INTPARAM(i)\
+	int i& = (dynamic_cast<IntBytecode*>(current_bytecode))->num
+
+#define SEQPARAM(i)\
+	boost::shared_ptr<BytecodeSequence> i& =\
+		(dynamic_cast<SeqBytecode*>(current_bytecode))->seq
+
+#define INTSEQPARAM(i,s)\
+	int i& = (dynamic_cast<IntBytecode*>(current_bytecode))->num;\
+	boost::shared_ptr<BytecodeSequence> s& =\
+		(dynamic_cast<IntSeqBytecode*>(current_bytecode))->seq
 #endif //EXECUTORS_H
 
