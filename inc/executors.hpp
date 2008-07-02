@@ -72,7 +72,11 @@ DECLARE_BYTECODES
 	A_BYTECODE(apply)
 	A_BYTECODE(apply_list)
 	A_BYTECODE(car)
+	A_BYTECODE(car_local_push)
+	A_BYTECODE(car_clos_push)
 	A_BYTECODE(cdr)
+	A_BYTECODE(cdr_local_push)
+	A_BYTECODE(cdr_clos_push)
 	A_BYTECODE(cons)
 END_DECLARE_BYTECODES
 

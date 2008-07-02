@@ -15,7 +15,9 @@ static boost::shared_ptr<Atom> HALTATOM;
 static std::map<Atom*,_bytecode_label> bytetb;
 
 template<class T>
-static inline T* expect_type(Generic* g, char const* s1 = "executor-error", char const* s2 = "Unspecified error"){
+static inline T* expect_type(Generic* g,
+				char const* s1 = "executor-error",
+				char const* s2 = "Unspecified error"){
 	T* tmp = dynamic_cast<T*>(g);
 	if(tmp == NULL) throw ArcError(s1, s2);
 	return tmp;
@@ -23,7 +25,7 @@ static inline T* expect_type(Generic* g, char const* s1 = "executor-error", char
 
 static _bytecode_label bytecodelookup(boost::shared_ptr<Atom> a){
 	std::map<Atom*, _bytecode_label>::iterator i = bytetb.find(&*a);
-	if(i == bytetb.end()){
+	if(i != bytetb.end()){
 		return i->second;
 	} else {
 		throw ArcError("compile",
@@ -42,7 +44,6 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 					stack.restack(N);
 				} /***/ NEXT_EXECUTOR; /***/
 				BYTECODE(apply_list):
-				{NOPARAM;
 					Generic* tmp;
 					stack.restack(3);
 					/*destructure until stack top is nil*/
@@ -53,12 +54,32 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 						bytecode_cdr(stack);
 					}
 					stack.pop();
-				} /***/ NEXT_EXECUTOR; /***/
+				/***/ NEXT_EXECUTOR; /***/
 				BYTECODE(car):
 					bytecode_car(stack);
 				NEXT_BYTECODE;
+				BYTECODE(car_local_push):
+				{INTPARAM(N);
+					bytecode_car_local_push(stack,N);
+				}
+				NEXT_BYTECODE;
+				BYTECODE(car_clos_push):
+				{INTPARAM(N);
+					bytecode_car_clos_push(stack,*clos,N);
+				}
+				NEXT_BYTECODE;
 				BYTECODE(cdr):
 					bytecode_cdr(stack);
+				NEXT_BYTECODE;
+				BYTECODE(cdr_local_push):
+				{INTPARAM(N);
+					bytecode_cdr_local_push(stack,N);
+				}
+				NEXT_BYTECODE;
+				BYTECODE(cdr_clos_push):
+				{INTPARAM(N);
+					bytecode_cdr_clos_push(stack,*clos,N);
+				}
 				NEXT_BYTECODE;
 				BYTECODE(cons):
 					bytecode_cons(proc,stack);
@@ -374,6 +395,9 @@ initialize:
 	FREEFUNATOM = globals->lookup("bytecode-to-free-fun");
 	HALTATOM = globals->lookup("halt");
 	/*bytecodes*/
+	bytetb[&*globals->lookup("apply")] = THE_BYTECODE_LABEL(apply);
+	bytetb[&*globals->lookup("apply-list")] =
+		THE_BYTECODE_LABEL(apply_list);
 	bytetb[&*globals->lookup("car")] = THE_BYTECODE_LABEL(car);
 	bytetb[&*globals->lookup("cdr")] = THE_BYTECODE_LABEL(cdr);
 	bytetb[&*globals->lookup("cons")] = THE_BYTECODE_LABEL(cons);

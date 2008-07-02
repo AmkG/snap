@@ -40,7 +40,15 @@ inline void bytecode_car_local_push(ProcessStack& stack, int N){
 		if(cp == NULL) throw ArcError("badargs",
 				"'car expects an argument of type 'cons");
 		stack.push(cp->a);
-	}
+	} else	stack.push(stack[N])
+}
+inline void bytecode_car_clos_push(ProcessStack& stack, Closure& clos, int N){
+	if(clos[N]->istrue()){
+		Cons* cp = dynamic_cast<Cons*>(clos[N]);
+		if(cp == NULL) throw ArcError("badargs",
+				"'car expects an argument of type 'cons");
+		stack.push(cp->a);
+	} else	stack.push(clos[N])
 }
 inline void bytecode_cdr(ProcessStack& stack){
 	//(car nil) => nil
@@ -50,6 +58,22 @@ inline void bytecode_cdr(ProcessStack& stack){
 				"'cdr expects an argument of type 'cons");
 		stack.top() = cp->d;
 	}
+}
+inline void bytecode_cdr_local_push(ProcessStack& stack, int N){
+	if(stack[N]->istrue()){
+		Cons* cp = dynamic_cast<Cons*>(stack[N]);
+		if(cp == NULL) throw ArcError("badargs",
+				"'car expects an argument of type 'cons");
+		stack.push(cp->d);
+	} else	stack.push(stack[N]);
+}
+inline void bytecode_cdr_clos_push(ProcessStack& stack, Closure& clos, int N){
+	if(clos[N]->istrue()){
+		Cons* cp = dynamic_cast<Cons*>(clos[N]);
+		if(cp == NULL) throw ArcError("badargs",
+				"'car expects an argument of type 'cons");
+		stack.push(cp->d);
+	} else	stack.push(clos[N]);
 }
 
 #endif //BYTECODES_H
