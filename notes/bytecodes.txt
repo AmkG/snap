@@ -177,9 +177,9 @@ halt
 	  (stack!push nil)
 	  (while (> n N)
 	    ; equivalent to bytecode cons
-            (withs (d (stack!pop)
-                    a (stack!pop))
-              (stack!push (cons a d)))
+	    (withs (d (stack!pop)
+	            a (stack!pop))
+	      (stack!push (cons a d)))
 	    (zap - n 1))
 	  (if (isnt n N)
 	    (err:annotate 'apply "Insufficient number of parameters to variadic function")))
