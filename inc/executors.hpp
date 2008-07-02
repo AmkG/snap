@@ -61,6 +61,7 @@ DECLARE_EXECUTORS
 	AN_EXECUTOR(compile_seq_bytecode)
 	AN_EXECUTOR(to_free_fun)
 	AN_EXECUTOR(halting_continuation)
+	AN_EXECUTOR(bif_dispatch)
 END_DECLARE_EXECUTORS
 
 #define DECLARE_BYTECODES enum _e_bytecode_label{

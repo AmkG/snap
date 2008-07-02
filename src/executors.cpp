@@ -8,6 +8,10 @@
 #include<map>
 
 static boost::shared_ptr<Atom> QUOTEATOM;
+static boost::shared_ptr<Atom> CCCATOM;
+static boost::shared_ptr<Atom> BYTECODERATOM;
+static boost::shared_ptr<Atom> FREEFUNATOM;
+static boost::shared_ptr<Atom> HALTATOM;
 static std::map<Atom*,_bytecode_label> bytetb;
 
 template<class T>
@@ -157,10 +161,10 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 							for(int i = 0; i < 6; ++i){
 								(*clos)[i] = proc.stack[i];
 							}
-							/*call new closure*/
+							/*call new continuation*/
 							proc.stack[3] = proc.stack[0];
 							proc.stack[4] = clos; // have to save this first!
-							proc.stack[5] = b = new(proc) ArcBytecodeSequence();
+							proc.stack[5] = b = new(proc) ArcBytecodeSequence(); // make sure to reassign b
 							proc.stack.restack(4);
 							if(--reductions) goto compile_helper_loop; else return running;
 						} else {
@@ -220,7 +224,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 							(*clos)[i] = proc.stack[i];
 						}
 						proc.stack[1] = clos; // Have to save this first!
-						proc.stack[2] = b = new(proc) ArcBytecodeSequence();
+						proc.stack[2] = b = new(proc) ArcBytecodeSequence(); // make sure to reassign b
 						proc.stack[3] = proc.stack.top(); proc.stack.pop();
 						if(--reductions) goto compile_helper_loop; else return running;
 					}
@@ -308,15 +312,56 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 			proc.stack.restack(1);
 			return dead;
 		NEXT_EXECUTOR;
+		/* this function implements the ($ ...) dispatcher
+		not very efficient, since we construct new closures
+		each time; obviously the arc-side support has to
+		put them in some sort of enclosed local variable
+		(fn (self k s)
+		  (case s
+		    ...))
+		*/
+		EXECUTOR(bif_dispatch):
+		{	Sym* s = expect_type<Sym>(proc.stack[2],
+					"$",
+					"Expected a symbol");
+			/*if-else-if chain*/
+			if(s->a == CCCATOM){
+				proc.stack[2] =
+					new(proc)
+					Closure(THE_EXECUTOR(ccc), 0);
+			} else if(s->a == BYTECODERATOM){
+				proc.stack[2] =
+					new(proc)
+					Closure(THE_EXECUTOR(compile), 0);
+			} else if(s->a == FREEFUNATOM){
+				proc.stack[2] =
+					new(proc)
+					Closure(THE_EXECUTOR(to_free_fun), 0);
+			} else if(s->a == HALTATOM){
+				proc.stack[2] =
+					new(proc)
+					Closure(THE_EXECUTOR(halting_continuation), 0);
+			} else {
+				proc.stack[2] = new(proc) Sym(NILATOM);
+			}
+			proc.stack.restack(2);
+		} NEXT_EXECUTOR;
 	}
 	return dead;
 initialize:
+	/*atoms*/
 	QUOTEATOM = globals->lookup("quote");
+	CCCATOM = globals->lookup("ccc");
+	BYTECODERATOM = globals->lookup("bytecoder");
+	FREEFUNATOM = globals->lookup("bytecode-to-free-fun");
+	HALTATOM = globals->lookup("halt");
 	/*bytecodes*/
 	bytetb[&*globals->lookup("car")] = THE_BYTECODE_LABEL(car);
 	bytetb[&*globals->lookup("cdr")] = THE_BYTECODE_LABEL(cdr);
 	bytetb[&*globals->lookup("cons")] = THE_BYTECODE_LABEL(cons);
-	/*assign some bultin globals*/
+	/*assign bultin global*/
+	proc.assign(globals->lookup("$"),
+		new(proc) Closure(THE_EXECUTOR(bif_dispatch), 0));
 	return running;
 }
 
