@@ -38,6 +38,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 	if(init) goto initialize;
 	DISPATCH_EXECUTORS {
 		EXECUTOR(arc_executor):
+		arc_executor_top://must be named exactly so, and must exist
 		{	DISPATCH_BYTECODES{//provides the Closure clos
 				BYTECODE(apply):
 				{INTPARAM(N);
@@ -66,24 +67,29 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 				BYTECODE(car_clos_push):
 				{INTPARAM(N);
 					bytecode_car_clos_push(stack,clos,N);
-				}
-				NEXT_BYTECODE;
+				} NEXT_BYTECODE;
 				BYTECODE(cdr):
 					bytecode_cdr(stack);
 				NEXT_BYTECODE;
 				BYTECODE(cdr_local_push):
 				{INTPARAM(N);
 					bytecode_cdr_local_push(stack,N);
-				}
-				NEXT_BYTECODE;
+				} NEXT_BYTECODE;
 				BYTECODE(cdr_clos_push):
 				{INTPARAM(N);
 					bytecode_cdr_clos_push(stack,clos,N);
-				}
-				NEXT_BYTECODE;
+				} NEXT_BYTECODE;
 				BYTECODE(cons):
 					bytecode_cons(proc,stack);
 				NEXT_BYTECODE;
+				BYTECODE(check_vars):
+				{INTPARAM(N);
+					if(N != stack.size()){
+						throw ArcError("apply",
+							"Incorrect number of "
+							"parameters");
+					}
+				} NEXT_BYTECODE;
 			}
 		} NEXT_EXECUTOR;
 		/*
@@ -362,7 +368,8 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 		EXECUTOR(bif_dispatch):
 		{	Sym* s = expect_type<Sym>(stack[2],
 					"$",
-					"Expected a symbol");
+					"built-in dispatcher "
+					"expected a symbol");
 			/*if-else-if chain*/
 			if(s->a == CCCATOM){
 				stack[2] =
@@ -399,8 +406,18 @@ initialize:
 	bytetb[&*globals->lookup("apply-list")] =
 		THE_BYTECODE_LABEL(apply_list);
 	bytetb[&*globals->lookup("car")] = THE_BYTECODE_LABEL(car);
+	bytetb[&*globals->lookup("car-local-push")] =
+		THE_BYTECODE_LABEL(car_local_push);
+	bytetb[&*globals->lookup("car-clos-push")] =
+		THE_BYTECODE_LABEL(car_clos_push);
 	bytetb[&*globals->lookup("cdr")] = THE_BYTECODE_LABEL(cdr);
+	bytetb[&*globals->lookup("cdr-local-push")] =
+		THE_BYTECODE_LABEL(cdr_local_push);
+	bytetb[&*globals->lookup("cdr-clos-push")] =
+		THE_BYTECODE_LABEL(cdr_clos_push);
 	bytetb[&*globals->lookup("cons")] = THE_BYTECODE_LABEL(cons);
+	bytetb[&*globals->lookup("check-vars")] =
+		THE_BYTECODE_LABEL(check_vars);
 	/*assign bultin global*/
 	proc.assign(globals->lookup("$"),
 		new(proc) Closure(THE_EXECUTOR(bif_dispatch), 0));

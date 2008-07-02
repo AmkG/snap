@@ -78,6 +78,7 @@ DECLARE_BYTECODES
 	A_BYTECODE(cdr_local_push)
 	A_BYTECODE(cdr_clos_push)
 	A_BYTECODE(cons)
+	A_BYTECODE(check_vars)
 END_DECLARE_BYTECODES
 
 
@@ -87,8 +88,7 @@ typedef void* _executor_label;
 #define EXECUTOR_GOTO(x) goto *x
 #define DISPATCH_EXECUTORS enum _e_executor_label pc; NEXT_EXECUTOR;
 #define EXECUTOR(x) pc = EXECUTOR_ENUM(x); PASTE_SYMBOLS(label_, x)
-#define THE_EXECUTOR(x) new Executor(&&PASTE_SYMBOLS(label_, x))
-#define THE_ARC_EXECUTOR(x,y) new ArcExecutor(&&PASTE_SYMBOLS(label_, x), y)
+#define THE_EXECUTOR_LABEL(x) &&PASTE_SYMBOLS(label_, x)
 
 typedef void* _bytecode_label;
 #define DISPATCH_BYTECODES \
@@ -109,8 +109,7 @@ typedef enum _e_executor_label _executor_label;
 #define DISPATCH_EXECUTORS _executor_label pc; NEXT_EXECUTOR;\
 	executor_switch: switch(pc)
 #define EXECUTOR(x) case EXECUTOR_ENUM(x)
-#define THE_EXECUTOR(x) new Executor(EXECUTOR_ENUM(x))
-#define THE_ARC_EXECUTOR(x,y) new ArcExecutor(EXECUTOR_ENUM(x), y)
+#define THE_EXECUTOR_LABEL(x) EXECUTOR_ENUM(x)
 
 typedef enum _e_bytecode_label _bytecode_label;
 #define BYTECODE_GOTO(x) {bpc = (x); goto bytecode_switch;}
@@ -126,8 +125,12 @@ typedef enum _e_bytecode_label _bytecode_label;
 
 #endif//__GNUC__
 
+#define THE_EXECUTOR(x) new Executor(THE_EXECUTOR_LABEL(x))
+#define THE_ARC_EXECUTOR(x,y) new ArcExecutor(THE_EXECUTOR_LABEL(x), y)
+
 /*TODO: 'call* / 'defcall support*/
 #define NEXT_EXECUTOR if(--reductions != 0){ Closure* c = dynamic_cast<Closure*>(proc.stack[0]);\
+	if(c->code().l == THE_EXECUTOR_LABEL(arc_executor)) goto arc_executor_top;\
 	EXECUTOR_GOTO((c->code()).l);} else {return process_running;}
 
 #define NEXT_BYTECODE { current_bytecode = &*current_bytecode->next;\
