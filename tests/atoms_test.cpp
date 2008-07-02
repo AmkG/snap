@@ -1,17 +1,11 @@
+#include"variables.hpp"
 #include<iostream>
 #include"atoms.hpp"
 #include<boost/shared_ptr.hpp>
 #include<boost/scoped_ptr.hpp>
 
-boost::shared_ptr<Atom> NILATOM;
-boost::shared_ptr<Atom> TATOM;
-
-boost::scoped_ptr<Globals> globals;
-
 int main(int argc, const char* argv[]){
-	globals.reset(new Globals());
-	NILATOM = globals->lookup("nil");
-	TATOM = globals->lookup("t");
+	variables_init();
 
 	/*tests!*/
 	/*make sure NILATOM is a global atom*/
