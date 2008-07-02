@@ -3,31 +3,33 @@
 #include<string>
 #include<iostream>
 #include<map>
+#include<set>
 #include<boost/shared_ptr.hpp>
 #include<stdexcept>
 #include"heaps.hpp"
 
+class Globals;
+
 class Atom {
+private:
+	Generic* value;
 protected:
-	Atom(){};
+	Atom() : value(NULL){};
 	Atom(Atom&){};
 public:
 	virtual ~Atom(){};
+	friend class Globals;
 };
-
-class Globals;
 
 class GlobalAtom : public Atom {
 private:
 	std::string utf8string;
-	Generic* value;
 public:
-	GlobalAtom(std::string& s) : utf8string(s), value(NULL){};
+	GlobalAtom(std::string& s) : utf8string(s){};
 	virtual ~GlobalAtom(){};
 	void emit(void) const {
 		std::cout << utf8string;
 	};
-	friend class Globals;
 };
 
 /*from (uniq)*/
@@ -36,9 +38,11 @@ public:
 	virtual ~LocalAtom(){};
 };
 
+/*NOTE!  intended to be instantiated only once (singleton)*/
 class Globals : public Heap {
 private:
-	std::map< std::string, boost::shared_ptr<Atom> > string_to_atom;
+	std::map< std::string, boost::shared_ptr<GlobalAtom> > string_to_atom;
+	std::set<boost::shared_ptr<Atom> > assigned_local_atoms;
 	/*insert mutex here*/
 	/*The mutex must be locked for the following cases:
 	1. Setting of global variables
@@ -51,14 +55,14 @@ protected:
 public:
 	boost::shared_ptr<Atom> lookup(std::string& s){
 		/*insert locking of string_to_atom table here*/
-		std::map< std::string, boost::shared_ptr<Atom> >::iterator i;
+		std::map< std::string, boost::shared_ptr<GlobalAtom> >::iterator i;
 		i = string_to_atom.find(s);
 		if(i != string_to_atom.end()){
 			std::map< std::string,
 				boost::shared_ptr<Atom> >::value_type v = *i;
 			return v.second;
 		} else {
-			boost::shared_ptr<Atom> tmp(new GlobalAtom(s));
+			boost::shared_ptr<GlobalAtom> tmp(new GlobalAtom(s));
 			string_to_atom[s].swap(tmp);
 			return string_to_atom[s];
 		}
@@ -67,18 +71,23 @@ public:
 		std::string ss(s);
 		return lookup(ss);
 	}
-	/*precondition: lock for this object must be acquired*/
+	/*precondition: lock for globals must be acquired*/
+	/*requirements: g must be in the given semispace ns*/
 	void assign(boost::shared_ptr<Atom> a,
 		    boost::shared_ptr<Semispace> ns,
 		    Generic* g){
 		other_spaces.push_back(ns);
-		GlobalAtom* gp = dynamic_cast<GlobalAtom*>(&*a);
-		/*TODO: allow assignment to a LocalAtom, probably
-		using a vector of LocalAtom's that have ever been
-		assigned to.
-		*/
-		if(gp == NULL) throw std::runtime_error("write to non-global");
-		gp->value = g;
+		a->value = g;
+		/*check if local atom*/
+		LocalAtom* lp = dynamic_cast<LocalAtom*>(&*a);
+		if(lp != NULL){
+			/*add a to set*/
+			assigned_local_atoms.insert(a);
+			/*TODO: figure out how to dynamic_cast shared_ptr<Base>
+			to shared_ptr<Derived>, so that assigned_local_atoms
+			are indeed local atoms
+			*/
+		}
 	}
 	Generic* get(boost::shared_ptr<Atom> a){
 		GlobalAtom* gp = dynamic_cast<GlobalAtom*>(&*a);

@@ -9,16 +9,18 @@
 Globals
 -----------------------------------------------------------------------------*/
 void Globals::get_root_set(std::stack<Generic**>& s){
-	std::map<std::string, boost::shared_ptr<Atom> >::iterator i;
-	boost::shared_ptr<Atom> ap;
+	std::map<std::string, boost::shared_ptr<GlobalAtom> >::iterator i;
+	Atom* ap;
 	for(i = string_to_atom.begin(); i != string_to_atom.end(); ++i){
-		ap = (*i).second;
-		GlobalAtom* gp = dynamic_cast<GlobalAtom*>(&*ap);
-		if(gp == NULL){
-			throw std::runtime_error(
-				"Non-global atom in global atoms list");
-		}
-		if(gp->value != NULL) s.push(&gp->value);
+		ap = i->second.get();
+		if(ap->value != NULL) s.push(&ap->value);
+	}
+	std::set<boost::shared_ptr<Atom> >::iterator ii;
+	for(ii = assigned_local_atoms.begin();
+	    ii != assigned_local_atoms.end();
+	    ++i){
+		ap = ii->get();
+		s.push(&ap->value);
 	}
 }
 
