@@ -310,7 +310,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 		EXECUTOR(halting_continuation):
 			proc.stack.push(proc.stack[1]);
 			proc.stack.restack(1);
-			return dead;
+			return process_dead;
 		NEXT_EXECUTOR;
 		/* this function implements the ($ ...) dispatcher
 		not very efficient, since we construct new closures
@@ -347,7 +347,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 			proc.stack.restack(2);
 		} NEXT_EXECUTOR;
 	}
-	return dead;
+	return process_dead;
 initialize:
 	/*atoms*/
 	QUOTEATOM = globals->lookup("quote");
