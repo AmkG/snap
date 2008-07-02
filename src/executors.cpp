@@ -62,8 +62,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 				BYTECODE(car_local_push):
 				{INTPARAM(N);
 					bytecode_car_local_push(stack,N);
-				}
-				NEXT_BYTECODE;
+				} NEXT_BYTECODE;
 				BYTECODE(car_clos_push):
 				{INTPARAM(N);
 					bytecode_car_clos_push(stack,clos,N);
@@ -90,6 +89,10 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 							"parameters");
 					}
 				} NEXT_BYTECODE;
+				BYTECODE(b_continue):
+					stack.top(2) = stack[1];
+					stack.restack(2);
+				/***/ NEXT_EXECUTOR; /***/
 			}
 		} NEXT_EXECUTOR;
 		/*
@@ -418,6 +421,8 @@ initialize:
 	bytetb[&*globals->lookup("cons")] = THE_BYTECODE_LABEL(cons);
 	bytetb[&*globals->lookup("check-vars")] =
 		THE_BYTECODE_LABEL(check_vars);
+	bytetb[&*globals->lookup("continue")] =
+		THE_BYTECODE_LABEL(b_continue);
 	/*assign bultin global*/
 	proc.assign(globals->lookup("$"),
 		new(proc) Closure(THE_EXECUTOR(bif_dispatch), 0));
