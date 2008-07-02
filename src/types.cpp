@@ -47,14 +47,14 @@ void MetadataCons::probe(size_t ind){
 
 void Sym::probe(size_t ind){
 	INDENT(ind); std::cout << "SYMBOL: ";
-	GlobalAtom* gp = dynamic_cast<GlobalAtom*>(&*a);
+	GlobalAtom* gp = dynamic_cast<GlobalAtom*>(a.get());
 	if(gp != NULL) {gp->emit(); std::cout << std::endl;}
 	else	std::cout << "<uniq>" << std::endl;
 }
 
 void Closure::probe(size_t ind){
 	INDENT(ind); std::cout <<  "CLOSURE: fn@" <<
-			std::hex << ((size_t) &*cd) << " {" << std::endl;
+			std::hex << ((size_t) cd.get()) << " {" << std::endl;
 	for(size_t i = 0; i < vars.size(); ++i){
 		vars[i]->probe(ind+1);
 	}
@@ -68,6 +68,6 @@ void Integer::probe(size_t ind){
 
 void ArcBytecodeSequence::probe(size_t ind){
 	INDENT(ind); std:: cout << "BYTECODE @" <<
-			std::hex << ((size_t) &*seq) << std::endl;
+			std::hex << ((size_t) seq.get()) << std::endl;
 }
 
