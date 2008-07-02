@@ -56,6 +56,8 @@ private:
 	std::vector<Generic*> mailbox;
 	Generic* queue;//handled by Arc-side code
 	std::map<boost::shared_ptr<Atom>, Generic*> global_cache;
+	Generic* _tobj;
+	Generic* _nilobj;
 protected:
 	virtual void get_root_set(std::stack<Generic**>&);
 public:
@@ -64,7 +66,9 @@ public:
 	void assign(boost::shared_ptr<Atom>, Generic*) const ;
 	Generic* get(boost::shared_ptr<Atom>);
 	virtual ~Process(){};
-	Process() : Heap(), queue(NULL) {};
+	Process() : Heap(), queue(NULL), _tobj(NULL), _nilobj(NULL) {};
+	Generic* tobj(void);
+	Generic* nilobj(void);
 };
 
 typedef enum _e_ProcessStatus {

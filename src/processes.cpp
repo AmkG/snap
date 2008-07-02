@@ -11,6 +11,8 @@ Process
 
 void Process::get_root_set(std::stack<Generic**>& s){
 	if(queue != NULL) s.push(&queue);
+	if(_tobj != NULL) s.push(&_tobj);
+	if(_nilobj != NULL) s.push(&_nilobj);
 	for(std::vector<Generic*>::iterator i = mailbox.begin();
 	    i != mailbox.end();
 	    ++i){
@@ -85,8 +87,8 @@ Generic* Process::get(boost::shared_ptr<Atom> a){
 		Generic* src;
 		boost::shared_ptr<Semispace> ns;
 		{/*insert locking of global here*/
-			/*need to lock globals because assigning to globals might
-			force a copy
+			/*need to lock globals because assigning to globals
+			might force a copy
 			*/
 			src = globals->get(a);
 			if(src == NULL) throw ArcError("eval",
@@ -101,4 +103,17 @@ Generic* Process::get(boost::shared_ptr<Atom> a){
 	}
 }
 
+/*used when we need to return a nil or t
+Important!  tobj() and nilobj() are allocating
+functions, so any data must be saved on the Arc
+stack
+*/
+Generic* Process::tobj(void){
+	if(_tobj != NULL)	return _tobj;
+	else			return _tobj = new(*this) Sym(TATOM);
+}
+Generic* Process::nilobj(void){
+	if(_nilobj != NULL)	return _nilobj;
+	else			return _nilobj = new(*this) Sym(NILATOM);
+}
 
