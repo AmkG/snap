@@ -46,7 +46,8 @@ the declarations for the benefit of non-GCC
 users.
 */
 #define DECLARE_EXECUTORS enum _e_executor_label {
-#define AN_EXECUTOR(x)  x,
+#define EXECUTOR_ENUM(x)  PASTE_SYMBOLS(_executor_, x)
+#define AN_EXECUTOR(x) EXECUTOR_ENUM(x),
 #define END_DECLARE_EXECUTORS __null_executor };
 
 /*NOTE!  no ; or : or {} or other markers*/
@@ -63,7 +64,8 @@ DECLARE_EXECUTORS
 END_DECLARE_EXECUTORS
 
 #define DECLARE_BYTECODES enum _e_bytecode_label{
-#define A_BYTECODE(x) x,
+#define BYTECODE_ENUM(x) PASTE_SYMBOLS(_bytecode_, x)
+#define A_BYTECODE(x) BYTECODE_ENUM(x),
 #define END_DECLARE_BYTECODES __null_bytecode };
 DECLARE_BYTECODES
 	A_BYTECODE(car)
@@ -77,7 +79,7 @@ END_DECLARE_BYTECODES
 typedef void* _executor_label;
 #define EXECUTOR_GOTO(x) goto *x
 #define DISPATCH_EXECUTORS enum _e_executor_label pc; NEXT_EXECUTOR;
-#define EXECUTOR(x) pc = x; PASTE_SYMBOLS(label_, x)
+#define EXECUTOR(x) pc = EXECUTOR_ENUM(x); PASTE_SYMBOLS(label_, x)
 #define THE_EXECUTOR(x) new Executor(&&PASTE_SYMBOLS(label_, x))
 #define THE_ARC_EXECUTOR(x,y) new ArcExecutor(&&PASTE_SYMBOLS(label_, x), y)
 
@@ -89,7 +91,7 @@ typedef void* _bytecode_label;
 	Bytecode* current_bytecode = &*e->b->head; \
 	enum _e_bytecode_label bpc; NEXT_BYTECODE;
 #define BYTECODE_GOTO(x) goto *x
-#define BYTECODE(x) bpc = x; PASTE_SYMBOLS(label_b_, x)
+#define BYTECODE(x) bpc = BYTECODE_ENUM(x); PASTE_SYMBOLS(label_b_, x)
 #define THE_BYTECODE_LABEL(x) &&PASTE_SYMBOLS(label_b_, x)
 
 #else //__GNUC__
@@ -99,9 +101,9 @@ typedef enum _e_executor_label _executor_label;
 #define EXECUTOR_GOTO(x) {pc = (x); goto executor_switch;}
 #define DISPATCH_EXECUTORS _executor_label pc; NEXT_EXECUTOR;\
 	executor_switch: switch(pc)
-#define EXECUTOR(x) case x
-#define THE_EXECUTOR(x) new Executor(x)
-#define THE_ARC_EXECUTOR(x,y) new ArcExecutor(x, y)
+#define EXECUTOR(x) case EXECUTOR_ENUM(x)
+#define THE_EXECUTOR(x) new Executor(EXECUTOR_ENUM(x))
+#define THE_ARC_EXECUTOR(x,y) new ArcExecutor(EXECUTOR_ENUM(x), y)
 
 typedef enum _e_bytecode_label _bytecode_label;
 #define BYTECODE_GOTO(x) {bpc = (x); goto bytecode_switch;}
@@ -112,8 +114,8 @@ typedef enum _e_bytecode_label _bytecode_label;
 	Bytecode* current_bytecode = &*e->b->head; \
 	enum _e_bytecode_label bpc; NEXT_BYTECODE; \
 	bytecode_switch: switch(bpc)
-#define BYTECODE(x) case x
-#define THE_BYTECODE_LABEL(x) x
+#define BYTECODE(x) case BYTECODE_ENUM(x)
+#define THE_BYTECODE_LABEL(x) BYTECODE_ENUM(x)
 
 #endif//__GNUC__
 
