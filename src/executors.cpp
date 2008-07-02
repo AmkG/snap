@@ -78,9 +78,6 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 				{INTPARAM(N);
 					bytecode_cdr_clos_push(stack,clos,N);
 				} NEXT_BYTECODE;
-				BYTECODE(cons):
-					bytecode_cons(proc,stack);
-				NEXT_BYTECODE;
 				BYTECODE(check_vars):
 				{INTPARAM(N);
 					if(N != stack.size()){
@@ -89,6 +86,23 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 							"parameters");
 					}
 				} NEXT_BYTECODE;
+				BYTECODE(closure):
+				{INTSEQPARAM(N,S);
+					Closure* nclos =
+						new(proc) Closure(
+							THE_ARC_EXECUTOR(
+								arc_executor,
+								S),
+							N);
+					for(int i = N; i ; --i){
+						(*nclos)[i - 1] = stack.top();
+						stack.pop();
+					}
+					stack.push(nclos);
+				} NEXT_BYTECODE;
+				BYTECODE(cons):
+					bytecode_cons(proc,stack);
+				NEXT_BYTECODE;
 				BYTECODE(b_continue):
 					stack.top(2) = stack[1];
 					stack.restack(2);
@@ -418,9 +432,10 @@ initialize:
 		THE_BYTECODE_LABEL(cdr_local_push);
 	bytetb[&*globals->lookup("cdr-clos-push")] =
 		THE_BYTECODE_LABEL(cdr_clos_push);
-	bytetb[&*globals->lookup("cons")] = THE_BYTECODE_LABEL(cons);
 	bytetb[&*globals->lookup("check-vars")] =
 		THE_BYTECODE_LABEL(check_vars);
+	bytetb[&*globals->lookup("closure")] = THE_BYTECODE_LABEL(closure);
+	bytetb[&*globals->lookup("cons")] = THE_BYTECODE_LABEL(cons);
 	bytetb[&*globals->lookup("continue")] =
 		THE_BYTECODE_LABEL(b_continue);
 	/*assign bultin global*/
