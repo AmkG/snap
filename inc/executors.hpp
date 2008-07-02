@@ -127,6 +127,9 @@ typedef enum _e_bytecode_label _bytecode_label;
 #define NEXT_BYTECODE { current_bytecode = &*current_bytecode->next;\
 	BYTECODE_GOTO(current_bytecode->l);}
 
+#define GOTO_BYTECODE(x) { current_bytecode = (x);\
+	BYTECODE_GOTO(current_bytecode->l);}
+
 class Executor{
 public:
 	virtual ~Executor(){};
