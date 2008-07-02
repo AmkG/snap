@@ -122,7 +122,7 @@ typedef enum _e_bytecode_label _bytecode_label;
 
 /*TODO: 'call* / 'defcall support*/
 #define NEXT_EXECUTOR if(--reductions != 0){ Closure* c = dynamic_cast<Closure*>(proc.stack[0]);\
-	EXECUTOR_GOTO((c->code()).l);} else {return running;}
+	EXECUTOR_GOTO((c->code()).l);} else {return process_running;}
 
 #define NEXT_BYTECODE { current_bytecode = &*current_bytecode->next;\
 	BYTECODE_GOTO(current_bytecode->l);}

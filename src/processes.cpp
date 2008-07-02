@@ -9,6 +9,26 @@
 Process
 -----------------------------------------------------------------------------*/
 
+void Process::get_root_set(std::stack<Generic**>& s){
+	if(queue != NULL) s.push(&queue);
+	for(std::vector<Generic*>::iterator i = mailbox.begin();
+	    i != mailbox.end();
+	    ++i){
+		s.push(&*i);
+	}
+	for(std::vector<Generic*>::iterator i = stack.stack.begin();
+	    i != stack.stack.end();
+	    ++i){
+		s.push(&*i);
+	}
+	for(std::map<boost::shared_ptr<Atom>, Generic* >::iterator i =
+		global_cache.begin();
+	    i != global_cache.end();
+	    ++i){
+		s.push(&(i->second));
+	}
+}
+
 void Process::sendto(Process& p, Generic* g) const {
 	boost::shared_ptr<Semispace> ns = to_new_semispace(g);
 	/*g is modified by to_new_semispace, and now points

@@ -138,7 +138,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 							bytecodelookup(c->a)));
 					/*Just pop off c*/
 					proc.stack.pop();
-					if(--reductions) goto compile_helper_loop; else return running;
+					if(--reductions) goto compile_helper_loop; else return process_running;
 				} else {
 					/*destructure form*/
 					proc.stack[4] = c->a;
@@ -166,7 +166,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 							proc.stack[4] = clos; // have to save this first!
 							proc.stack[5] = b = new(proc) ArcBytecodeSequence(); // make sure to reassign b
 							proc.stack.restack(4);
-							if(--reductions) goto compile_helper_loop; else return running;
+							if(--reductions) goto compile_helper_loop; else return process_running;
 						} else {
 							/*Int*/
 							/*Get the atom*/
@@ -179,7 +179,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 							b->append(new IntBytecode(bytecodelookup(c->a), param->integer()));
 							/*pop off c, param, and params*/
 							proc.stack.pop(3);
-							if(--reductions) goto compile_helper_loop; else return running;
+							if(--reductions) goto compile_helper_loop; else return process_running;
 						}
 					} else {
 						Cons* param = dynamic_cast<Cons*>(params->a);
@@ -202,7 +202,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 								b->append(new AtomBytecode(bytecodelookup(c->a), carparam->a));
 								/*pop off c, param, and params*/
 								proc.stack.pop(3);
-								if(--reductions)goto compile_helper_loop; else return running;
+								if(--reductions)goto compile_helper_loop; else return process_running;
 							} else goto compile_helper_non_quote_param;
 						}
 						/*this is effectively our elsemost branch*/
@@ -226,7 +226,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 						proc.stack[1] = clos; // Have to save this first!
 						proc.stack[2] = b = new(proc) ArcBytecodeSequence(); // make sure to reassign b
 						proc.stack[3] = proc.stack.top(); proc.stack.pop();
-						if(--reductions) goto compile_helper_loop; else return running;
+						if(--reductions) goto compile_helper_loop; else return process_running;
 					}
 				}
 			}
@@ -362,6 +362,6 @@ initialize:
 	/*assign bultin global*/
 	proc.assign(globals->lookup("$"),
 		new(proc) Closure(THE_EXECUTOR(bif_dispatch), 0));
-	return running;
+	return process_running;
 }
 

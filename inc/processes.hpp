@@ -57,25 +57,7 @@ private:
 	Generic* queue;//handled by Arc-side code
 	std::map<boost::shared_ptr<Atom>, Generic*> global_cache;
 protected:
-	virtual void get_root_set(std::stack<Generic**>& s){
-		if(queue != NULL) s.push(&queue);
-		for(std::vector<Generic*>::iterator i = mailbox.begin();
-		    i != mailbox.end();
-		    ++i){
-			s.push(&*i);
-		}
-		for(std::vector<Generic*>::iterator i = stack.stack.begin();
-		    i != stack.stack.end();
-		    ++i){
-			s.push(&*i);
-		}
-		for(std::map<boost::shared_ptr<Atom>, Generic* >::iterator i =
-			global_cache.begin();
-		    i != global_cache.end();
-		    ++i){
-			s.push(&(i->second));
-		}
-	}
+	virtual void get_root_set(std::stack<Generic**>);
 public:
 	ProcessStack stack;
 	void sendto(Process&, Generic*) const ;
@@ -86,7 +68,7 @@ public:
 };
 
 typedef enum _e_ProcessStatus {
-	running, waiting, dead
+	process_running, process_waiting, process_dead
 } ProcessStatus;
 
 #endif //PROCESS_H
