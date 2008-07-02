@@ -57,7 +57,7 @@ private:
 	Generic* queue;//handled by Arc-side code
 	std::map<boost::shared_ptr<Atom>, Generic*> global_cache;
 protected:
-	virtual void get_root_set(std::stack<Generic**>);
+	virtual void get_root_set(std::stack<Generic**>&);
 public:
 	ProcessStack stack;
 	void sendto(Process&, Generic*) const ;
