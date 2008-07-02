@@ -92,9 +92,9 @@ typedef void* _executor_label;
 
 typedef void* _bytecode_label;
 #define DISPATCH_BYTECODES \
-	Closure* clos = dynamic_cast<Closure*>(proc.stack[0]);\
+	Closure& clos = *dynamic_cast<Closure*>(proc.stack[0]);\
 	ArcExecutor const* e =\
-		dynamic_cast<ArcExecutor const*>(&clos->code());\
+		dynamic_cast<ArcExecutor const*>(&clos.code());\
 	Bytecode* current_bytecode = &*e->b->head; \
 	enum _e_bytecode_label bpc; NEXT_BYTECODE;
 #define BYTECODE_GOTO(x) goto *x
@@ -115,9 +115,9 @@ typedef enum _e_executor_label _executor_label;
 typedef enum _e_bytecode_label _bytecode_label;
 #define BYTECODE_GOTO(x) {bpc = (x); goto bytecode_switch;}
 #define DISPATCH_BYTECODES \
-	Closure* clos = dynamic_cast<Closure*>(proc.stack[0]);\
+	Closure& clos = *dynamic_cast<Closure*>(proc.stack[0]);\
 	ArcExecutor const* e =\
-		dynamic_cast<ArcExecutor const*>(&clos->code());\
+		dynamic_cast<ArcExecutor const*>(&clos.code());\
 	Bytecode* current_bytecode = &*e->b->head; \
 	enum _e_bytecode_label bpc; NEXT_BYTECODE; \
 	bytecode_switch: switch(bpc)
@@ -220,14 +220,14 @@ public:
 
 /*Bytecode definition helper macros*/
 #define INTPARAM(i)\
-	int i& = (dynamic_cast<IntBytecode*>(current_bytecode))->num
+	int& i = (dynamic_cast<IntBytecode*>(current_bytecode))->num
 
 #define SEQPARAM(i)\
 	boost::shared_ptr<BytecodeSequence> i& =\
 		(dynamic_cast<SeqBytecode*>(current_bytecode))->seq
 
 #define INTSEQPARAM(i,s)\
-	int i& = (dynamic_cast<IntBytecode*>(current_bytecode))->num;\
+	int& i = (dynamic_cast<IntBytecode*>(current_bytecode))->num;\
 	boost::shared_ptr<BytecodeSequence> s& =\
 		(dynamic_cast<IntSeqBytecode*>(current_bytecode))->seq
 #endif //EXECUTORS_H

@@ -38,7 +38,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 	if(init) goto initialize;
 	DISPATCH_EXECUTORS {
 		EXECUTOR(arc_executor):
-		{	DISPATCH_BYTECODES{//provides the Closure* clos
+		{	DISPATCH_BYTECODES{//provides the Closure clos
 				BYTECODE(apply):
 				{INTPARAM(N);
 					stack.restack(N);
@@ -65,7 +65,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 				NEXT_BYTECODE;
 				BYTECODE(car_clos_push):
 				{INTPARAM(N);
-					bytecode_car_clos_push(stack,*clos,N);
+					bytecode_car_clos_push(stack,clos,N);
 				}
 				NEXT_BYTECODE;
 				BYTECODE(cdr):
@@ -78,7 +78,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 				NEXT_BYTECODE;
 				BYTECODE(cdr_clos_push):
 				{INTPARAM(N);
-					bytecode_cdr_clos_push(stack,*clos,N);
+					bytecode_cdr_clos_push(stack,clos,N);
 				}
 				NEXT_BYTECODE;
 				BYTECODE(cons):
