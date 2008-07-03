@@ -80,11 +80,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 				} NEXT_BYTECODE;
 				BYTECODE(check_vars):
 				{INTPARAM(N);
-					if(N != stack.size()){
-						throw ArcError("apply",
-							"Incorrect number of "
-							"parameters");
-					}
+					bytecode_check_vars(stack, N);
 				} NEXT_BYTECODE;
 				BYTECODE(closure):
 				{INTSEQPARAM(N,S);
@@ -107,6 +103,23 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 					stack.top(2) = stack[1];
 					stack.restack(2);
 				/***/ NEXT_EXECUTOR; /***/
+				BYTECODE(continue_local):
+				{INTPARAM(N);
+					stack.push(stack[N]);
+					stack.top(2) = stack[1];
+					stack.restack(2);
+				} /***/ NEXT_EXECUTOR; /***/
+				BYTECODE(continue_on_clos):
+				{INTPARAM(N);
+					Generic* gp = stack.top();
+					stack.top() = clos[N];
+					stack.push(gp);
+					stack.restack(2);
+				} /***/ NEXT_EXECUTOR; /***/
+				BYTECODE(global):
+				{ATOMPARAM(S);
+					bytecode_global(proc,stack,S);
+				} NEXT_BYTECODE;
 			}
 		} NEXT_EXECUTOR;
 		/*
@@ -419,25 +432,36 @@ initialize:
 	FREEFUNATOM = globals->lookup("bytecode-to-free-fun");
 	HALTATOM = globals->lookup("halt");
 	/*bytecodes*/
-	bytetb[&*globals->lookup("apply")] = THE_BYTECODE_LABEL(apply);
+	bytetb[&*globals->lookup("apply")] =
+		THE_BYTECODE_LABEL(apply);
 	bytetb[&*globals->lookup("apply-list")] =
 		THE_BYTECODE_LABEL(apply_list);
-	bytetb[&*globals->lookup("car")] = THE_BYTECODE_LABEL(car);
+	bytetb[&*globals->lookup("car")] =
+		THE_BYTECODE_LABEL(car);
 	bytetb[&*globals->lookup("car-local-push")] =
 		THE_BYTECODE_LABEL(car_local_push);
 	bytetb[&*globals->lookup("car-clos-push")] =
 		THE_BYTECODE_LABEL(car_clos_push);
-	bytetb[&*globals->lookup("cdr")] = THE_BYTECODE_LABEL(cdr);
+	bytetb[&*globals->lookup("cdr")] =
+		THE_BYTECODE_LABEL(cdr);
 	bytetb[&*globals->lookup("cdr-local-push")] =
 		THE_BYTECODE_LABEL(cdr_local_push);
 	bytetb[&*globals->lookup("cdr-clos-push")] =
 		THE_BYTECODE_LABEL(cdr_clos_push);
 	bytetb[&*globals->lookup("check-vars")] =
 		THE_BYTECODE_LABEL(check_vars);
-	bytetb[&*globals->lookup("closure")] = THE_BYTECODE_LABEL(closure);
-	bytetb[&*globals->lookup("cons")] = THE_BYTECODE_LABEL(cons);
+	bytetb[&*globals->lookup("closure")] =
+		THE_BYTECODE_LABEL(closure);
+	bytetb[&*globals->lookup("cons")] =
+		THE_BYTECODE_LABEL(cons);
 	bytetb[&*globals->lookup("continue")] =
 		THE_BYTECODE_LABEL(b_continue);
+	bytetb[&*globals->lookup("continue-local")] =
+		THE_BYTECODE_LABEL(continue_local);
+	bytetb[&*globals->lookup("continue-on-clos")] =
+		THE_BYTECODE_LABEL(continue_on_clos);
+	bytetb[&*globals->lookup("global")] =
+		THE_BYTECODE_LABEL(global);
 	/*assign bultin global*/
 	proc.assign(globals->lookup("$"),
 		new(proc) Closure(THE_EXECUTOR(bif_dispatch), 0));

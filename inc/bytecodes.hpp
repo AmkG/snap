@@ -82,6 +82,16 @@ inline void bytecode_cdr_clos_push(ProcessStack& stack, Closure& clos, int N){
 		stack.push(cp->d);
 	} else	stack.push(clos[N]);
 }
+inline void bytecode_check_vars(ProcessStack& stack, int N){
+	if(stack.size() != N){
+		throw ArcError("apply",
+			"Function called with incorrect number of parameters");
+	}
+}
+inline void bytecode_global(Process& proc, ProcessStack& stack,
+		boost::shared_ptr<Atom> S){
+	stack.push(proc.get(S));
+}
 
 #endif //BYTECODES_H
 
