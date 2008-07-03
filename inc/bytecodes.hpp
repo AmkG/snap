@@ -12,6 +12,13 @@ change the interpreter system (for example,
 direct threading, maybe even dynamic inlining
 some day)
 */
+/*
+RULE: Implementations here are concerned only with
+allocating stuff and manipulating stack.  Control
+flow and closure creation may very well be coupled
+to the interpreter system, so we don't define them
+here.
+*/
 
 /*parameters are on-stack*/
 inline void bytecode_cons(Process& proc, ProcessStack& stack){
