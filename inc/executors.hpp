@@ -84,6 +84,14 @@ DECLARE_BYTECODES
 	A_BYTECODE(continue_local)
 	A_BYTECODE(continue_on_clos)
 	A_BYTECODE(global)
+	A_BYTECODE(global_set)
+	A_BYTECODE(halt)
+	A_BYTECODE(halt_local_push)
+	A_BYTECODE(halt_clos_push)
+	A_BYTECODE(b_if)
+	A_BYTECODE(if_local)
+	A_BYTECODE(b_int)
+	A_BYTECODE(local)
 END_DECLARE_BYTECODES
 
 
@@ -231,7 +239,7 @@ public:
 	int& i = (dynamic_cast<IntBytecode*>(current_bytecode))->num
 
 #define SEQPARAM(i)\
-	boost::shared_ptr<BytecodeSequence> i& =\
+	boost::shared_ptr<BytecodeSequence>& i =\
 		(dynamic_cast<SeqBytecode*>(current_bytecode))->seq
 
 #define INTSEQPARAM(i,s)\

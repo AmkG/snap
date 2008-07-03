@@ -92,6 +92,18 @@ inline void bytecode_global(Process& proc, ProcessStack& stack,
 		boost::shared_ptr<Atom> S){
 	stack.push(proc.get(S));
 }
+inline void bytecode_global_set(Process& proc, ProcessStack& stack,
+		boost::shared_ptr<Atom> S){
+	proc.assign(S, stack.top());
+}
+inline void bytecode_int(Process& proc, ProcessStack& stack, int N){
+	stack.push(
+		new(proc) Integer(N)
+	);
+}
+inline void bytecode_local(ProcessStack& stack, int N){
+	stack.push(stack[N]);
+}
 
 #endif //BYTECODES_H
 

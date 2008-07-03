@@ -120,6 +120,46 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 				{ATOMPARAM(S);
 					bytecode_global(proc,stack,S);
 				} NEXT_BYTECODE;
+				BYTECODE(global_set):
+				{ATOMPARAM(S);
+					bytecode_global_set(proc,stack,S);
+				} NEXT_BYTECODE;
+				BYTECODE(halt):
+					stack.restack(1);
+					return process_dead;
+				NEXT_BYTECODE;
+				BYTECODE(halt_local_push):
+				{INTPARAM(N);
+					stack.push(stack[N]);
+					stack.restack(1);
+					return process_dead;
+				} NEXT_BYTECODE;
+				BYTECODE(halt_clos_push):
+				{INTPARAM(N);
+					stack.push(clos[N]);
+					stack.restack(1);
+					return process_dead;
+				} NEXT_BYTECODE;
+				BYTECODE(b_if):
+					Generic* gp = stack.top(); stack.pop();
+					if(gp->istrue()){SEQPARAM(S);
+						GOTO_BYTECODE(&*S->head);
+					}
+				NEXT_BYTECODE;
+				BYTECODE(if_local):
+				{INTSEQPARAM(N,S);
+					if(stack[N]->istrue()){
+						GOTO_BYTECODE(&*S->head);
+					}
+				} NEXT_BYTECODE;
+				BYTECODE(b_int):
+				{INTPARAM(N);
+					bytecode_int(proc, stack, N);
+				} NEXT_BYTECODE;
+				BYTECODE(local):
+				{INTPARAM(N);
+					bytecode_local(stack, N);
+				} NEXT_BYTECODE;
 			}
 		} NEXT_EXECUTOR;
 		/*
@@ -462,6 +502,22 @@ initialize:
 		THE_BYTECODE_LABEL(continue_on_clos);
 	bytetb[&*globals->lookup("global")] =
 		THE_BYTECODE_LABEL(global);
+	bytetb[&*globals->lookup("global-set")] =
+		THE_BYTECODE_LABEL(global_set);
+	bytetb[&*globals->lookup("halt")] =
+		THE_BYTECODE_LABEL(halt);
+	bytetb[&*globals->lookup("halt-local-push")] =
+		THE_BYTECODE_LABEL(halt_local_push);
+	bytetb[&*globals->lookup("halt-clos-push")] =
+		THE_BYTECODE_LABEL(halt_clos_push);
+	bytetb[&*globals->lookup("if")] =
+		THE_BYTECODE_LABEL(b_if);
+	bytetb[&*globals->lookup("if-local")] =
+		THE_BYTECODE_LABEL(if_local);
+	bytetb[&*globals->lookup("int")] =
+		THE_BYTECODE_LABEL(b_int);
+	bytetb[&*globals->lookup("local")] =
+		THE_BYTECODE_LABEL(local);
 	/*assign bultin global*/
 	proc.assign(globals->lookup("$"),
 		new(proc) Closure(THE_EXECUTOR(bif_dispatch), 0));
