@@ -28,10 +28,6 @@ inline void bytecode_cons(Process& proc, ProcessStack& stack){
 	stack.top(2) = cp;
 	stack.pop();
 }
-inline void bytecode_sym(Process& proc, ProcessStack& stack,
-			boost::shared_ptr<Atom> a){
-	stack.push(new(proc) Sym(a));
-}
 inline void bytecode_car(ProcessStack& stack){
 	//(car nil) => nil
 	if(stack.top()->istrue()){
@@ -103,6 +99,25 @@ inline void bytecode_int(Process& proc, ProcessStack& stack, int N){
 }
 inline void bytecode_local(ProcessStack& stack, int N){
 	stack.push(stack[N]);
+}
+inline void bytecode_sym(Process& proc, ProcessStack& stack,
+		boost::shared_ptr<Atom> S){
+	stack.push(
+		new(proc) Sym(S)
+	);
+}
+inline void bytecode_variadic(Process& proc, ProcessStack& stack, int N){
+	int i = stack.size();
+	stack.push(proc.nilobj());
+	while(i > N){
+		bytecode_cons(proc, stack);
+		--i;
+	}
+	if(i != N){
+		throw ArcError("apply",
+			"Insufficient number of parameters to "
+			"variadic function");
+	}
 }
 
 #endif //BYTECODES_H

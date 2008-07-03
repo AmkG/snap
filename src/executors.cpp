@@ -160,6 +160,14 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 				{INTPARAM(N);
 					bytecode_local(stack, N);
 				} NEXT_BYTECODE;
+				BYTECODE(sym):
+				{ATOMPARAM(S);
+					bytecode_sym(proc, stack, S);
+				} NEXT_BYTECODE;
+				BYTECODE(variadic):
+				{INTPARAM(N);
+					bytecode_variadic(proc, stack, N);
+				} NEXT_BYTECODE;
 			}
 		} NEXT_EXECUTOR;
 		/*
@@ -518,6 +526,10 @@ initialize:
 		THE_BYTECODE_LABEL(b_int);
 	bytetb[&*globals->lookup("local")] =
 		THE_BYTECODE_LABEL(local);
+	bytetb[&*globals->lookup("sym")] =
+		THE_BYTECODE_LABEL(sym);
+	bytetb[&*globals->lookup("variadic")] =
+		THE_BYTECODE_LABEL(variadic);
 	/*assign bultin global*/
 	proc.assign(globals->lookup("$"),
 		new(proc) Closure(THE_EXECUTOR(bif_dispatch), 0));
