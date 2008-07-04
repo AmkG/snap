@@ -90,7 +90,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 							THE_ARC_EXECUTOR(
 								arc_executor,
 								S),
-							N);/*buggy*/
+							N);
 					for(int i = N; i ; --i){
 						(*nclos)[i - 1] = stack.top();
 						stack.pop();
