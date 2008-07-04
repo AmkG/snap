@@ -71,9 +71,5 @@ public:
 	Generic* nilobj(void);
 };
 
-typedef enum _e_ProcessStatus {
-	process_running, process_waiting, process_dead
-} ProcessStatus;
-
 #endif //PROCESS_H
 

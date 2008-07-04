@@ -2,6 +2,7 @@
 #define BYTECODES_H
 #include"processes.hpp"
 #include"types.hpp"
+#include"atoms.hpp"
 #include"errors.hpp"
 #include<boost/shared_ptr.hpp>
 

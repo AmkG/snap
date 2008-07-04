@@ -33,7 +33,7 @@ static _bytecode_label bytecodelookup(boost::shared_ptr<Atom> a){
 	}
 }
 
-ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
+ProcessStatus execute(Process& proc, size_t reductions, bool init){
 	ProcessStack& stack = proc.stack;
 	if(init) goto initialize;
 	DISPATCH_EXECUTORS {
@@ -84,12 +84,13 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 				} NEXT_BYTECODE;
 				BYTECODE(closure):
 				{INTSEQPARAM(N,S);
+					std::cout << "closure bytecode:" << N << std::endl;
 					Closure* nclos =
 						new(proc) Closure(
 							THE_ARC_EXECUTOR(
 								arc_executor,
 								S),
-							N);
+							N);/*buggy*/
 					for(int i = N; i ; --i){
 						(*nclos)[i - 1] = stack.top();
 						stack.pop();
@@ -187,7 +188,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 			stack[1] = stack[2/*r*/];
 			stack.pop();
 		} NEXT_EXECUTOR;
-		/*(fn (k l)
+		/*(fn (self k l)
 		    (compile_helper k (%empty-bytecode-sequence) l))
 		*/
 		EXECUTOR(compile):
@@ -197,8 +198,8 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init=0){
 				ArcBytecodeSequence();
 			stack[0] = c;
 			/*just do type checking*/
-			if(stack[1]->istrue()){
-				Cons* cp = expect_type<Cons>(stack[1],
+			if(stack[2]->istrue()){
+				Cons* cp = expect_type<Cons>(stack[2],
 						"compile",
 						"Expected bytecode list");
 			}
@@ -533,6 +534,12 @@ initialize:
 	/*assign bultin global*/
 	proc.assign(globals->lookup("$"),
 		new(proc) Closure(THE_EXECUTOR(bif_dispatch), 0));
+	proc.assign(globals->lookup("<snap>compile</snap>"),
+		new(proc) Closure(THE_EXECUTOR(compile), 0));
+	proc.assign(globals->lookup("<snap>halt</snap>"),
+		new(proc) Closure(THE_EXECUTOR(halting_continuation), 0));
+	proc.assign(globals->lookup("<snap>to-free-fun</snap>"),
+		new(proc) Closure(THE_EXECUTOR(to_free_fun), 0));
 	return process_running;
 }
 

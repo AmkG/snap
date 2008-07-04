@@ -245,13 +245,21 @@ public:
 		(dynamic_cast<SeqBytecode*>(current_bytecode))->seq
 
 #define INTSEQPARAM(i,s)\
-	int& i = (dynamic_cast<IntBytecode*>(current_bytecode))->num;\
+	int& i = (dynamic_cast<IntSeqBytecode*>(current_bytecode))->num;\
 	boost::shared_ptr<BytecodeSequence>& s =\
 		(dynamic_cast<IntSeqBytecode*>(current_bytecode))->seq
 
 #define ATOMPARAM(s)\
 	boost::shared_ptr<Atom>& s =\
 		(dynamic_cast<AtomBytecode*>(current_bytecode))->atom;
+
+typedef enum _e_ProcessStatus {
+	process_running, process_waiting, process_dead
+} ProcessStatus;
+
+class Process;
+
+ProcessStatus execute(Process& proc, size_t reductions, bool init=0);
 
 #endif //EXECUTORS_H
 
