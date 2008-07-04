@@ -39,6 +39,7 @@ int main(int argc, const char* argv[]){
 	std::cout << "executing free function" << std::endl;
 	while(execute(proc, 64) != process_dead){
 	}
+	stack.top()->probe(0);
 	std::cout << "done" << std::endl;
 }
 
