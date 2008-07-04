@@ -90,9 +90,7 @@ public:
 		}
 	}
 	Generic* get(boost::shared_ptr<Atom> a){
-		GlobalAtom* gp = dynamic_cast<GlobalAtom*>(&*a);
-		if(gp == NULL) throw std::runtime_error("read from non-global");
-		return gp->value;
+		return a->value;
 	}
 	void GC(void){Heap::GC(0);};
 	virtual ~Globals(){};
