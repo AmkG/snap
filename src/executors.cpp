@@ -84,7 +84,6 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				} NEXT_BYTECODE;
 				BYTECODE(closure):
 				{INTSEQPARAM(N,S);
-					std::cout << "closure bytecode:" << N << std::endl;
 					Closure* nclos =
 						new(proc) Closure(
 							THE_ARC_EXECUTOR(
