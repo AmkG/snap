@@ -246,6 +246,8 @@ public:
 
 	Closure(Executor* c, size_t s) :
 		Generic(), cd(c), vars(s) {};
+	Closure(boost::shared_ptr<Executor> c, size_t s) :
+		Generic(), cd(c), vars(s) {};
 
 	/*new stuff*/
 	Executor const& code(void) {return *cd;};
