@@ -25,3 +25,16 @@ different Arc implementations) form of bytecode.
 Other goals: fast message passing, fast execution, generational
 GC for long-lived processes, trap-exit and process linking
 
+
+Requirements for compiling:
+
+a C++ compiler (tested on g++ 4.2.3)
+
+Boost (tested on 1.34.1)
+
+
+Tested on Ubuntu 8.04, 64-bit
+(should probably work on Windows, if your C++ compiler is compliant
+unless I accidentally used something GNU-specific, which would be a
+bug.)
+
