@@ -8,11 +8,9 @@
 #include<map>
 
 static boost::shared_ptr<Atom> QUOTEATOM;
-static boost::shared_ptr<Atom> CCCATOM;
-static boost::shared_ptr<Atom> BYTECODERATOM;
-static boost::shared_ptr<Atom> FREEFUNATOM;
-static boost::shared_ptr<Atom> HALTATOM;
+
 static std::map<Atom*,_bytecode_label> bytetb;
+static std::map<Atom*, boost::shared_ptr<Executor> > biftb;
 
 template<class T>
 static inline T* expect_type(Generic* g,
@@ -31,6 +29,10 @@ static _bytecode_label bytecodelookup(boost::shared_ptr<Atom> a){
 		throw ArcError("compile",
 			"Unknown bytecode form");
 	}
+}
+
+static void biftbassign(char const* s, Executor* e){
+	biftb[&*globals->lookup(s)].reset(e);
 }
 
 ProcessStatus execute(Process& proc, size_t reductions, bool init){
@@ -366,12 +368,12 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 		*/
 		EXECUTOR(compile_intseq_bytecode):
 		{	Closure* clos =
-				dynamic_cast<Closure*>(stack[0]);
+				static_cast<Closure*>(stack[0]);
 			ArcBytecodeSequence* subseq =
-				dynamic_cast<ArcBytecodeSequence*>(stack[1]);
+				static_cast<ArcBytecodeSequence*>(stack[1]);
 			/*(let ...)*/
 			ArcBytecodeSequence* b =
-				dynamic_cast<ArcBytecodeSequence*>(
+				static_cast<ArcBytecodeSequence*>(
 					(*clos)[2]);
 			/*the type of c wasn't checked in the first place*/
 			Sym* c = expect_type<Sym>((*clos)[4],
@@ -379,7 +381,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				"Expected bytecode symbol "
 				"in int-seq bytecode form");
 			Integer* param =
-				dynamic_cast<Integer*>(
+				static_cast<Integer*>(
 					(*clos)[5]);
 			b->append(new IntSeqBytecode(bytecodelookup(c->a), param->integer(), subseq->seq));
 			/*push the closure elements*/
@@ -448,25 +450,14 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					"$",
 					"built-in dispatcher "
 					"expected a symbol");
-			/*if-else-if chain*/
-			if(s->a == CCCATOM){
-				stack[2] =
-					new(proc)
-					Closure(THE_EXECUTOR(ccc), 0);
-			} else if(s->a == BYTECODERATOM){
-				stack[2] =
-					new(proc)
-					Closure(THE_EXECUTOR(compile), 0);
-			} else if(s->a == FREEFUNATOM){
-				stack[2] =
-					new(proc)
-					Closure(THE_EXECUTOR(to_free_fun), 0);
-			} else if(s->a == HALTATOM){
-				stack[2] =
-					new(proc)
-					Closure(THE_EXECUTOR(halting_continuation), 0);
+			std::map<Atom*,
+				boost::shared_ptr<Executor> >::iterator i =
+				biftb.find(&s->atom());
+			if(i != biftb.end()){
+				stack.top() = new(proc)
+					Closure(i->second,0);
 			} else {
-				stack[2] = new(proc) Sym(NILATOM);
+				stack.top() = proc.nilobj();
 			}
 			stack.restack(2);
 		} NEXT_EXECUTOR;
@@ -475,10 +466,11 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 initialize:
 	/*atoms*/
 	QUOTEATOM = globals->lookup("quote");
-	CCCATOM = globals->lookup("ccc");
-	BYTECODERATOM = globals->lookup("bytecoder");
-	FREEFUNATOM = globals->lookup("bytecode-to-free-fun");
-	HALTATOM = globals->lookup("halt");
+	/*built-in functions*/
+	biftbassign("ccc", THE_EXECUTOR(ccc));
+	biftbassign("bytecoder", THE_EXECUTOR(compile));
+	biftbassign("bytecode-to-free-fun", THE_EXECUTOR(to_free_fun));
+	biftbassign("halt", THE_EXECUTOR(halting_continuation));
 	/*bytecodes*/
 	bytetb[&*globals->lookup("apply")] =
 		THE_BYTECODE_LABEL(apply);
