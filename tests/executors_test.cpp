@@ -49,7 +49,9 @@ void construct_test(Process& proc){
  (global (quote $))
  (closure 0
           (check-vars 2)
-          (local 1)
+          (sym (quote foo))
+          (int 1)
+          cons
           continue)
  (sym (quote halt))
  (apply 3))
@@ -83,14 +85,30 @@ void construct_test(Process& proc){
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
 	bytecode_sym(proc,stack,
-		globals->lookup("local"));
+		globals->lookup("sym"));
+	bytecode_sym(proc,stack,
+		globals->lookup("quote"));
+	bytecode_sym(proc,stack,
+		globals->lookup("foo"));
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("int"));
 	bytecode_int(proc,stack,1);
 	bytecode_sym(proc,stack,NILATOM);
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
 	bytecode_sym(proc,stack,
+		globals->lookup("cons"));
+	bytecode_sym(proc,stack,
 		globals->lookup("continue"));
 	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
