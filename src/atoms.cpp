@@ -24,3 +24,36 @@ void Globals::get_root_set(std::stack<Generic**>& s){
 	}
 }
 
+boost::shared_ptr<Atom> Globals::lookup(std::string& s){
+	/*insert locking of string_to_atom table here*/
+	std::map< std::string, boost::shared_ptr<GlobalAtom> >::iterator i;
+	i = string_to_atom.find(s);
+	if(i != string_to_atom.end()){
+		std::map< std::string,
+			boost::shared_ptr<Atom> >::value_type v = *i;
+		return v.second;
+	} else {
+		boost::shared_ptr<GlobalAtom> tmp(new GlobalAtom(s));
+		string_to_atom[s].swap(tmp);
+		return string_to_atom[s];
+	}
+}
+
+/*precondition: lock for globals must be acquired*/
+/*requirements: g must be in the given semispace ns*/
+void Globals::assign(boost::shared_ptr<Atom> a,
+	    boost::shared_ptr<Semispace> ns,
+	    Generic* g){
+	other_spaces.push_back(ns);
+	a->value = g;
+	/*check if local atom*/
+	LocalAtom* lp = dynamic_cast<LocalAtom*>(&*a);
+	if(lp != NULL){
+		/*add a to set*/
+		assigned_local_atoms.insert(a);
+		/*TODO: figure out how to dynamic_cast shared_ptr<Base>
+		to shared_ptr<Derived>, so that assigned_local_atoms
+		are indeed local atoms
+		*/
+	}
+}
