@@ -29,9 +29,7 @@ boost::shared_ptr<Atom> Globals::lookup(std::string& s){
 	std::map< std::string, boost::shared_ptr<GlobalAtom> >::iterator i;
 	i = string_to_atom.find(s);
 	if(i != string_to_atom.end()){
-		std::map< std::string,
-			boost::shared_ptr<Atom> >::value_type v = *i;
-		return v.second;
+		return i->second;
 	} else {
 		boost::shared_ptr<GlobalAtom> tmp(new GlobalAtom(s));
 		string_to_atom[s].swap(tmp);
