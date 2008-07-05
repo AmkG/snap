@@ -107,9 +107,9 @@ typedef void* _executor_label;
 
 typedef void* _bytecode_label;
 #define DISPATCH_BYTECODES \
-	Closure& clos = *dynamic_cast<Closure*>(proc.stack[0]);\
+	Closure& clos = *static_cast<Closure*>(proc.stack[0]);\
 	ArcExecutor const* e =\
-		dynamic_cast<ArcExecutor const*>(&clos.code());\
+		static_cast<ArcExecutor const*>(&clos.code());\
 	Bytecode* current_bytecode = &*e->b->head; \
 	enum _e_bytecode_label bpc; NEXT_BYTECODE;
 #define BYTECODE_GOTO(x) goto *x
@@ -129,9 +129,9 @@ typedef enum _e_executor_label _executor_label;
 typedef enum _e_bytecode_label _bytecode_label;
 #define BYTECODE_GOTO(x) {bpc = (x); goto bytecode_switch;}
 #define DISPATCH_BYTECODES \
-	Closure& clos = *dynamic_cast<Closure*>(proc.stack[0]);\
+	Closure& clos = *static_cast<Closure*>(proc.stack[0]);\
 	ArcExecutor const* e =\
-		dynamic_cast<ArcExecutor const*>(&clos.code());\
+		static_cast<ArcExecutor const*>(&clos.code());\
 	Bytecode* current_bytecode = &*e->b->head; \
 	enum _e_bytecode_label bpc; NEXT_BYTECODE; \
 	bytecode_switch: switch(bpc)
@@ -145,6 +145,7 @@ typedef enum _e_bytecode_label _bytecode_label;
 
 /*TODO: 'call* / 'defcall support*/
 #define NEXT_EXECUTOR if(--reductions != 0){ Closure* c = dynamic_cast<Closure*>(proc.stack[0]);\
+	/*TODO: insert check that c is not NULL; if NULL, lookup in call* */\
 	if(c->code().l == THE_EXECUTOR_LABEL(arc_executor)) goto arc_executor_top;\
 	EXECUTOR_GOTO((c->code()).l);} else {return process_running;}
 
@@ -237,21 +238,22 @@ public:
 };
 
 /*Bytecode definition helper macros*/
+/*WARNING!  Assumes that the bytecodes are correct in the first place!*/
 #define INTPARAM(i)\
-	int& i = (dynamic_cast<IntBytecode*>(current_bytecode))->num
+	int& i = (static_cast<IntBytecode*>(current_bytecode))->num
 
 #define SEQPARAM(i)\
 	boost::shared_ptr<BytecodeSequence>& i =\
-		(dynamic_cast<SeqBytecode*>(current_bytecode))->seq
+		(static_cast<SeqBytecode*>(current_bytecode))->seq
 
 #define INTSEQPARAM(i,s)\
-	int& i = (dynamic_cast<IntSeqBytecode*>(current_bytecode))->num;\
+	int& i = (static_cast<IntSeqBytecode*>(current_bytecode))->num;\
 	boost::shared_ptr<BytecodeSequence>& s =\
-		(dynamic_cast<IntSeqBytecode*>(current_bytecode))->seq
+		(static_cast<IntSeqBytecode*>(current_bytecode))->seq
 
 #define ATOMPARAM(s)\
 	boost::shared_ptr<Atom>& s =\
-		(dynamic_cast<AtomBytecode*>(current_bytecode))->atom;
+		(static_cast<AtomBytecode*>(current_bytecode))->atom;
 
 typedef enum _e_ProcessStatus {
 	process_running, process_waiting, process_dead
