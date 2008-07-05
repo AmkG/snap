@@ -533,6 +533,10 @@ initialize:
 	/*assign bultin global*/
 	proc.assign(globals->lookup("$"),
 		new(proc) Closure(THE_EXECUTOR(bif_dispatch), 0));
+	/*these globals are used only during initialization.  After
+	initialization these globals may be overwritten by user
+	program.
+	*/
 	proc.assign(globals->lookup("<snap>compile</snap>"),
 		new(proc) Closure(THE_EXECUTOR(compile), 0));
 	proc.assign(globals->lookup("<snap>halt</snap>"),
