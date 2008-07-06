@@ -470,7 +470,9 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 		{	ArcBytecodeSequence* b =
 				expect_type<ArcBytecodeSequence>(stack.top());
 			Closure* clos =
-				new(proc) Closure(THE_ARC_EXECUTOR(arc_executor, b->seq), 0);
+				new(proc) Closure(
+					THE_ARC_EXECUTOR(arc_executor, b->seq),
+					0);
 			stack[2] = clos;
 			stack.restack(2);
 		} NEXT_EXECUTOR;
