@@ -20,7 +20,6 @@ private:
 protected:
 	Generic(void) : to_pointer(NULL) {};
 	Generic(Generic const&) : to_pointer(NULL) {};
-	virtual boost::shared_ptr<Atom> type_atom(void) const =0;
 public:
 	friend class Semispace;
 	friend class ToPointerLock;
@@ -49,6 +48,7 @@ public:
 	}
 	*/
 	virtual void probe(size_t indent) =0;//for debugging
+	virtual boost::shared_ptr<Atom> type_atom(void) const =0;
 
 	/*overridable stuff*/
 
@@ -114,7 +114,6 @@ public:
 class Cons : public Generic{
 protected:
 	Cons(Cons const& s) : Generic(), a(s.a), d(s.d){};
-	virtual boost::shared_ptr<Atom> type_atom(void) const {return CONSATOM;};
 public:
 	/*standard stuff*/
 	virtual size_t hash(void) const {
@@ -127,6 +126,7 @@ public:
 		return sizeof(Cons);
 	}
 	virtual void probe(size_t);
+	virtual boost::shared_ptr<Atom> type_atom(void) const {return CONSATOM;};
 
 	/*overridden stuff*/
 	/*comparisons*/
@@ -187,7 +187,6 @@ private:
 	Sym(void){}; //disallowed!
 protected:
 	Sym(Sym const& s) : Generic(), a(s.a){};
-	virtual boost::shared_ptr<Atom> type_atom(void) const {return SYMATOM;};
 public:
 	/*standard stuff*/
 	virtual size_t hash(void) const{
@@ -200,6 +199,7 @@ public:
 		return sizeof(Sym);
 	};
 	virtual void probe(size_t);
+	virtual boost::shared_ptr<Atom> type_atom(void) const {return SYMATOM;};
 
 	/*overrideable stuff*/
 	virtual bool is(Generic* gp) const{
@@ -233,7 +233,6 @@ private:
 	std::vector<Generic*> vars;
 protected:
 	Closure(Closure const& o) : Generic(), cd(o.cd), vars(o.vars) {}
-	virtual boost::shared_ptr<Atom> type_atom(void) const {return FNATOM;};
 public:
 	/*standard stuff*/
 	virtual size_t hash(void) const{
@@ -246,6 +245,7 @@ public:
 		return sizeof(Closure);
 	}
 	virtual void probe(size_t);
+	virtual boost::shared_ptr<Atom> type_atom(void) const {return FNATOM;};
 
 	/*overrideable stuff*/
 	virtual void get_refs(std::stack<Generic**>& s){
@@ -275,7 +275,6 @@ private:
 	int val;
 protected:
 	Integer(Integer const& o) : Generic(), val(o.val){}
-	virtual boost::shared_ptr<Atom> type_atom(void) const {return INTATOM;};
 public:
 	/*standard stuff*/
 	virtual size_t hash() const {
@@ -287,6 +286,7 @@ public:
 	virtual size_t get_size(void) const{
 		return sizeof(Integer);
 	}
+	virtual boost::shared_ptr<Atom> type_atom(void) const {return INTATOM;};
 
 	virtual void probe(size_t);
 
@@ -303,7 +303,6 @@ class ArcBytecodeSequence : public Generic {
 protected:
 	ArcBytecodeSequence(ArcBytecodeSequence const & o)
 		: Generic(), seq(o.seq) {}
-	virtual boost::shared_ptr<Atom> type_atom(void) const {return INTERNALATOM;};
 public:
 	/*standard stuff*/
 	virtual size_t hash() const{
@@ -316,6 +315,7 @@ public:
 		return sizeof(ArcBytecodeSequence);
 	}
 	virtual void probe(size_t);
+	virtual boost::shared_ptr<Atom> type_atom(void) const {return INTERNALATOM;};
 
 	/*new stuff*/
 	void append(Bytecode* b){
@@ -330,8 +330,6 @@ class Tagged : public Generic {
 protected:
 	Tagged(Tagged const& o)
 		: Generic(), type_o(o.type_o), rep_o(o.rep_o) {}
-	/*shouldn't be used*/
-	virtual boost::shared_ptr<Atom> type_atom(void) const {return INTERNALATOM;};
 public:
 	/*standard stuff*/
 	virtual size_t hash() const{
@@ -344,6 +342,8 @@ public:
 		return sizeof(Tagged);
 	}
 	virtual void probe(size_t);
+	/*shouldn't be used*/
+	virtual boost::shared_ptr<Atom> type_atom(void) const {return INTERNALATOM;};
 
 	/*overridden stuff*/
 	virtual void get_refs(std::stack<Generic**>& s){
