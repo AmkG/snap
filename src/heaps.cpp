@@ -1,10 +1,37 @@
 /*
 */
 #include"heaps.hpp"
+#include<cstring>
 
 /*-----------------------------------------------------------------------------
 Semispaces
 -----------------------------------------------------------------------------*/
+
+static ptrdiff_t moveallreferences(void* mem, void* allocpt, void* nmem){
+	char* cmem = (char*)mem; char* cnmem = (char*)nmem;
+	ptrdiff_t diff = cnmem - cmem;
+	char* callocpt = (char*)allocpt;
+	void* nallocpt = callocpt + diff;
+	std::stack<Generic**> to_check;
+	Generic* cur;
+	Generic** gpp;
+	char* i;
+	for(i = cnmem;
+	    i < nallocpt;
+	    i += ((Generic*)(void*) i)->get_size()){
+		cur = (Generic*)i;
+		cur->get_refs(to_check);
+		while(!to_check.empty()){
+			gpp = to_check.top(); to_check.pop();
+			if(mem <= *gpp && *gpp < allocpt){
+				char* cgp = (char*)(void*) *gpp;
+				cgp += diff;
+				*gpp = (Generic*)(void*) cgp;
+			}
+		}
+	}
+	return diff;
+}
 
 /*should be used only to make the semispace smaller*/
 void Semispace::resize(size_t nsize){
@@ -12,30 +39,9 @@ void Semispace::resize(size_t nsize){
 	if(nmem == NULL) throw std::bad_alloc();
 	/*shouldn't happen if resized to smaller, but might*/
 	if(nmem != mem){
-		char* cmem = (char*)mem; char* cnmem = (char*)nmem;
-		ptrdiff_t diff = cnmem - cmem;//not necessarily correct
-		std::stack<Generic**> to_check;
-		Generic* cur;
-		Generic** gpp;
-		char* i;
-		for(i = (char*)mem;
-		    i < allocpt;
-		    i += ((Generic*)(void*) i)->get_size()){
-			cur = (Generic*)i;
-			cur->get_refs(to_check);
-			while(!to_check.empty()){
-				gpp = to_check.top(); to_check.pop();
-				if(mem <= *gpp && *gpp < allocpt){
-					char* cgp = (char*)(void*) *gpp;
-					cgp += diff;
-					*gpp = (Generic*)(void*) cgp;
-				}
-			}
-		}
-		mem = nmem;
-		char* callocpt = (char*)allocpt;
-		callocpt += diff;
-		allocpt = callocpt;
+		ptrdiff_t diff = moveallreferences(mem,allocpt,nmem);
+		mem = ((char*)mem) + diff;
+		allocpt = ((char*)allocpt) + diff;
 	}
 	max = nsize;
 }
@@ -94,6 +100,19 @@ bool Semispace::can_fit(size_t sz) const{
 	char* m = (char*) mem;
 	char* a = (char*) allocpt;
 	return (m + max) >= (a + sz);
+}
+
+std::pair<boost::shared_ptr<Semispace>, Generic* >
+	Semispace::clone(Generic* o) const {
+	boost::shared_ptr<Semispace> ns(new Semispace(size()));
+	/*make a perfect copy*/
+	std::memcpy(ns->mem, mem, size());
+	/*now shift each pointer in the new semispace*/
+	ptrdiff_t diff = moveallreferences(mem,allocpt,ns->mem);
+	ns->allocpt = ((char*)allocpt) + diff;
+	o = (Generic*)(void*)(((char*)(void*)o) + diff);
+	return std::pair<boost::shared_ptr<Semispace>, Generic*>(
+		ns, o);
 }
 
 /*-----------------------------------------------------------------------------

@@ -4,6 +4,7 @@
 #include<iostream>
 #include<map>
 #include<set>
+#include<utility>
 #include<boost/shared_ptr.hpp>
 #include<stdexcept>
 #include"heaps.hpp"
@@ -13,8 +14,9 @@ class Globals;
 class Atom {
 private:
 	Generic* value;
+	boost::shared_ptr<Semispace> s;
 protected:
-	Atom() : value(NULL){};
+	Atom() : value(NULL), s(){};
 	Atom(Atom&){};
 public:
 	virtual ~Atom(){};
@@ -60,10 +62,19 @@ public:
 	}
 	void assign(boost::shared_ptr<Atom>, boost::shared_ptr<Semispace>,
 		Generic*);
-	Generic* get(boost::shared_ptr<Atom> a){
-		return a->value;
+	std::pair<boost::shared_ptr<Semispace>, Generic*> get(
+		boost::shared_ptr<Atom> a){
+		boost::shared_ptr<Semispace> s;
+		Generic* v;
+		{/*insert locking of atom here*/
+			s = a->s;
+			v = a->value;
+		}
+		/*we now have a copy in a shared_ptr: now it
+		won't be deleted from under us
+		*/
+		return s->clone(v);
 	}
-	void GC(void){Heap::GC(0);};
 	virtual ~Globals(){};
 };
 

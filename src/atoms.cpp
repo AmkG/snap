@@ -37,16 +37,18 @@ boost::shared_ptr<Atom> Globals::lookup(std::string& s){
 	}
 }
 
-/*precondition: lock for globals must be acquired*/
 /*requirements: g must be in the given semispace ns*/
 void Globals::assign(boost::shared_ptr<Atom> a,
 	    boost::shared_ptr<Semispace> ns,
 	    Generic* g){
-	other_spaces.push_back(ns);
-	a->value = g;
+	{/*insert locking for atom here*/
+		a->value = g;
+		a->s = ns; // this release the old data
+	}
 	/*check if local atom*/
 	LocalAtom* lp = dynamic_cast<LocalAtom*>(&*a);
 	if(lp != NULL){
+		/*insert locking for assigned_local_atoms here*/
 		/*add a to set*/
 		assigned_local_atoms.insert(a);
 		/*TODO: figure out how to dynamic_cast shared_ptr<Base>

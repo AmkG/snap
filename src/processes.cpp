@@ -52,23 +52,10 @@ Scheduling:
 /*assigns the generic to the global variable*/
 void Process::assign(boost::shared_ptr<Atom> a, Generic* g) const {
 	boost::shared_ptr<Semispace> ns = to_new_semispace(g);
-	{/*insert acquisition of global lock*/
-		/*NOTE!  The GC will acquire the Heap-based lock.
-		However we can't release the global lock between the
-		assign below and the GC, because the GC mutates some
-		Heap member variables.  We are thus constrained to
-		use *another* lock. We might try using a recursive lock
-		instead, but a recursive lock is unnecessary for a
-		true Process Heap.
-		Since global assignment is expected to be rare anyway...
-		*/
-		globals->assign(a, ns, g);
-		/*reset ns so that GC will release the new semispace*/
-		ns.reset();
-		/*This process has responsibility for doing a GC*/
-		globals->GC();
-	}
-	//note: ns and g will be invalid by now
+	/*assign it (Global::assign will handle locking of the atom)*/
+	globals->assign(a, ns, g);
+	/*reset ns so that GC will release the new semispace*/
+	ns.reset();
 	/*TODO: notify all other processes that the global
 	has been modified.  including itself
 	*/
@@ -84,17 +71,15 @@ Generic* Process::get(boost::shared_ptr<Atom> a){
 		return i->second;
 	} else {
 		/*look it up, then*/
-		Generic* src;
+		std::pair<boost::shared_ptr<Semispace>, Generic*> nsv;
 		boost::shared_ptr<Semispace> ns;
-		{/*insert locking of global here*/
-			/*need to lock globals because assigning to globals
-			might force a copy
-			*/
-			src = globals->get(a);
-			if(src == NULL) throw ArcError("eval",
-							"Unbound variable");
-			ns = to_new_semispace(src);
-		}/*release before locking something else*/
+		Generic* src;
+		/*globals->get handles locking of the atom for us*/
+		nsv = globals->get(a);
+		ns = nsv.first;// a new Semispace just for us
+		src = nsv.second;
+		if(!ns) throw ArcError("eval",
+					"Unbound variable");
 		{/*insert locking of our own other_spaces*/
 			other_spaces.push_back(ns);
 		}

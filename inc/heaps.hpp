@@ -4,6 +4,7 @@
 #include<boost/scoped_ptr.hpp>
 #include<boost/shared_ptr.hpp>
 #include<vector>
+#include<utility>
 #include"types.hpp"
 
 class Heap;
@@ -27,6 +28,9 @@ public:
 	size_t size(void) const {return max;};
 	size_t used(void) const {
 		return (size_t)(((char*) allocpt) - ((char*) mem));};
+
+	std::pair<boost::shared_ptr<Semispace>, Generic* >
+		clone(Generic*) const;
 
 	friend class Heap;
 };
