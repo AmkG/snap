@@ -25,6 +25,7 @@ public:
 	friend class Semispace;
 	friend class ToPointerLock;
 
+	/*standard stuff*/
 	/*hash should return pretty much just any
 	size_t, provided that an unmutated copy of
 	that object will have the same hash().
@@ -41,6 +42,15 @@ public:
 		return new(sp) Type(*this);
 	}
 	*/
+	virtual size_t get_size(void) const =0;
+	/*get_size should always have the following code:
+	virtual size_t get_size(void) const {
+		return sizeof(Type);
+	}
+	*/
+	virtual void probe(size_t indent) =0;//for debugging
+
+	/*overridable stuff*/
 
 	/*gets addresses of references to other objects*/
 	virtual void get_refs(std::stack<Generic**>&){};
@@ -48,25 +58,15 @@ public:
 	/*comparisons*/
 	virtual bool is(Generic const* gp) const{return gp == this;}
 	virtual bool iso(Generic const* gp) const{return is(gp);}
-
-	virtual size_t get_size(void) const =0;
-	/*get_size should always have the following code:
-	virtual size_t get_size(void) const {
-		return sizeof(Type);
-	}
-	*/
+	virtual bool isnil(void) const {return 0;};
+	bool istrue(void) const {return !isnil();};
 
 	virtual Generic* type(Process&) const;
 	virtual Generic* rep(void) {return this;};
 
-	/*symbols should change this to check that it's nil*/
-	virtual bool isnil(void) const {return 0;};
-	bool istrue(void) const {return !isnil();};
-
-	virtual void probe(size_t indent) =0;//for debugging
-
 	virtual ~Generic(){};
 
+	/*truly generic stuff*/
 	size_t total_size(ToPointerLock&, std::stack<Generic**>&);
 };
 
@@ -116,8 +116,6 @@ protected:
 	Cons(Cons const& s) : Generic(), a(s.a), d(s.d){};
 	virtual boost::shared_ptr<Atom> type_atom(void) const {return CONSATOM;};
 public:
-	Generic* a;
-	Generic* d;
 	/*standard stuff*/
 	virtual size_t hash(void) const {
 		return a->hash() ^ d->hash();
@@ -128,7 +126,9 @@ public:
 	virtual size_t get_size(void) const {
 		return sizeof(Cons);
 	}
+	virtual void probe(size_t);
 
+	/*overridden stuff*/
 	/*comparisons*/
 	virtual bool iso(Generic*gp) const{
 		if(is(gp)) {
@@ -147,7 +147,8 @@ public:
 		s.push(&d);
 	}
 
-	virtual void probe(size_t);
+	Generic* a;
+	Generic* d;
 
 	Cons(void) : Generic() {};
 	virtual ~Cons(){};
@@ -158,22 +159,24 @@ class MetadataCons : public Cons {
 protected:
 	MetadataCons(MetadataCons const& s):Cons(s), line(s.line), file(s.file){};
 public:
-	Generic* line;
-	Generic* file;
+	/*standard stuff*/
 	virtual MetadataCons* clone(Semispace& sp) const{
 		return new(sp) MetadataCons(*this);
 	}
 	virtual size_t get_size(void) const {
 		return sizeof(MetadataCons);
 	}
+	virtual void probe(size_t);
+
+	/*overrideable stuff*/
 	virtual void get_refs(std::stack<Generic**>& s){
 		Cons::get_refs(s);
 		s.push(&line);
 		s.push(&file);
 	}
 
-	virtual void probe(size_t);
-
+	Generic* line;
+	Generic* file;
 	MetadataCons() : Cons() {};
 	virtual ~MetadataCons(){};
 
@@ -196,7 +199,9 @@ public:
 	virtual size_t get_size(void) const{
 		return sizeof(Sym);
 	};
+	virtual void probe(size_t);
 
+	/*overrideable stuff*/
 	virtual bool is(Generic* gp) const{
 		if(gp == this) return 1;
 		Sym* sp = dynamic_cast<Sym*>(gp);
@@ -208,8 +213,6 @@ public:
 	virtual bool isnil(void) const {
 		return a == NILATOM;
 	}
-
-	virtual void probe(size_t);
 
 	Sym(boost::shared_ptr<Atom> const& na) : Generic(), a(na){};
 	virtual ~Sym(){};
@@ -242,14 +245,14 @@ public:
 	virtual size_t get_size(void) const{
 		return sizeof(Closure);
 	}
+	virtual void probe(size_t);
 
+	/*overrideable stuff*/
 	virtual void get_refs(std::stack<Generic**>& s){
 		for(size_t i = 0; i < vars.size(); ++i){
 			s.push(&vars[i]);
 		}
 	}
-
-	virtual void probe(size_t);
 
 	Closure(Executor* c, size_t s) :
 		Generic(), cd(c), vars(s) {};
@@ -312,7 +315,6 @@ public:
 	virtual size_t get_size(void) const{
 		return sizeof(ArcBytecodeSequence);
 	}
-
 	virtual void probe(size_t);
 
 	/*new stuff*/
@@ -321,6 +323,44 @@ public:
 	}
 	boost::shared_ptr<BytecodeSequence> seq;
 	ArcBytecodeSequence(void) : Generic(), seq(new BytecodeSequence()) {}
+};
+
+/*created by 'annotate*/
+class Tagged : public Generic {
+protected:
+	Tagged(Tagged const& o)
+		: Generic(), type_o(o.type_o), rep_o(o.rep_o) {}
+	/*shouldn't be used*/
+	virtual boost::shared_ptr<Atom> type_atom(void) const {return INTERNALATOM;};
+public:
+	/*standard stuff*/
+	virtual size_t hash() const{
+		return type_o->hash() + rep_o->hash();
+	}
+	virtual Tagged* clone(Semispace& sp) const{
+		return new(sp) Tagged(*this);
+	}
+	virtual size_t get_size(void) const{
+		return sizeof(Tagged);
+	}
+	virtual void probe(size_t);
+
+	/*overridden stuff*/
+	virtual void get_refs(std::stack<Generic**>& s){
+		s.push(&type_o);
+		s.push(&rep_o);
+	}
+	virtual Generic* type(Process&) const {
+		return type_o;
+	}
+	virtual Generic* rep(void) {
+		return rep_o;
+	}
+
+	/*new stuff*/
+	Generic* type_o;
+	Generic* rep_o;
+	Tagged(void) : Generic() {}
 };
 
 #endif //TYPES_H
