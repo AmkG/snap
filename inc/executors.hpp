@@ -89,7 +89,14 @@ DECLARE_BYTECODES
 	A_BYTECODE(if_local)
 	A_BYTECODE(b_int)
 	A_BYTECODE(local)
+	A_BYTECODE(rep)
+	A_BYTECODE(rep_local_push)
+	A_BYTECODE(rep_clos_push)
 	A_BYTECODE(sym)
+	A_BYTECODE(tag)
+	A_BYTECODE(type)
+	A_BYTECODE(type_local_push)
+	A_BYTECODE(type_clos_push)
 	A_BYTECODE(variadic)
 END_DECLARE_BYTECODES
 

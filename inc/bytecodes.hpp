@@ -21,6 +21,42 @@ to the interpreter system, so we don't define them
 here.
 */
 
+/*---------------------------------------------------------------------------*/
+
+template<Generic* (Generic::*MF)(void)>
+inline void bytecode_(ProcessStack& stack){
+	stack.top() = (stack.top()->*MF)();
+}
+
+template<Generic* (Generic::*MF)(void)>
+inline void bytecode_local_push_(ProcessStack& stack, int N){
+	stack.push(((stack[N])->*MF)());
+}
+
+template<Generic* (Generic::*MF)(void)>
+inline void bytecode_clos_push_(ProcessStack& stack, Closure& clos, int N){
+	stack.push(((clos[N])->*MF)());
+}
+
+template<Generic* (Generic::*MF)(Process&)>
+inline void bytecode_(Process& proc, ProcessStack& stack){
+	stack.top() = (stack.top()->*MF)(proc);
+}
+
+template<Generic* (Generic::*MF)(Process&)>
+inline void bytecode_local_push_(Process& proc, ProcessStack& stack,
+		int N){
+	stack.push(((stack[N])->*MF)(proc));
+}
+
+template<Generic* (Generic::*MF)(Process&)>
+inline void bytecode_clos_push_(Process& proc, ProcessStack& stack,
+		Closure& clos, int N){
+	stack.push(((clos[N])->*MF)(proc));
+}
+
+/*---------------------------------------------------------------------------*/
+
 /*parameters are on-stack*/
 inline void bytecode_cons(Process& proc, ProcessStack& stack){
 	Cons* cp = new(proc) Cons();
@@ -28,56 +64,6 @@ inline void bytecode_cons(Process& proc, ProcessStack& stack){
 	cp->d = stack.top(1);
 	stack.top(2) = cp;
 	stack.pop();
-}
-inline void bytecode_car(ProcessStack& stack){
-	//(car nil) => nil
-	if(stack.top()->istrue()){
-		Cons* cp = dynamic_cast<Cons*>(stack.top());
-		if(cp == NULL) throw ArcError("badargs",
-				"'car expects an argument of type 'cons");
-		stack.top() = cp->a;
-	}
-}
-inline void bytecode_car_local_push(ProcessStack& stack, int N){
-	if(stack[N]->istrue()){
-		Cons* cp = dynamic_cast<Cons*>(stack[N]);
-		if(cp == NULL) throw ArcError("badargs",
-				"'car expects an argument of type 'cons");
-		stack.push(cp->a);
-	} else	stack.push(stack[N]);
-}
-inline void bytecode_car_clos_push(ProcessStack& stack, Closure& clos, int N){
-	if(clos[N]->istrue()){
-		Cons* cp = dynamic_cast<Cons*>(clos[N]);
-		if(cp == NULL) throw ArcError("badargs",
-				"'car expects an argument of type 'cons");
-		stack.push(cp->a);
-	} else	stack.push(clos[N]);
-}
-inline void bytecode_cdr(ProcessStack& stack){
-	//(car nil) => nil
-	if(stack.top()->istrue()){
-		Cons* cp = dynamic_cast<Cons*>(stack.top());
-		if(cp == NULL) throw ArcError("badargs",
-				"'cdr expects an argument of type 'cons");
-		stack.top() = cp->d;
-	}
-}
-inline void bytecode_cdr_local_push(ProcessStack& stack, int N){
-	if(stack[N]->istrue()){
-		Cons* cp = dynamic_cast<Cons*>(stack[N]);
-		if(cp == NULL) throw ArcError("badargs",
-				"'cdr expects an argument of type 'cons");
-		stack.push(cp->d);
-	} else	stack.push(stack[N]);
-}
-inline void bytecode_cdr_clos_push(ProcessStack& stack, Closure& clos, int N){
-	if(clos[N]->istrue()){
-		Cons* cp = dynamic_cast<Cons*>(clos[N]);
-		if(cp == NULL) throw ArcError("badargs",
-				"'cdr expects an argument of type 'cons");
-		stack.push(cp->d);
-	} else	stack.push(clos[N]);
 }
 inline void bytecode_check_vars(ProcessStack& stack, int N){
 	if(stack.size() != N){
@@ -89,10 +75,6 @@ inline void bytecode_global(Process& proc, ProcessStack& stack,
 		boost::shared_ptr<Atom> S){
 	stack.push(proc.get(S));
 }
-inline void bytecode_global_set(Process& proc, ProcessStack& stack,
-		boost::shared_ptr<Atom> S){
-	proc.assign(S, stack.top());
-}
 inline void bytecode_int(Process& proc, ProcessStack& stack, int N){
 	stack.push(
 		new(proc) Integer(N)
@@ -100,6 +82,53 @@ inline void bytecode_int(Process& proc, ProcessStack& stack, int N){
 }
 inline void bytecode_local(ProcessStack& stack, int N){
 	stack.push(stack[N]);
+}
+inline void bytecode_global_set(Process& proc, ProcessStack& stack,
+		boost::shared_ptr<Atom> S){
+	proc.assign(S, stack.top());
+}
+inline void bytecode_tag(Process& proc, ProcessStack& stack){
+	/*have to check that the current type tag isn't
+	the same as the given type tag
+	(cref. ac.scm line 801 Anarki, line 654 Arc2)
+	*/
+	Generic* ntype = stack.top(2);
+	Generic* nrep = stack.top(1);
+	/*determine if rep is built-in type or not
+	We do this to avoid allocating - 'type on
+	built-in objects has to allocate the symbol.
+	*/
+	Tagged* tp = dynamic_cast<Tagged*>(nrep);
+	if(tp == NULL){
+		/*not a tagged type - check atom type instead*/
+		Sym* s = dynamic_cast<Sym*>(ntype);
+		if(s == NULL){
+			/*new type isn't a symbol - tag it*/
+			goto validtag;
+		} else {
+			/*check if new tag's atom is the same
+			as atom type of object
+			*/
+			if(s->a == nrep->type_atom()){
+				goto invalidtag;
+				/*hot path - most execution routes here*/
+			} else	goto validtag;
+		}
+	/*tagged representation - check if (is ntype (type nrep))*/
+	} else if(tp->type(proc)->is(ntype)){
+		goto invalidtag;
+	} else	goto validtag;
+invalidtag:
+	/*return representation as-is*/
+	stack.top(2) = nrep;
+	stack.pop();
+	return;
+validtag:
+	tp = new(proc) Tagged();
+	tp->type_o = ntype;
+	tp->rep_o = nrep;
+	stack.top(2) = tp;
+	stack.pop();
 }
 inline void bytecode_sym(Process& proc, ProcessStack& stack,
 		boost::shared_ptr<Atom> S){

@@ -3,6 +3,7 @@
 #include"types.hpp"
 #include"heaps.hpp"
 #include"processes.hpp"
+#include"errors.hpp"
 
 /*O(N), where N is the number of objects involved!*/
 /*necessary for determining the size of the semispace
@@ -28,8 +29,36 @@ size_t Generic::total_size(ToPointerLock& toptrs, std::stack<Generic**>& s){
 	return rv;
 }
 
-Generic* Generic::type(Process& proc) const {
+Generic* Generic::type(Process& proc) {
 	return new(proc) Sym(type_atom());
+}
+
+Generic* Generic::car(void) {
+	throw ArcError("apply",
+		"'car expects an object of type 'cons");
+}
+
+Generic* Generic::cdr(void) {
+	throw ArcError("apply",
+		"'cdr expects an object of type 'cons");
+}
+
+Generic* Cons::car(void){
+	return a;
+}
+
+Generic* Cons::cdr(void){
+	return d;
+}
+
+Generic* Sym::car(void){
+	if(isnil())	return this;
+	else		Generic::car();
+}
+
+Generic* Sym::cdr(void){
+	if(isnil())	return this;
+	else		Generic::cdr();
 }
 
 /*DEBUG CODE*/
@@ -72,7 +101,15 @@ void Integer::probe(size_t ind){
 }
 
 void ArcBytecodeSequence::probe(size_t ind){
-	INDENT(ind); std:: cout << "BYTECODE @" <<
+	INDENT(ind); std::cout << "BYTECODE @" <<
 			std::hex << ((size_t) seq.get()) << std::endl;
 }
 
+void Tagged::probe(size_t ind){
+	INDENT(ind); std::cout << "TAGGED @" <<
+			std::hex << ((size_t) this) << std::endl;
+	INDENT(ind); std::cout << "type:" << std::endl;
+	type_o->probe(ind+1);
+	INDENT(ind); std::cout << "rep:" << std::endl;
+	rep_o->probe(ind+1);
+}

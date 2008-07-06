@@ -56,33 +56,39 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					/*destructure until stack top is nil*/
 					while(stack.top()->istrue()){
 						tmp = stack.top();
-						bytecode_car(stack);
+						bytecode_<&Generic::car>(
+							stack);
 						stack.push(tmp);
-						bytecode_cdr(stack);
+						bytecode_<&Generic::cdr>(
+							stack);
 					}
 					stack.pop();
 				/***/ NEXT_EXECUTOR; /***/
 				BYTECODE(car):
-					bytecode_car(stack);
+					bytecode_<&Generic::car>(stack);
 				NEXT_BYTECODE;
 				BYTECODE(car_local_push):
 				{INTPARAM(N);
-					bytecode_car_local_push(stack,N);
+					bytecode_local_push_<&Generic::car>(
+						stack,N);
 				} NEXT_BYTECODE;
 				BYTECODE(car_clos_push):
 				{INTPARAM(N);
-					bytecode_car_clos_push(stack,clos,N);
+					bytecode_clos_push_<&Generic::car>(
+						stack,clos,N);
 				} NEXT_BYTECODE;
 				BYTECODE(cdr):
-					bytecode_cdr(stack);
+					bytecode_<&Generic::cdr>(stack);
 				NEXT_BYTECODE;
 				BYTECODE(cdr_local_push):
 				{INTPARAM(N);
-					bytecode_cdr_local_push(stack,N);
+					bytecode_local_push_<&Generic::cdr>(
+						stack,N);
 				} NEXT_BYTECODE;
 				BYTECODE(cdr_clos_push):
 				{INTPARAM(N);
-					bytecode_cdr_clos_push(stack,clos,N);
+					bytecode_clos_push_<&Generic::cdr>(
+						stack,clos,N);
 				} NEXT_BYTECODE;
 				BYTECODE(check_vars):
 				{INTPARAM(N);
@@ -166,9 +172,41 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				{INTPARAM(N);
 					bytecode_local(stack, N);
 				} NEXT_BYTECODE;
+				BYTECODE(rep):
+					bytecode_<&Generic::rep>(stack);
+				NEXT_BYTECODE;
+				BYTECODE(rep_local_push):
+				{INTPARAM(N);
+					bytecode_local_push_<&Generic::rep>(
+						stack,N);
+				} NEXT_BYTECODE;
+				BYTECODE(rep_clos_push):
+				{INTPARAM(N);
+					bytecode_clos_push_<&Generic::rep>(
+						stack,clos,N);
+				} NEXT_BYTECODE;
+				BYTECODE(tag):
+					bytecode_tag(proc,stack);
+				NEXT_BYTECODE;
 				BYTECODE(sym):
 				{ATOMPARAM(S);
 					bytecode_sym(proc, stack, S);
+				} NEXT_BYTECODE;
+				BYTECODE(type):
+					bytecode_<&Generic::type>(
+						proc, stack);
+				NEXT_BYTECODE;
+				BYTECODE(type_local_push):
+				{INTPARAM(N);
+					bytecode_local_push_
+						<&Generic::type>(
+						proc, stack, N);
+				} NEXT_BYTECODE;
+				BYTECODE(type_clos_push):
+				{INTPARAM(N);
+					bytecode_clos_push_
+						<&Generic::type>(
+						proc, stack, clos, N);
 				} NEXT_BYTECODE;
 				BYTECODE(variadic):
 				{INTPARAM(N);
@@ -499,7 +537,14 @@ initialize:
 	bytetbassign("if-local", THE_BYTECODE_LABEL(if_local));
 	bytetbassign("int", THE_BYTECODE_LABEL(b_int));
 	bytetbassign("local", THE_BYTECODE_LABEL(local));
+	bytetbassign("rep", THE_BYTECODE_LABEL(rep));
+	bytetbassign("rep-local-push", THE_BYTECODE_LABEL(rep_local_push));
+	bytetbassign("rep-clos-push", THE_BYTECODE_LABEL(rep_clos_push));
 	bytetbassign("sym", THE_BYTECODE_LABEL(sym));
+	bytetbassign("tag", THE_BYTECODE_LABEL(tag));
+	bytetbassign("type", THE_BYTECODE_LABEL(type));
+	bytetbassign("type-local-push", THE_BYTECODE_LABEL(type_local_push));
+	bytetbassign("type-clos-push", THE_BYTECODE_LABEL(type_clos_push));
 	bytetbassign("variadic", THE_BYTECODE_LABEL(variadic));
 	/*assign bultin global*/
 	proc.assign(globals->lookup("$"),

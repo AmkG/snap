@@ -169,8 +169,31 @@ halt
 (local N)
 	(stack!push stack.N)
 
+rep
+	(= stack!top (type stack!top))
+
+(rep-local-push N)
+	(stack!push (rep stack.N))
+
+(rep-clos-push)
+	(stack!push (rep (stack.0 N)))
+
 (sym 'S)
 	(stack!push (sym S))
+
+tag
+	(givens R (stack!pop)
+	        T (stack!pop)
+	  (stack!push (annotate T R)))
+
+type
+	(= stack!top (type stack!top))
+
+(type-local-push N)
+	(stack!push (type stack.N))
+
+(type-clos-push)
+	(stack!push (type (stack.0 N)))
 
 (variadic N)
 	(let n (len stack)

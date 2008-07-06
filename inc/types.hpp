@@ -61,8 +61,13 @@ public:
 	virtual bool isnil(void) const {return 0;};
 	bool istrue(void) const {return !isnil();};
 
-	virtual Generic* type(Process&) const;
+	/*types*/
+	virtual Generic* type(Process&);
 	virtual Generic* rep(void) {return this;};
+
+	/*list*/
+	virtual Generic* car(void);
+	virtual Generic* cdr(void);
 
 	virtual ~Generic(){};
 
@@ -147,6 +152,10 @@ public:
 		s.push(&d);
 	}
 
+	/*list*/
+	virtual Generic* car(void);
+	virtual Generic* cdr(void);
+
 	Generic* a;
 	Generic* d;
 
@@ -210,9 +219,14 @@ public:
 		} else return 0;
 	};
 
+	/*comparisons*/
 	virtual bool isnil(void) const {
 		return a == NILATOM;
 	}
+
+	/*list*/
+	virtual Generic* car(void);
+	virtual Generic* cdr(void);
 
 	Sym(boost::shared_ptr<Atom> const& na) : Generic(), a(na){};
 	virtual ~Sym(){};
@@ -350,7 +364,7 @@ public:
 		s.push(&type_o);
 		s.push(&rep_o);
 	}
-	virtual Generic* type(Process&) const {
+	virtual Generic* type(Process&) {
 		return type_o;
 	}
 	virtual Generic* rep(void) {
