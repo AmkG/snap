@@ -188,7 +188,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 			stack[2] = c;
 		} NEXT_EXECUTOR;
 		EXECUTOR(ccc_helper):
-		{	Closure* c = expect_type<Closure>(stack[0]);
+		{	Closure* c = static_cast<Closure*>(stack[0]);
 			stack[0] = (*c)[0/*k*/];
 			stack[1] = stack[2/*r*/];
 			stack.pop();

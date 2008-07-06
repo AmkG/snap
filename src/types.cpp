@@ -2,6 +2,7 @@
 */
 #include"types.hpp"
 #include"heaps.hpp"
+#include"processes.hpp"
 
 /*O(N), where N is the number of objects involved!*/
 /*necessary for determining the size of the semispace
@@ -25,6 +26,10 @@ size_t Generic::total_size(ToPointerLock& toptrs, std::stack<Generic**>& s){
 	}
 	/*toptrs' dtor should clear the to-pointers of the objects*/
 	return rv;
+}
+
+Generic* Generic::type(Process& proc) const {
+	return new(proc) Sym(type_atom());
 }
 
 /*DEBUG CODE*/

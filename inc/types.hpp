@@ -20,6 +20,7 @@ private:
 protected:
 	Generic(void) : to_pointer(NULL) {};
 	Generic(Generic const&) : to_pointer(NULL) {};
+	virtual boost::shared_ptr<Atom> type_atom(void) const =0;
 public:
 	friend class Semispace;
 	friend class ToPointerLock;
@@ -55,6 +56,9 @@ public:
 	}
 	*/
 
+	virtual Generic* type(Process&) const;
+	virtual Generic* rep(void) {return this;};
+
 	/*symbols should change this to check that it's nil*/
 	virtual bool isnil(void) const {return 0;};
 	bool istrue(void) const {return !isnil();};
@@ -78,7 +82,7 @@ ToPointerLock's, so that the to-pointers are reset
 to NULL once the non-normal operation (GC,
 tracing) are complete.  When the operation
 determines that the to-pointers can be left used
-(i.e. after a GC run) then it can call the clear()
+(i.e. after a GC run) then it can call the good()
 member function so that it won't bother resetting
 the to-pointers.
 */
@@ -110,6 +114,7 @@ public:
 class Cons : public Generic{
 protected:
 	Cons(Cons const& s) : Generic(), a(s.a), d(s.d){};
+	virtual boost::shared_ptr<Atom> type_atom(void) const {return CONSATOM;};
 public:
 	Generic* a;
 	Generic* d;
@@ -179,6 +184,7 @@ private:
 	Sym(void){}; //disallowed!
 protected:
 	Sym(Sym const& s) : Generic(), a(s.a){};
+	virtual boost::shared_ptr<Atom> type_atom(void) const {return SYMATOM;};
 public:
 	/*standard stuff*/
 	virtual size_t hash(void) const{
@@ -224,6 +230,7 @@ private:
 	std::vector<Generic*> vars;
 protected:
 	Closure(Closure const& o) : Generic(), cd(o.cd), vars(o.vars) {}
+	virtual boost::shared_ptr<Atom> type_atom(void) const {return FNATOM;};
 public:
 	/*standard stuff*/
 	virtual size_t hash(void) const{
@@ -265,6 +272,7 @@ private:
 	int val;
 protected:
 	Integer(Integer const& o) : Generic(), val(o.val){}
+	virtual boost::shared_ptr<Atom> type_atom(void) const {return INTATOM;};
 public:
 	/*standard stuff*/
 	virtual size_t hash() const {
@@ -292,6 +300,7 @@ class ArcBytecodeSequence : public Generic {
 protected:
 	ArcBytecodeSequence(ArcBytecodeSequence const & o)
 		: Generic(), seq(o.seq) {}
+	virtual boost::shared_ptr<Atom> type_atom(void) const {return INTERNALATOM;};
 public:
 	/*standard stuff*/
 	virtual size_t hash() const{

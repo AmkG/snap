@@ -19,8 +19,13 @@ class Atom;
 class Globals;
 
 /*These are constant after initialization*/
-EXTERN boost::shared_ptr<Atom> NILATOM;	//'nil
-EXTERN boost::shared_ptr<Atom> TATOM;	//'t
+EXTERN boost::shared_ptr<Atom> NILATOM;		//'nil
+EXTERN boost::shared_ptr<Atom> TATOM;		//'t
+EXTERN boost::shared_ptr<Atom> CONSATOM;	//'cons
+EXTERN boost::shared_ptr<Atom> SYMATOM;		//'sym
+EXTERN boost::shared_ptr<Atom> FNATOM;		//'fn
+EXTERN boost::shared_ptr<Atom> INTATOM;		//'int
+EXTERN boost::shared_ptr<Atom> INTERNALATOM;	//'internally-used
 
 /*Should really be Singleton but let's not bother with that*/
 EXTERN boost::scoped_ptr<Globals> globals;
