@@ -8,6 +8,7 @@ int main(int argc, const char* argv[]){
 
 	/*tests!*/
 	Process proc;
+	ProcessStack& stack = proc.stack;
 	/*allocate stuff*/
 	//(cons 'bar ...)
 	proc.stack.push(new(proc) Sym(globals->lookup("bar")));
@@ -19,17 +20,17 @@ int main(int argc, const char* argv[]){
 	proc.stack.push(new(proc) Sym(TATOM)); //t
 	proc.stack.push(new(proc) Sym(NILATOM)); //nil
 	//cons
-	bytecode_cons(proc);
+	bytecode_cons(proc,stack);
 	//repush stack top to make shared structure
 	proc.stack.push(proc.stack.top());
-	bytecode_cons(proc);
-	bytecode_cons(proc);
-	bytecode_cons(proc);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
 	//int
 	proc.stack.push(new(proc) Integer(1));
 	proc.stack.push(new(proc) Integer(-1));
-	bytecode_cons(proc);
-	bytecode_cons(proc);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
 
 	proc.stack.top()->probe(0);
 }
