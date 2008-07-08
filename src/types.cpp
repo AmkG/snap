@@ -43,7 +43,7 @@ Generic* Generic::cdr(void) {
 		"'cdr expects an object of type 'cons");
 }
 
-Generic* Generic::sv_read(void) {
+Generic* Generic::sv_ref(void) {
 	throw ArcError("container",
 		"expected an object of type 'container");
 }
@@ -62,7 +62,7 @@ Generic* Cons::cdr(void){
 	return d;
 }
 
-Generic* SharedVar::sv_read(void) {
+Generic* SharedVar::sv_ref(void) {
 	return val;
 }
 

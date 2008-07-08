@@ -70,7 +70,7 @@ public:
 	virtual Generic* cdr(void);
 
 	/*sharedvar*/
-	virtual Generic* sv_read(void);
+	virtual Generic* sv_ref(void);
 	Generic* make_sv(Process&);
 
 	virtual ~Generic(){};
