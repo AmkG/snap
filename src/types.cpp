@@ -43,12 +43,27 @@ Generic* Generic::cdr(void) {
 		"'cdr expects an object of type 'cons");
 }
 
+Generic* Generic::sv_read(void) {
+	throw ArcError("container",
+		"expected an object of type 'container");
+}
+
+Generic* Generic::make_sv(Process& proc) {
+	SharedVar* sp = new(proc) SharedVar();
+	sp->val = this;
+	return sp;
+}
+
 Generic* Cons::car(void){
 	return a;
 }
 
 Generic* Cons::cdr(void){
 	return d;
+}
+
+Generic* SharedVar::sv_read(void) {
+	return val;
 }
 
 Generic* Sym::car(void){

@@ -48,7 +48,7 @@ public:
 	}
 	*/
 	virtual void probe(size_t indent) =0;//for debugging
-	virtual boost::shared_ptr<Atom> type_atom(void) const =0;
+	virtual boost::shared_ptr<Atom> type_atom(void) const {return INTERNALATOM;};
 
 	/*overridable stuff*/
 
@@ -69,11 +69,19 @@ public:
 	virtual Generic* car(void);
 	virtual Generic* cdr(void);
 
+	/*sharedvar*/
+	virtual Generic* sv_read(void);
+	Generic* make_sv(Process&);
+
 	virtual ~Generic(){};
 
 	/*truly generic stuff*/
 	size_t total_size(ToPointerLock&, std::stack<Generic**>&);
 };
+
+#define GENERIC_STANDARD_DEFINITIONS(Type) \
+	virtual Type* clone(Semispace& sp) const { return new(sp) Type(*this);}; \
+	virtual size_t get_size(void) const {return sizeof(Type);}
 
 inline bool is(Generic const* a, Generic const* b){ return a->is(b);}
 inline bool iso(Generic const* a, Generic const* b){ return a->iso(b);}
@@ -375,6 +383,29 @@ public:
 	Generic* type_o;
 	Generic* rep_o;
 	Tagged(void) : Generic() {}
+};
+
+class SharedVar : public Generic {
+protected:
+	SharedVar(SharedVar const& o)
+		: Generic(), val(o.val) {}
+public:
+	/*standard stuff*/
+	size_t hash(void) const {
+		return 0;
+	}
+	GENERIC_STANDARD_DEFINITIONS(SharedVar)
+	virtual void probe(size_t);
+
+	/*overridden stuff*/
+	virtual void get_refs(std::stack<Generic**>& s){
+		s.push(&val);
+	}
+	virtual Generic* sv_read(void);
+
+	/*new stuff*/
+	Generic* val;
+	SharedVar(void) : Generic() {}
 };
 
 #endif //TYPES_H
