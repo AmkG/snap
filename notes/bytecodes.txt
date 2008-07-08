@@ -178,6 +178,32 @@ rep
 (rep-clos-push)
 	(stack!push (rep (stack.0 N)))
 
+sv
+	(= stack!top (%sharedvar stack!top))
+	; shared variables are singleton containers
+	; used to implement mutated local variables
+
+(sv-local-push N)
+	(stack!push (%sharedvar stack.N))
+
+(sv-clos-push)
+	(stack!push (%sharedvar (stack.0 N)))
+
+sv-ref
+	(= stack!top (%sharedvar-read stack!top))
+
+(sv-ref-local-push N)
+	(stack!push (%sharedvar-read stack.N))
+
+(sv-ref-clos-push)
+	(stack!push (%sharedvar-read (stack.0 N)))
+
+sv-set
+	(withs (val (stack!pop)
+	        sv  (stack!pop))
+	  (%sharedvar-write sv val)
+	  (stack!push val))
+
 (sym 'S)
 	(stack!push (sym S))
 
