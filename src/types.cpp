@@ -128,3 +128,9 @@ void Tagged::probe(size_t ind){
 	INDENT(ind); std::cout << "rep:" << std::endl;
 	rep_o->probe(ind+1);
 }
+
+void SharedVar::probe(size_t ind){
+	INDENT(ind); std::cout << "SHAREDVAR @" <<
+			std::hex << ((size_t) this) << std::endl;
+	val->probe(ind+1);
+}

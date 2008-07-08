@@ -87,6 +87,22 @@ inline void bytecode_global_set(Process& proc, ProcessStack& stack,
 		boost::shared_ptr<Atom> S){
 	proc.assign(S, stack.top());
 }
+inline void bytecode_sv_set(ProcessStack& stack){
+	SharedVar* sp = dynamic_cast<SharedVar*>(stack.top(2));
+	if(sp == NULL){
+		throw ArcError("container",
+			"Expected an object of type 'container");
+	}
+	sp->val = stack.top(1);
+	stack.top(2) = stack.top(1);
+	stack.pop();
+}
+inline void bytecode_sym(Process& proc, ProcessStack& stack,
+		boost::shared_ptr<Atom> S){
+	stack.push(
+		new(proc) Sym(S)
+	);
+}
 inline void bytecode_tag(Process& proc, ProcessStack& stack){
 	/*have to check that the current type tag isn't
 	the same as the given type tag
@@ -129,12 +145,6 @@ validtag:
 	tp->rep_o = nrep;
 	stack.top(2) = tp;
 	stack.pop();
-}
-inline void bytecode_sym(Process& proc, ProcessStack& stack,
-		boost::shared_ptr<Atom> S){
-	stack.push(
-		new(proc) Sym(S)
-	);
 }
 inline void bytecode_variadic(Process& proc, ProcessStack& stack, int N){
 	int i = stack.size();

@@ -188,6 +188,40 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				BYTECODE(tag):
 					bytecode_tag(proc,stack);
 				NEXT_BYTECODE;
+				BYTECODE(sv):
+					bytecode_<&Generic::make_sv>(
+						proc, stack);
+				NEXT_BYTECODE;
+				BYTECODE(sv_local_push):
+				{INTPARAM(N);
+					bytecode_local_push_
+						<&Generic::make_sv>(
+						proc, stack, N);
+				} NEXT_BYTECODE;
+				BYTECODE(sv_clos_push):
+				{INTPARAM(N);
+					bytecode_clos_push_
+						<&Generic::make_sv>(
+						proc, stack, clos, N);
+				} NEXT_BYTECODE;
+				BYTECODE(sv_ref):
+					bytecode_<&Generic::sv_ref>(
+						stack);
+				NEXT_BYTECODE;
+				BYTECODE(sv_ref_local_push):
+				{INTPARAM(N);
+					bytecode_local_push_
+						<&Generic::sv_ref>(
+						stack, N);
+				} NEXT_BYTECODE;
+				BYTECODE(sv_ref_clos_push):
+				{INTPARAM(N);
+					bytecode_clos_push_
+						<&Generic::sv_ref>(
+						stack, clos, N);
+				} NEXT_BYTECODE;
+				BYTECODE(sv_set):
+					bytecode_sv_set(stack);
 				BYTECODE(sym):
 				{ATOMPARAM(S);
 					bytecode_sym(proc, stack, S);
@@ -542,6 +576,14 @@ initialize:
 	bytetbassign("rep", THE_BYTECODE_LABEL(rep));
 	bytetbassign("rep-local-push", THE_BYTECODE_LABEL(rep_local_push));
 	bytetbassign("rep-clos-push", THE_BYTECODE_LABEL(rep_clos_push));
+	bytetbassign("sv", THE_BYTECODE_LABEL(sv));
+	bytetbassign("sv-local-push", THE_BYTECODE_LABEL(sv_local_push));
+	bytetbassign("sv-clos-push", THE_BYTECODE_LABEL(sv_clos_push));
+	bytetbassign("sv-ref", THE_BYTECODE_LABEL(sv_ref));
+	bytetbassign("sv-ref-local-push",
+		THE_BYTECODE_LABEL(sv_ref_local_push));
+	bytetbassign("sv-ref-clos-push",
+		THE_BYTECODE_LABEL(sv_ref_clos_push));
 	bytetbassign("sym", THE_BYTECODE_LABEL(sym));
 	bytetbassign("tag", THE_BYTECODE_LABEL(tag));
 	bytetbassign("type", THE_BYTECODE_LABEL(type));

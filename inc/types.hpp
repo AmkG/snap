@@ -401,7 +401,7 @@ public:
 	virtual void get_refs(std::stack<Generic**>& s){
 		s.push(&val);
 	}
-	virtual Generic* sv_read(void);
+	virtual Generic* sv_ref(void);
 
 	/*new stuff*/
 	Generic* val;
