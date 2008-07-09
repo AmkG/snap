@@ -64,13 +64,13 @@ private:
 public:
 	DECLARE_ASYNC_PORT
 	OutputFilePort(std::string const&);
-}
+};
 
 /*question: can we do terminal-based i/o that way or no?*/
 
 /*-------------------------------------------sets of AsyncPorts for waiting*/
 
-class AsyncPortSetImplementation
+class AsyncPortSetImplementation;
 
 class AsyncPortSet{
 private:
