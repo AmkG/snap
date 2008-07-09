@@ -19,19 +19,21 @@ public:
 	virtual void output(std::vector<unsigned char> const&) =0;
 	virtual bool is_input(void) const =0;
 	virtual bool is_output(void) const =0;
+	virtual ~AsyncPort(){};
 };
 
 boost::shared_ptr<AsyncPort> AsyncSTDIN(void);
 boost::shared_ptr<AsyncPort> AsyncSTDOUT(void);
 boost::shared_ptr<AsyncPort> AsyncSTDERR(void);
 
-#define DECLARE_ASYNC_PORT\
+#define DECLARE_ASYNC_PORT(T)\
 	virtual bool input_available(void) const;\
 	virtual void input(std::vector<unsigned char>&);\
 	virtual bool output_available(void) const;\
 	virtual void output(std::vector<unsigned char> const&);\
 	virtual bool is_input(void) const;\
 	virtual bool is_output(void) const;\
+	virtual ~T();\
 	friend boost::shared_ptr<AsyncPort> AsyncSTDIN(void);\
 	friend boost::shared_ptr<AsyncPort> AsyncSTDOUT(void);\
 	friend boost::shared_ptr<AsyncPort> AsyncSTDERR(void);
@@ -50,7 +52,7 @@ private:
 	boost::scoped_ptr<InputFileImplementation> p;
 	InputFilePort();
 public:
-	DECLARE_ASYNC_PORT
+	DECLARE_ASYNC_PORT(InputFilePort)
 	explicit InputFilePort(std::string const&);
 };
 
@@ -62,7 +64,7 @@ private:
 	boost::scoped_ptr<OutputFileImplementation> p;
 	OutputFilePort();
 public:
-	DECLARE_ASYNC_PORT
+	DECLARE_ASYNC_PORT(OutputFilePort)
 	explicit OutputFilePort(std::string const&);
 };
 
