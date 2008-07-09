@@ -21,9 +21,9 @@ public:
 	virtual bool is_output(void) const =0;
 };
 
-AsyncPort* AsyncSTDIN(void);
-AsyncPort* AsyncSTDOUT(void);
-AsyncPort* AsyncSTDERR(void);
+boost::shared_ptr<AsyncPort> AsyncSTDIN(void);
+boost::shared_ptr<AsyncPort> AsyncSTDOUT(void);
+boost::shared_ptr<AsyncPort> AsyncSTDERR(void);
 
 #define DECLARE_ASYNC_PORT\
 	virtual bool input_available(void) const;\
@@ -32,9 +32,9 @@ AsyncPort* AsyncSTDERR(void);
 	virtual void output(std::vector<unsigned char> const&);\
 	virtual bool is_input(void) const;\
 	virtual bool is_output(void) const;\
-	friend AsyncPort* AsyncSTDIN(void);\
-	friend AsyncPort* AsyncSTDOUT(void);\
-	friend AsyncPort* AsyncSTDERR(void);
+	friend boost::shared_ptr<AsyncPort> AsyncSTDIN(void);\
+	friend boost::shared_ptr<AsyncPort> AsyncSTDOUT(void);\
+	friend boost::shared_ptr<AsyncPort> AsyncSTDERR(void);
 /*include above as friends, we can't be too sure that
 those functions might, in some random implementation,
 actually construct a derived concrete class.
