@@ -51,7 +51,7 @@ private:
 	InputFilePort();
 public:
 	DECLARE_ASYNC_PORT
-	InputFilePort(std::string const&);
+	explicit InputFilePort(std::string const&);
 };
 
 class OutputFileImplementation;
@@ -63,7 +63,7 @@ private:
 	OutputFilePort();
 public:
 	DECLARE_ASYNC_PORT
-	OutputFilePort(std::string const&);
+	explicit OutputFilePort(std::string const&);
 };
 
 /*question: can we do terminal-based i/o that way or no?*/
