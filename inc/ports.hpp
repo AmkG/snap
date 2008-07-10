@@ -5,6 +5,8 @@
 #include<boost/shared_ptr.hpp>
 #include<string>
 
+class AsyncPortSet;
+
 /*abstract class*/
 class AsyncPort{
 public:
@@ -21,6 +23,8 @@ public:
 	virtual bool is_input(void) const =0;
 	virtual bool is_output(void) const =0;
 	virtual ~AsyncPort(){};
+
+	friend class AsyncPortSet;
 };
 
 boost::shared_ptr<AsyncPort> AsyncSTDIN(void);
@@ -38,7 +42,8 @@ boost::shared_ptr<AsyncPort> AsyncSTDERR(void);
 	virtual ~T();\
 	friend boost::shared_ptr<AsyncPort> AsyncSTDIN(void);\
 	friend boost::shared_ptr<AsyncPort> AsyncSTDOUT(void);\
-	friend boost::shared_ptr<AsyncPort> AsyncSTDERR(void);
+	friend boost::shared_ptr<AsyncPort> AsyncSTDERR(void);\
+	friend class AsyncPortSet;
 /*include above as friends, we can't be too sure that
 those functions might, in some random implementation,
 actually construct a derived concrete class.
