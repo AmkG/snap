@@ -16,7 +16,8 @@ public:
 	//  number of bytes
 	virtual void input(std::vector<unsigned char>&) =0;
 	virtual bool output_available(void) const =0;
-	virtual void output(std::vector<unsigned char> const&) =0;
+	virtual size_t output(std::vector<unsigned char> const&,
+				size_t off=0) =0;
 	virtual bool is_input(void) const =0;
 	virtual bool is_output(void) const =0;
 	virtual ~AsyncPort(){};
@@ -30,7 +31,8 @@ boost::shared_ptr<AsyncPort> AsyncSTDERR(void);
 	virtual bool input_available(void) const;\
 	virtual void input(std::vector<unsigned char>&);\
 	virtual bool output_available(void) const;\
-	virtual void output(std::vector<unsigned char> const&);\
+	virtual size_t output(std::vector<unsigned char> const&,
+				size_t off=0 );\
 	virtual bool is_input(void) const;\
 	virtual bool is_output(void) const;\
 	virtual ~T();\
