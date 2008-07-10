@@ -90,6 +90,8 @@ public:
 	//blocking (if we detect that we're the only running
 	//process)
 	std::vector<boost::shared_ptr<AsyncPort> > wait(void);
+	AsyncPortSet();
+	~AsyncPortSet();
 };
 
 #endif //PORTS_H
