@@ -31,6 +31,10 @@ boost::shared_ptr<AsyncPort> AsyncSTDIN(void);
 boost::shared_ptr<AsyncPort> AsyncSTDOUT(void);
 boost::shared_ptr<AsyncPort> AsyncSTDERR(void);
 
+boost::shared_ptr<AsyncPort> InputFile(std::string);
+boost::shared_ptr<AsyncPort> OutputFile(std::string);
+
+/*for the convenience of the implementation*/
 #define DECLARE_ASYNC_PORT(T)\
 	virtual bool input_available(void) const;\
 	virtual void input(std::vector<unsigned char>&);\
@@ -49,54 +53,22 @@ those functions might, in some random implementation,
 actually construct a derived concrete class.
 */
 
-/*---------------------------------------------------------concrete classes*/
-
-class InputFileImplementation;
-
-class InputFilePort : public AsyncPort{
-private:
-	//Pointer to implementation
-	boost::scoped_ptr<InputFileImplementation> p;
-	InputFilePort();
-public:
-	DECLARE_ASYNC_PORT(InputFilePort)
-	explicit InputFilePort(std::string const&);
-};
-
-class OutputFileImplementation;
-
-class OutputFilePort : public AsyncPort{
-private:
-	//Pointer to implementation
-	boost::scoped_ptr<OutputFileImplementation> p;
-	OutputFilePort();
-public:
-	DECLARE_ASYNC_PORT(OutputFilePort)
-	explicit OutputFilePort(std::string const&);
-};
-
-/*question: can we do terminal-based i/o that way or no?*/
-
 /*-------------------------------------------sets of AsyncPorts for waiting*/
 
-class AsyncPortSetImplementation;
-
 class AsyncPortSet{
-private:
-	boost::scoped_ptr<AsyncPortSetImplementation> p;
 public:
-	void add(boost::shared_ptr<AsyncPort>);
-	void remove(boost::shared_ptr<AsyncPort>);
+	virtual void add(boost::shared_ptr<AsyncPort>) =0;
+	virtual void remove(boost::shared_ptr<AsyncPort>) =0;
 	//nonblocking
 	// returns all asynchronous ports that have data
 	// waiting.  those ports are automatically removed
 	// from this set.
-	std::vector<boost::shared_ptr<AsyncPort> > check(void);
+	virtual std::vector<boost::shared_ptr<AsyncPort> > check(void) =0;
 	//blocking (if we detect that we're the only running
 	//process)
-	std::vector<boost::shared_ptr<AsyncPort> > wait(void);
+	virtual std::vector<boost::shared_ptr<AsyncPort> > wait(void) =0;
 	AsyncPortSet();
-	~AsyncPortSet();
+	virtual ~AsyncPortSet();
 };
 
 #endif //PORTS_H
