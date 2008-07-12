@@ -11,13 +11,13 @@ class AsyncPortSet;
 class AsyncPort{
 public:
 	// returns true if input is available on the port
-	virtual bool input_available(void) const =0;
+	virtual bool input_available(void) =0;
 	// size of vector denotes desired number of characters
 	//  (call vector::resize() before calling this function)
 	// upon return, vector now contains the actual read
 	//  number of bytes
 	virtual void input(std::vector<unsigned char>&) =0;
-	virtual bool output_available(void) const =0;
+	virtual bool output_available(void) =0;
 	virtual size_t output(std::vector<unsigned char> const&,
 				size_t off=0) =0;
 	virtual bool is_input(void) const =0;
@@ -36,9 +36,9 @@ boost::shared_ptr<AsyncPort> OutputFile(std::string);
 
 /*for the convenience of the implementation*/
 #define DECLARE_ASYNC_PORT(T)\
-	virtual bool input_available(void) const;\
+	virtual bool input_available(void);\
 	virtual void input(std::vector<unsigned char>&);\
-	virtual bool output_available(void) const;\
+	virtual bool output_available(void);\
 	virtual size_t output(std::vector<unsigned char> const&,
 				size_t off=0 );\
 	virtual bool is_input(void) const;\
