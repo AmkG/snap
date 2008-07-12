@@ -6,13 +6,13 @@
 #include"heaps.hpp"
 #include"hashes.hpp"
 #include"variables.hpp"
-#include"executors.hpp"
 
 class Semispace;
 void* operator new(size_t, Semispace&);
 void operator delete(void*, Semispace&);
 
 class ToPointerLock;
+class Process;
 
 class Generic {
 private:
@@ -276,10 +276,8 @@ public:
 		}
 	}
 
-	Closure(Executor* c, size_t s) :
-		Generic(), cd(c), vars(s) {};
-	Closure(boost::shared_ptr<Executor> c, size_t s) :
-		Generic(), cd(c), vars(s) {};
+	Closure(Executor* c, size_t s);
+	Closure(boost::shared_ptr<Executor> c, size_t s);
 
 	/*new stuff*/
 	Executor const& code(void) {return *cd;};
@@ -317,6 +315,9 @@ public:
 	Integer(int x) : Generic(), val(x) {}
 };
 
+class BytecodeSequence;
+class Bytecode;
+
 /*Used during compilation to hold a bytecode sequence while
 converting from a symbolcode list to an internal bytecode
 format.
@@ -340,11 +341,9 @@ public:
 	virtual boost::shared_ptr<Atom> type_atom(void) const {return INTERNALATOM;};
 
 	/*new stuff*/
-	void append(Bytecode* b){
-		seq->append(b);
-	}
+	void append(Bytecode* b);
 	boost::shared_ptr<BytecodeSequence> seq;
-	ArcBytecodeSequence(void) : Generic(), seq(new BytecodeSequence()) {}
+	ArcBytecodeSequence(void);
 };
 
 /*created by 'annotate*/

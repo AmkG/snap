@@ -4,6 +4,7 @@
 #include"heaps.hpp"
 #include"processes.hpp"
 #include"errors.hpp"
+#include"executors.hpp"
 
 /*O(N), where N is the number of objects involved!*/
 /*necessary for determining the size of the semispace
@@ -74,6 +75,19 @@ Generic* Sym::car(void){
 Generic* Sym::cdr(void){
 	if(isnil())	return this;
 	else		Generic::cdr();
+}
+
+Closure::Closure(Executor* c, size_t s)
+	: Generic(), cd(c), vars(s) {}
+
+Closure::Closure(boost::shared_ptr<Executor> c, size_t s)
+	: Generic(), cd(c), vars(s) {}
+
+ArcBytecodeSequence::ArcBytecodeSequence()
+	: Generic(), seq(new BytecodeSequence()) {}
+
+void ArcBytecodeSequence::append(Bytecode* b){
+	seq->append(b);
 }
 
 /*DEBUG CODE*/

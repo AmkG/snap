@@ -48,9 +48,26 @@ public:
 	friend class Process;
 };
 
+typedef enum _e_ProcessStatus {
+	process_running, process_waiting, process_dead
+} ProcessStatus;
+
+class Semispace;
+
+/*base process class*/
+/*the base process class includes built-in non-Arc system processes
+(e.g. i/o processes)
+*/
+class ProcessBase {
+public:
+	virtual void receive(boost::shared_ptr<Semispace>, Generic*) =0;
+	virtual ProcessStatus run(void) =0;
+	virtual ~ProcessBase(){};
+};
+
 class Atom;
 
-class Process : public Heap {
+class Process : public Heap, public ProcessBase {
 private:
 	//should also be locked using the other_spaces lock
 	std::vector<Generic*> mailbox;
@@ -62,13 +79,15 @@ protected:
 	virtual void get_root_set(std::stack<Generic**>&);
 public:
 	ProcessStack stack;
-	void sendto(Process&, Generic*) const ;
+	void sendto(ProcessBase&, Generic*) const ;
 	void assign(boost::shared_ptr<Atom>, Generic*) const ;
 	Generic* get(boost::shared_ptr<Atom>);
 	virtual ~Process(){};
 	Process() : Heap(), queue(NULL), _tobj(NULL), _nilobj(NULL) {};
 	Generic* tobj(void);
 	Generic* nilobj(void);
+	virtual void receive(boost::shared_ptr<Semispace>, Generic*);
+	virtual ProcessStatus run(void);
 };
 
 #endif //PROCESS_H

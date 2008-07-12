@@ -3,6 +3,7 @@
 #include"types.hpp"
 #include"atoms.hpp"
 #include"bytecodes.hpp"
+#include"executors.hpp"
 
 #include<iostream>
 
@@ -21,7 +22,7 @@ int main(int argc, const char* argv[]){
 	construct_test(proc);
 	/*execute it*/
 	std::cout << "compiling to bytecode" << std::endl;
-	while(execute(proc, 64) != process_dead){
+	while(proc.run() != process_dead){
 	}
 	/*transform bytecode object to global function object*/
 	stack.push(proc.get(globals->lookup("<snap>to-free-fun</snap>")));
@@ -30,14 +31,14 @@ int main(int argc, const char* argv[]){
 	stack.restack(3);
 	/*execute it*/
 	std::cout << "converting to free function" << std::endl;
-	while(execute(proc, 64) != process_dead){
+	while(proc.run() != process_dead){
 	}
 
 	/*finally, execute the process*/
 	stack.push(proc.get(globals->lookup("<snap>halt</snap>")));
 	stack.restack(2);
 	std::cout << "executing free function" << std::endl;
-	while(execute(proc, 64) != process_dead){
+	while(proc.run() != process_dead){
 	}
 	stack.top()->probe(0);
 	std::cout << "done" << std::endl;

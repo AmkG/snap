@@ -266,11 +266,9 @@ public:
 	boost::shared_ptr<Atom>& s =\
 		(static_cast<AtomBytecode*>(current_bytecode))->atom;
 
-typedef enum _e_ProcessStatus {
-	process_running, process_waiting, process_dead
-} ProcessStatus;
-
 class Process;
+
+#include"processes.hpp"
 
 ProcessStatus execute(Process& proc, size_t reductions, bool init=0);
 

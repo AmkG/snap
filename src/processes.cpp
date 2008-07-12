@@ -4,6 +4,7 @@
 #include"variables.hpp"
 #include"atoms.hpp"
 #include<boost/shared_ptr.hpp>
+#include"executors.hpp"
 
 /*-----------------------------------------------------------------------------
 Process
@@ -31,16 +32,13 @@ void Process::get_root_set(std::stack<Generic**>& s){
 	}
 }
 
-void Process::sendto(Process& p, Generic* g) const {
+void Process::sendto(ProcessBase& p, Generic* g) const {
 	boost::shared_ptr<Semispace> ns = to_new_semispace(g);
 	/*g is modified by to_new_semispace, and now points
 	to the copy in the new Semispace
 	*/
-	/*add to mailbox*/
-	{/*insert locking of destination's other_spaces here*/
-		p.other_spaces.push_back(ns);
-		p.mailbox.push_back(g);
-	}
+	/*send message*/
+	p.receive(ns, g);
 	/*TODO: if destination process is waiting for a message,
 	schedule it
 	*/
@@ -54,7 +52,7 @@ void Process::assign(boost::shared_ptr<Atom> a, Generic* g) const {
 	boost::shared_ptr<Semispace> ns = to_new_semispace(g);
 	/*assign it (Global::assign will handle locking of the atom)*/
 	globals->assign(a, ns, g);
-	/*reset ns so that GC will release the new semispace*/
+	/*reset ns so that GC will release the old semispace*/
 	ns.reset();
 	/*TODO: notify all other processes that the global
 	has been modified.  including itself
@@ -100,5 +98,16 @@ Generic* Process::tobj(void){
 Generic* Process::nilobj(void){
 	if(_nilobj != NULL)	return _nilobj;
 	else			return _nilobj = new(*this) Sym(NILATOM);
+}
+
+void Process::receive(boost::shared_ptr<Semispace> s, Generic* o){
+	/*insert locking of other_spaces here*/
+	other_spaces.push_back(s);
+	mailbox.push_back(o);
+}
+
+ProcessStatus Process::run(void){
+	// TODO: number should eventually be related to priority
+	return execute(*this, 64);
 }
 
