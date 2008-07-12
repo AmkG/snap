@@ -39,7 +39,7 @@ boost::shared_ptr<AsyncPort> OutputFile(std::string);
 	virtual bool input_available(void);\
 	virtual void input(std::vector<unsigned char>&);\
 	virtual bool output_available(void);\
-	virtual size_t output(std::vector<unsigned char> const&,
+	virtual size_t output(std::vector<unsigned char> const&,\
 				size_t off=0 );\
 	virtual bool is_input(void) const;\
 	virtual bool is_output(void) const;\
