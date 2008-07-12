@@ -103,10 +103,16 @@ bool Semispace::can_fit(size_t sz) const{
 }
 
 std::pair<boost::shared_ptr<Semispace>, Generic* >
-	Semispace::clone(Generic* o) const {
+		Semispace::clone(Generic* o) const {
 	boost::shared_ptr<Semispace> ns(new Semispace(size()));
-	/*make a perfect copy*/
-	std::memcpy(ns->mem, mem, size());
+	/*make a copy. note that we must use Generic::clone() because
+	any boost::shared_ptr's in the object will have special semantics
+	*/
+	Generic* gp;
+	for(char* ip = (char*) mem; ip < allocpt; ip += gp->get_size()){
+		gp = (Generic*)(void*)ip;
+		gp->clone(*ns);
+	}
 	/*now shift each pointer in the new semispace*/
 	ptrdiff_t diff = moveallreferences(mem,allocpt,ns->mem);
 	ns->allocpt = ((char*)allocpt) + diff;
