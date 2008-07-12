@@ -57,16 +57,16 @@ actually construct a derived concrete class.
 
 class AsyncPortSet{
 public:
-	virtual void add(boost::shared_ptr<AsyncPort>) =0;
-	virtual void remove(boost::shared_ptr<AsyncPort>) =0;
+	virtual void add(boost::shared_ptr<AsyncPort>);
+	virtual void remove(boost::shared_ptr<AsyncPort>);
 	//nonblocking
 	// returns all asynchronous ports that have data
 	// waiting.  those ports are automatically removed
 	// from this set.
-	virtual std::vector<boost::shared_ptr<AsyncPort> > check(void) =0;
+	virtual std::vector<boost::shared_ptr<AsyncPort> > check(void);
 	//blocking (if we detect that we're the only running
 	//process)
-	virtual std::vector<boost::shared_ptr<AsyncPort> > wait(void) =0;
+	virtual std::vector<boost::shared_ptr<AsyncPort> > wait(void);
 	AsyncPortSet();
 	virtual ~AsyncPortSet();
 };
