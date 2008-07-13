@@ -53,6 +53,8 @@ void construct_test(Process& proc){
           (sym (quote foo))
           (int 1)
           cons
+          (global-set 'temp)
+          (global 'temp)
           continue)
  (sym (quote halt))
  (apply 3))

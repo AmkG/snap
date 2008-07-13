@@ -433,7 +433,7 @@ public:
 	boost::shared_ptr<ProcessBase> pproc;
 	Pid(boost::shared_ptr<ProcessBase> p)
 		: Generic(), pproc(p) {}
-}
+};
 
 #endif //TYPES_H
 
