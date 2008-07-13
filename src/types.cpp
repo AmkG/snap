@@ -148,3 +148,10 @@ void SharedVar::probe(size_t ind){
 			std::hex << ((size_t) this) << std::endl;
 	val->probe(ind+1);
 }
+
+void Pid::probe(size_t ind){
+	INDENT(ind); std::cout << "PID @" <<
+			std::hex << ((size_t) this) <<
+			" referring to: " << ((size_t) pproc.get()) <<
+			std::endl;
+}

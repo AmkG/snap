@@ -407,5 +407,33 @@ public:
 	SharedVar(void) : Generic() {}
 };
 
+class ProcessBase;
+
+class Pid : public Generic {
+protected:
+	Pid(Pid const& o)
+		: pproc(o.pproc) {}
+public:
+	/*standard stuff*/
+	size_t hash(void){
+		return (size_t) pproc.get();
+	}
+	GENERIC_STANDARD_DEFINITIONS(Pid)
+	virtual void probe(size_t);
+
+	/*overridable stuff*/
+	virtual bool is(Generic* o) const {
+		if(o == this) return 1;
+		Pid* po = dynamic_cast<Pid*>(o);
+		if(po == NULL) return 0;
+		return po->pproc == pproc;
+	}
+
+	/*new stuff*/
+	boost::shared_ptr<ProcessBase> pproc;
+	Pid(boost::shared_ptr<ProcessBase> p)
+		: Generic(), pproc(p) {}
+}
+
 #endif //TYPES_H
 
