@@ -415,7 +415,7 @@ protected:
 		: pproc(o.pproc) {}
 public:
 	/*standard stuff*/
-	size_t hash(void){
+	size_t hash(void) const {
 		return (size_t) pproc.get();
 	}
 	GENERIC_STANDARD_DEFINITIONS(Pid)
