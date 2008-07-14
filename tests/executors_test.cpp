@@ -11,7 +11,8 @@ void construct_test(Process&);
 
 int main(int argc, const char* argv[]){
 	variables_init();
-	Process proc;
+	boost::shared_ptr<ProcessBase> pproc = NewArcProcess();
+	Process& proc=*(static_cast<Process*>(pproc.get()));
 	execute(proc, 0, 1); /*initialize*/
 
 	ProcessStack& stack = proc.stack;

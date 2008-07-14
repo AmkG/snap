@@ -9,6 +9,9 @@
 /*-----------------------------------------------------------------------------
 Process
 -----------------------------------------------------------------------------*/
+/*
+These are Arc processes
+*/
 
 void Process::get_root_set(std::stack<Generic**>& s){
 	if(queue != NULL) s.push(&queue);
@@ -110,4 +113,21 @@ ProcessStatus Process::run(void){
 	// TODO: number should eventually be related to priority
 	return execute(*this, 64);
 }
+
+boost::shared_ptr<ProcessBase> NewArcProcess(void){
+	boost::shared_ptr<ProcessBase> rv (new Process());
+	return rv;
+}
+
+/*f is the starting function, ns is a Semispace containing that function*/
+boost::shared_ptr<ProcessBase> NewArcProcess(
+		boost::shared_ptr<Semispace>ns, Generic* f){
+	Process* np = new Process();
+	boost::shared_ptr<ProcessBase> rv(np);
+	/*no need to lock other_spaces: this is a new process anyway*/
+	np->other_spaces.push_back(ns);
+	np->stack.push(f);
+	return rv;
+}
+
 

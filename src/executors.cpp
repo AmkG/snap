@@ -515,6 +515,30 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 			stack.restack(1);
 			return process_dead;
 		NEXT_EXECUTOR;
+		/*TODO: EXECUTOR(spawn)
+		(with (stored_f <...>)
+		  (fn (self)
+		    (stored_f halting-continuation)))
+		this is the only executor that really doesn't have
+		a continuation argument.  it is intended to be the
+		executor for a newly-spawned process.
+		*/
+		EXECUTOR(spawn_helper):
+		{	Closure* clos = static_cast<Closure*>(stack[0]);
+			stack[0] = (*clos)[0];
+			Closure* nclos =
+				new(proc) Closure(
+					THE_EXECUTOR(halting_continuation),
+					0);
+			stack.push(nclos);
+		} NEXT_EXECUTOR;
+		/*
+		(fn (self k p) (p!probe 0) (k p))
+		*/
+		EXECUTOR(probe):
+			stack[2]->probe(0);
+			stack.restack(2);
+		NEXT_EXECUTOR;
 		/* this function implements the ($ ...) dispatcher
 		not very efficient, since we construct new closures
 		each time; obviously the arc-side support has to
@@ -549,6 +573,7 @@ initialize:
 	biftbassign("bytecoder", THE_EXECUTOR(compile));
 	biftbassign("bytecode-to-free-fun", THE_EXECUTOR(to_free_fun));
 	biftbassign("halt", THE_EXECUTOR(halting_continuation));
+	biftbassign("probe", THE_EXECUTOR(probe));
 	/*bytecodes*/
 	bytetbassign("apply", THE_BYTECODE_LABEL(apply));
 	bytetbassign("apply-list", THE_BYTECODE_LABEL(apply_list));

@@ -6,6 +6,8 @@
 #include<stack>
 #include<map>
 #include<boost/shared_ptr.hpp>
+#include<boost/scoped_ptr.hpp>
+#include<boost/enable_shared_from_this.hpp>
 
 class Process;
 
@@ -58,14 +60,20 @@ class Semispace;
 /*the base process class includes built-in non-Arc system processes
 (e.g. i/o processes)
 */
-class ProcessBase {
+class ProcessBase : public boost::enable_shared_from_this<ProcessBase>{
 public:
 	virtual void receive(boost::shared_ptr<Semispace>, Generic*) =0;
 	virtual ProcessStatus run(void) =0;
 	virtual ~ProcessBase(){};
+	boost::shared_ptr<ProcessBase> mypid(void){
+		return shared_from_this();
+	}
 };
 
 class Atom;
+boost::shared_ptr<ProcessBase> NewArcProcess(void);
+boost::shared_ptr<ProcessBase> NewArcProcess(
+	boost::shared_ptr<Semispace>, Generic*);
 
 class Process : public Heap, public ProcessBase {
 private:
@@ -75,6 +83,7 @@ private:
 	std::map<boost::shared_ptr<Atom>, Generic*> global_cache;
 	Generic* _tobj;
 	Generic* _nilobj;
+	Process() : Heap(), queue(NULL), _tobj(NULL), _nilobj(NULL) {};
 protected:
 	virtual void get_root_set(std::stack<Generic**>&);
 public:
@@ -83,11 +92,29 @@ public:
 	void assign(boost::shared_ptr<Atom>, Generic*) const ;
 	Generic* get(boost::shared_ptr<Atom>);
 	virtual ~Process(){};
-	Process() : Heap(), queue(NULL), _tobj(NULL), _nilobj(NULL) {};
 	Generic* tobj(void);
 	Generic* nilobj(void);
 	virtual void receive(boost::shared_ptr<Semispace>, Generic*);
 	virtual ProcessStatus run(void);
+	friend boost::shared_ptr<ProcessBase> NewArcProcess(void);
+	friend boost::shared_ptr<ProcessBase> NewArcProcess(
+		boost::shared_ptr<Semispace>, Generic*);
+};
+
+/*handles all the i/o in the system*/
+/*intended to be Singleton (using informal Singleton pattern)*/
+/*NOTE!  Please instantiate this object only once*/
+class AsyncPortSet;
+class AsyncPort;
+class CentralIOProcess : public ProcessBase {
+private:
+	boost::scoped_ptr<AsyncPortSet> ports;
+	std::map<boost::shared_ptr<AsyncPort>,
+		boost::shared_ptr<ProcessBase> > polling_set;
+	unsigned int state;
+public:
+	void receive(boost::shared_ptr<Semispace>, Generic*);
+	ProcessStatus run(void);
 };
 
 #endif //PROCESS_H
