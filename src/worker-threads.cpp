@@ -33,5 +33,13 @@ void WorkerThread::operator()(void) const {
 			runqueue->pop_push(curp);
 		} else	runqueue->pop(curp);
 	}
+	/*TODO: check that this is the last surviving worker thread, and
+	inform the main thread (which should have been asleep all this
+	time) that it can now exit the program.
+	Alternatively have a loop which just waits for an available
+	process on the runqueue, but this makes it difficult to cause the
+	main thread to exit the program when all workers become perfectly
+	idle.
+	*/
 }
 
