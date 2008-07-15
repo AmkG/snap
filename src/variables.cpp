@@ -1,11 +1,11 @@
 #define NO_EXTERN
 #include"variables.hpp"
 #include"atoms.hpp"
-#include"runqueues.hpp"
+#include"runsystem.hpp"
 
 void variables_init(void){
 	globals.reset(new Globals());
-	runqueue.reset(new RunQueue());
+	runsystem = NewRunsystem();
 	NILATOM = globals->lookup("nil");
 	TATOM = globals->lookup("t");
 	CONSATOM = globals->lookup("cons");

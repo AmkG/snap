@@ -17,7 +17,7 @@
 
 class Atom;
 class Globals;
-class RunQueue;
+class Runsystem;
 
 /*These are constant after initialization*/
 EXTERN boost::shared_ptr<Atom> NILATOM;		//'nil
@@ -30,7 +30,7 @@ EXTERN boost::shared_ptr<Atom> INTERNALATOM;	//'internally-used
 
 /*Should really be Singleton but let's not bother with that*/
 EXTERN boost::scoped_ptr<Globals> globals;
-EXTERN boost::scoped_ptr<RunQueue> runqueue;
+EXTERN boost::scoped_ptr<Runsystem> runsystem;
 
 void variables_init(void);
 

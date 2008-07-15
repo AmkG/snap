@@ -55,6 +55,7 @@ typedef enum _e_ProcessStatus {
 } ProcessStatus;
 
 class Semispace;
+class ProcessHandle;
 
 /*base process class*/
 /*the base process class includes built-in non-Arc system processes
@@ -68,6 +69,7 @@ public:
 	boost::shared_ptr<ProcessBase> mypid(void){
 		return shared_from_this();
 	}
+	ProcessHandle* handle;
 };
 
 class Atom;
