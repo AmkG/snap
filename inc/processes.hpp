@@ -73,8 +73,9 @@ public:
 };
 
 class Atom;
-boost::shared_ptr<ProcessBase> NewArcProcess(void);
-boost::shared_ptr<ProcessBase> NewArcProcess(
+class ProcessHandle;
+boost::shared_ptr<ProcessHandle> NewArcProcess(void);
+boost::shared_ptr<ProcessHandle> NewArcProcess(
 	boost::shared_ptr<Semispace>, Generic*);
 
 class Process : public Heap, public ProcessBase {
@@ -98,8 +99,8 @@ public:
 	Generic* nilobj(void);
 	virtual void receive(boost::shared_ptr<Semispace>, Generic*);
 	virtual ProcessStatus run(void);
-	friend boost::shared_ptr<ProcessBase> NewArcProcess(void);
-	friend boost::shared_ptr<ProcessBase> NewArcProcess(
+	friend boost::shared_ptr<ProcessHandle> NewArcProcess(void);
+	friend boost::shared_ptr<ProcessHandle> NewArcProcess(
 		boost::shared_ptr<Semispace>, Generic*);
 };
 

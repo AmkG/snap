@@ -5,6 +5,7 @@
 #include"atoms.hpp"
 #include<boost/shared_ptr.hpp>
 #include"executors.hpp"
+#include"phandles.hpp"
 
 /*-----------------------------------------------------------------------------
 Process
@@ -111,19 +112,21 @@ void Process::receive(boost::shared_ptr<Semispace> s, Generic* o){
 
 ProcessStatus Process::run(void){
 	// TODO: number should eventually be related to priority
+	// TODO: catch any thrown ArcError and transform them into
+	//       ordinary Arc-side invocations of the error handler
 	return execute(*this, 64);
 }
 
-boost::shared_ptr<ProcessBase> NewArcProcess(void){
-	boost::shared_ptr<ProcessBase> rv (new Process());
+boost::shared_ptr<ProcessHandle> NewArcProcess(void){
+	boost::shared_ptr<ProcessHandle> rv (new ProcessHandle(new Process()));
 	return rv;
 }
 
 /*f is the starting function, ns is a Semispace containing that function*/
-boost::shared_ptr<ProcessBase> NewArcProcess(
+boost::shared_ptr<ProcessHandle> NewArcProcess(
 		boost::shared_ptr<Semispace>ns, Generic* f){
 	Process* np = new Process();
-	boost::shared_ptr<ProcessBase> rv(np);
+	boost::shared_ptr<ProcessHandle> rv(new ProcessHandle(np));
 	/*no need to lock other_spaces: this is a new process anyway*/
 	np->other_spaces.push_back(ns);
 	np->stack.push(f);
