@@ -5,7 +5,7 @@
 
 void variables_init(void){
 	globals.reset(new Globals());
-	runsystem = NewRunsystem();
+	runsystem.reset(NewRunsystem());
 	NILATOM = globals->lookup("nil");
 	TATOM = globals->lookup("t");
 	CONSATOM = globals->lookup("cons");

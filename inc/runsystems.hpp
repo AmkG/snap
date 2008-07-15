@@ -5,7 +5,7 @@
 
 class ProcessHandle;
 class Runsystem;
-boost::shared_ptr<Runsystem> NewRunsystem(void);
+Runsystem* NewRunsystem(void);
 
 class Runsystem {
 public:

@@ -31,9 +31,8 @@ public:
 	virtual ~SingleWorkerRunsystem(){}
 };
 
-boost::shared_ptr<Runsystem> NewRunsystem(void){
-	boost::shared_ptr<Runsystem> rv(new SingleWorkerRunsystem());
-	return rv;
+Runsystem* NewRunsystem(void){
+	return new SingleWorkerRunsystem();
 }
 
 
