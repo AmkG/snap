@@ -4,6 +4,7 @@
 #include"atoms.hpp"
 #include"bytecodes.hpp"
 #include"executors.hpp"
+#include"phandles.hpp"
 
 #include<iostream>
 
@@ -11,8 +12,9 @@ void construct_test(Process&);
 
 int main(int argc, const char* argv[]){
 	variables_init();
-	boost::shared_ptr<ProcessBase> pproc = NewArcProcess();
-	Process& proc=*(static_cast<Process*>(pproc.get()));
+
+	boost::shared_ptr<ProcessHandle> hproc = NewArcProcess();
+	Process& proc=*(static_cast<Process*>(hproc->pproc.get()));
 	execute(proc, 0, 1); /*initialize*/
 
 	ProcessStack& stack = proc.stack;
