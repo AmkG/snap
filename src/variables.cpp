@@ -1,7 +1,7 @@
 #define NO_EXTERN
 #include"variables.hpp"
 #include"atoms.hpp"
-#include"runsystem.hpp"
+#include"runsystems.hpp"
 
 void variables_init(void){
 	globals.reset(new Globals());
