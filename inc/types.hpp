@@ -430,9 +430,9 @@ public:
 	}
 
 	/*new stuff*/
-	boost::shared_ptr<ProcessBase> pproc;
-	Pid(boost::shared_ptr<ProcessBase> p)
-		: Generic(), pproc(p) {}
+	boost::shared_ptr<ProcessHandle> hproc;
+	Pid(boost::shared_ptr<ProcessHandle> p)
+		: Generic(), hproc(p) {}
 };
 
 #endif //TYPES_H
