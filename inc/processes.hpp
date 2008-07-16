@@ -62,6 +62,11 @@ class ProcessHandle;
 */
 class ProcessBase {
 public:
+	/*NOTE! if ever run() returns process_waiting, it is *removed*
+	from the running processes.  It is responsible for properly
+	keeping its "waiting" state (in a mutex-locked area, of course)
+	and having receive() schedule itself if it is waiting.
+	*/
 	virtual void receive(boost::shared_ptr<Semispace>, Generic*) =0;
 	virtual ProcessStatus run(void) =0;
 	virtual ~ProcessBase(){};
@@ -87,6 +92,8 @@ protected:
 	virtual void get_root_set(std::stack<Generic**>&);
 public:
 	ProcessStack stack;
+	bool waiting;
+
 	void sendto(ProcessBase&, Generic*) const ;
 	void assign(boost::shared_ptr<Atom>, Generic*) const ;
 	Generic* get(boost::shared_ptr<Atom>);

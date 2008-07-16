@@ -3,9 +3,11 @@
 #include"processes.hpp"
 #include"variables.hpp"
 #include"atoms.hpp"
-#include<boost/shared_ptr.hpp>
 #include"executors.hpp"
 #include"phandles.hpp"
+#include"runsystems.hpp"
+
+#include<boost/shared_ptr.hpp>
 
 /*-----------------------------------------------------------------------------
 Process
@@ -108,12 +110,20 @@ void Process::receive(boost::shared_ptr<Semispace> s, Generic* o){
 	/*insert locking of other_spaces here*/
 	other_spaces.push_back(s);
 	mailbox.push_back(o);
+	if(waiting){
+		runsystem->schedule(handle->mypid());
+		waiting = 0;
+	}
 }
 
 ProcessStatus Process::run(void){
 	// TODO: number should eventually be related to priority
 	// TODO: catch any thrown ArcError and transform them into
 	//       ordinary Arc-side invocations of the error handler
+	/*NOTE: execute() is responsible for properly setting the
+	waiting flag, in a lock-protected region, if ever it returns
+	process_waiting
+	*/
 	return execute(*this, 64);
 }
 
