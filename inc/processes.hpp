@@ -7,7 +7,6 @@
 #include<map>
 #include<boost/shared_ptr.hpp>
 #include<boost/scoped_ptr.hpp>
-#include<boost/enable_shared_from_this.hpp>
 
 class Process;
 
@@ -61,14 +60,11 @@ class ProcessHandle;
 /*the base process class includes built-in non-Arc system processes
 (e.g. i/o processes)
 */
-class ProcessBase : public boost::enable_shared_from_this<ProcessBase>{
+class ProcessBase {
 public:
 	virtual void receive(boost::shared_ptr<Semispace>, Generic*) =0;
 	virtual ProcessStatus run(void) =0;
 	virtual ~ProcessBase(){};
-	boost::shared_ptr<ProcessBase> mypid(void){
-		return shared_from_this();
-	}
 	ProcessHandle* handle;
 };
 
