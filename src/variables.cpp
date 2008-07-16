@@ -13,5 +13,9 @@ void variables_init(void){
 	FNATOM = globals->lookup("fn");
 	INTATOM = globals->lookup("int");
 	INTERNALATOM = globals->lookup("internally-used");
+	WRITEATOM = globals->lookup("write");
+	READ1ATOM = globals->lookup("read1");
+	ERRATOM = globals->lookup("err");
+	EOLATOM = globals->lookup("eol");
 }
 

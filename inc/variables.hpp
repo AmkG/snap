@@ -27,6 +27,10 @@ EXTERN boost::shared_ptr<Atom> SYMATOM;		//'sym
 EXTERN boost::shared_ptr<Atom> FNATOM;		//'fn
 EXTERN boost::shared_ptr<Atom> INTATOM;		//'int
 EXTERN boost::shared_ptr<Atom> INTERNALATOM;	//'internally-used
+EXTERN boost::shared_ptr<Atom> WRITEATOM;	//'write
+EXTERN boost::shared_ptr<Atom> READ1ATOM;	//'read1
+EXTERN boost::shared_ptr<Atom> ERRATOM;		//'err
+EXTERN boost::shared_ptr<Atom> EOLATOM;		//'eol
 
 /*Should really be Singleton but let's not bother with that*/
 EXTERN boost::scoped_ptr<Globals> globals;
