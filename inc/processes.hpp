@@ -67,7 +67,8 @@ public:
 	keeping its "waiting" state (in a mutex-locked area, of course)
 	and having receive() schedule itself if it is waiting.
 	*/
-	virtual void receive(boost::shared_ptr<Semispace>, Generic*) =0;
+	/*return 0 if this process is not yet ready to accept messages*/
+	virtual bool receive(boost::shared_ptr<Semispace>, Generic*) =0;
 	virtual ProcessStatus run(void) =0;
 	virtual ~ProcessBase(){};
 	ProcessHandle* handle;
@@ -94,13 +95,12 @@ public:
 	ProcessStack stack;
 	bool waiting;
 
-	void sendto(ProcessBase&, Generic*) const ;
 	void assign(boost::shared_ptr<Atom>, Generic*) const ;
 	Generic* get(boost::shared_ptr<Atom>);
 	virtual ~Process(){};
 	Generic* tobj(void);
 	Generic* nilobj(void);
-	virtual void receive(boost::shared_ptr<Semispace>, Generic*);
+	virtual bool receive(boost::shared_ptr<Semispace>, Generic*);
 	virtual ProcessStatus run(void);
 	friend boost::shared_ptr<ProcessHandle> NewArcProcess(void);
 	friend boost::shared_ptr<ProcessHandle> NewArcProcess(
@@ -119,7 +119,7 @@ private:
 		boost::shared_ptr<ProcessBase> > polling_set;
 	unsigned int state;
 public:
-	void receive(boost::shared_ptr<Semispace>, Generic*);
+	bool receive(boost::shared_ptr<Semispace>, Generic*);
 	ProcessStatus run(void);
 };
 

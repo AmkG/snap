@@ -38,21 +38,6 @@ void Process::get_root_set(std::stack<Generic**>& s){
 	}
 }
 
-void Process::sendto(ProcessBase& p, Generic* g) const {
-	boost::shared_ptr<Semispace> ns = to_new_semispace(g);
-	/*g is modified by to_new_semispace, and now points
-	to the copy in the new Semispace
-	*/
-	/*send message*/
-	p.receive(ns, g);
-	/*TODO: if destination process is waiting for a message,
-	schedule it
-	*/
-}
-/*
-Scheduling:
-*/
-
 /*assigns the generic to the global variable*/
 void Process::assign(boost::shared_ptr<Atom> a, Generic* g) const {
 	boost::shared_ptr<Semispace> ns = to_new_semispace(g);
@@ -106,14 +91,16 @@ Generic* Process::nilobj(void){
 	else			return _nilobj = new(*this) Sym(NILATOM);
 }
 
-void Process::receive(boost::shared_ptr<Semispace> s, Generic* o){
+bool Process::receive(boost::shared_ptr<Semispace> s, Generic* o){
 	/*insert locking of other_spaces here*/
+	/*NOTE: use a trylock.  If the trylock fails, return 0*/
 	other_spaces.push_back(s);
 	mailbox.push_back(o);
 	if(waiting){
 		runsystem->schedule(handle->mypid());
 		waiting = 0;
 	}
+	return 1;
 }
 
 ProcessStatus Process::run(void){
