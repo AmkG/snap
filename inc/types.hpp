@@ -420,6 +420,9 @@ public:
 	}
 	GENERIC_STANDARD_DEFINITIONS(Pid)
 	virtual void probe(size_t);
+	virtual boost::shared_ptr<Atom> type_atom(void) const {
+		return PIDATOM;
+	};
 
 	/*overridable stuff*/
 	virtual bool is(Generic* o) const {

@@ -26,6 +26,7 @@ EXTERN boost::shared_ptr<Atom> CONSATOM;	//'cons
 EXTERN boost::shared_ptr<Atom> SYMATOM;		//'sym
 EXTERN boost::shared_ptr<Atom> FNATOM;		//'fn
 EXTERN boost::shared_ptr<Atom> INTATOM;		//'int
+EXTERN boost::shared_ptr<Atom> PIDATOM;		//'pid
 EXTERN boost::shared_ptr<Atom> BINATOM;		//'binary
 EXTERN boost::shared_ptr<Atom> INTERNALATOM;	//'internally-used
 EXTERN boost::shared_ptr<Atom> WRITEATOM;	//'write
