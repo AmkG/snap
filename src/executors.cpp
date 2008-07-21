@@ -2,6 +2,8 @@
 #include"executors.hpp"
 #include"atoms.hpp"
 #include"processes.hpp"
+#include"phandles.hpp"
+#include"runsystems.hpp"
 #include"bytecodes.hpp"
 #include<iostream>
 #include<boost/shared_ptr.hpp>
@@ -515,6 +517,27 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 			stack.restack(1);
 			return process_dead;
 		NEXT_EXECUTOR;
+		/*
+		(fn (self k f) ; f is a (fn (self k))
+		  ...)
+		*/
+		EXECUTOR(spawn):
+		{	Closure* hclos = new(proc) Closure(
+					THE_EXECUTOR(spawn_helper),
+					1);
+			(*hclos)[0] = stack[2];
+			Generic* gp = hclos;
+			/*create a copy*/
+			boost::shared_ptr<Semispace> ns =
+				proc.to_new_semispace(gp);
+			//gp now points within the new Semispace
+			boost::shared_ptr<ProcessHandle> nh =
+				NewArcProcess(ns,gp);
+			Pid* npid = new(proc) Pid(nh);
+			stack[2] = npid;
+			runsystem->schedule(nh);
+			stack.restack(2);
+		} NEXT_EXECUTOR;
 		/*TODO: EXECUTOR(spawn)
 		(with (stored_f <...>)
 		  (fn (self)
@@ -573,6 +596,7 @@ initialize:
 	biftbassign("bytecoder", THE_EXECUTOR(compile));
 	biftbassign("bytecode-to-free-fun", THE_EXECUTOR(to_free_fun));
 	biftbassign("halt", THE_EXECUTOR(halting_continuation));
+	biftbassign("spawn", THE_EXECUTOR(spawn));
 	biftbassign("probe", THE_EXECUTOR(probe));
 	/*bytecodes*/
 	bytetbassign("apply", THE_BYTECODE_LABEL(apply));
