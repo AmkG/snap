@@ -156,3 +156,12 @@ void Pid::probe(size_t ind){
 			" referring to: " << ((size_t) hproc->pproc.get()) <<
 			std::endl;
 }
+
+void BinaryBlob::probe(size_t ind){
+	INDENT(ind); std::cout << "BINARY @" << std::hex << ((size_t) this) <<
+			" referring to:" << ((size_t) pdat.get()) <<
+			std::endl;
+	for(size_t i = 0; i < pdat->size; ++i){
+		INDENT(ind+1); std::cout << (*pdat)[i] << std::endl;
+	}
+}
