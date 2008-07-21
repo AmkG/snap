@@ -412,7 +412,7 @@ class ProcessHandle;
 class Pid : public Generic {
 protected:
 	Pid(Pid const& o)
-		: hproc(o.hproc) {}
+		: Generic(), hproc(o.hproc) {}
 public:
 	/*standard stuff*/
 	size_t hash(void) const {
@@ -447,7 +447,7 @@ private:
 	}
 protected:
 	BinaryBlob(BinaryBlob const& o)
-		: pdat(o.pdat){}
+		: Generic(), pdat(o.pdat){}
 public:
 	/*standard stuff*/
 	size_t hash(void) const {
@@ -470,7 +470,7 @@ public:
 	/*new stuff*/
 	boost::shared_ptr<std::vector<unsigned char> > pdat;
 	BinaryBlob(void)
-		: pdat(new std::vector<unsigned char>()) {}
+		: Generic(), pdat(new std::vector<unsigned char>()) {}
 	void append(unsigned char n){
 		copy_on_write();
 		pdat->push_back(n);
@@ -481,6 +481,30 @@ public:
 	unsigned char const& operator[](size_t i) const{
 		return (*pdat)[i];
 	}
+};
+
+/*object that conceptually contains an object that may be
+transmitted to a process.
+*/
+class SemispacePackage : public Generic{
+private:
+	SemispacePackage(void){}
+protected:
+	SemispacePackage(SemispacePackage const & o)
+		: Generic(), ns(o.ns), gp(o.gp) {}
+public:
+	/*standard stuff*/
+	size_t hash(void) const {
+		return (size_t) ns.get();
+	}
+	GENERIC_STANDARD_DEFINITIONS(SemispacePackage)
+	virtual void probe(size_t);
+
+	/*new stuff*/
+	boost::shared_ptr<Semispace> ns;
+	Generic* gp; //NOTE!  Should point within the attached semispace
+	SemispacePackage(boost::shared_ptr<Semispace> nns, Generic* ngp)
+		: Generic(), ns(nns), gp(ngp) {}
 };
 
 #endif //TYPES_H

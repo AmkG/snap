@@ -165,3 +165,12 @@ void BinaryBlob::probe(size_t ind){
 		INDENT(ind+1); std::cout << (*pdat)[i] << std::endl;
 	}
 }
+
+void SemispacePackage(size_t ind){
+	INDENT(ind); std::cout << "PACKAGE @" << std::hex << ((size_t) this) <<
+			std::endl;
+	INDENT(ind); std::cout << "Semispace:" << ((size_t) ns.get()) <<
+			std::endl;
+	gp->probe(ind+1);
+}
+
