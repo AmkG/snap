@@ -60,6 +60,8 @@ DECLARE_EXECUTORS
 	AN_EXECUTOR(halting_continuation)
 	AN_EXECUTOR(spawn)
 	AN_EXECUTOR(spawn_helper)
+	AN_EXECUTOR(send)
+	AN_EXECUTOR(actual_send)
 	AN_EXECUTOR(probe)
 	AN_EXECUTOR(bif_dispatch)
 END_DECLARE_EXECUTORS

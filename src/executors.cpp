@@ -556,6 +556,33 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 			stack.push(nclos);
 		} NEXT_EXECUTOR;
 		/*
+		(fn (self k pid o)
+		  (send_actual k pid (%to-new-semispace o)))
+		*/
+		EXECUTOR(send):
+		{	Pid* pp = expect_type<Pid>(stack[2],
+					"apply",
+					"==> expects an object of type 'pid");
+			Generic* gp = stack[3];
+			boost::shared_ptr<Semispace> ns =
+				proc.to_new_semispace(gp);
+			stack[3] = new(proc) SemispacePackage(ns,gp);
+			stack[0] = new(proc) Closure(
+					THE_EXECUTOR(send_actual),
+					0);
+		} /** FALL THROUGH! **/
+		EXECUTOR(send_actual):
+		{	Pid* pp = static_cast<Pid*>(stack[2]);
+			SemispacePackage* sp =
+				static_cast<SemispacePackage*>(stack[3]);
+			bool rv = pp->hproc->pproc->receive(sp->ns, sp->gs);
+			if(rv){
+				stack.push(stack[1]);
+				stack.push(proc.nilobj());
+			//process not ready, retry
+			} else return process_running;
+		} NEXT_EXECUTOR;
+		/*
 		(fn (self k p) (p!probe 0) (k p))
 		*/
 		EXECUTOR(probe):
