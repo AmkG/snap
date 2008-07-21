@@ -407,16 +407,16 @@ public:
 	SharedVar(void) : Generic() {}
 };
 
-class ProcessBase;
+class ProcessHandle;
 
 class Pid : public Generic {
 protected:
 	Pid(Pid const& o)
-		: pproc(o.pproc) {}
+		: hproc(o.hproc) {}
 public:
 	/*standard stuff*/
 	size_t hash(void) const {
-		return (size_t) pproc.get();
+		return (size_t) hproc.get();
 	}
 	GENERIC_STANDARD_DEFINITIONS(Pid)
 	virtual void probe(size_t);
@@ -426,13 +426,58 @@ public:
 		if(o == this) return 1;
 		Pid* po = dynamic_cast<Pid*>(o);
 		if(po == NULL) return 0;
-		return po->pproc == pproc;
+		return po->hproc == hproc;
 	}
 
 	/*new stuff*/
 	boost::shared_ptr<ProcessHandle> hproc;
 	Pid(boost::shared_ptr<ProcessHandle> p)
 		: Generic(), hproc(p) {}
+};
+
+class BinaryBlob : public Generic{
+private:
+	void copy_on_write(void){
+		if(!pdat.unique()){
+			pdat.reset(new std::vector<unsigned char>(*pdat));
+		}
+	}
+protected:
+	BinaryBlob(BinaryBlob const& o)
+		: pdat(o.pdat){}
+public:
+	/*standard stuff*/
+	size_t hash(void) const {
+		return 0;
+	}
+	GENERIC_STANDARD_DEFINITIONS(BinaryBlob)
+	virtual void probe(size_t);
+	virtual boost::shared_ptr<Atom> type_atom(void) const {
+		return BINATOM;
+	};
+
+	/*overridable stuff*/
+	virtual bool iso(Generic const* gp) const {
+		if(is(gp)) return 1;
+		BinaryBlob const* bp = dynamic_cast<BinaryBlob const*>(gp);
+		if(bp == NULL) return 0;
+		return *(bp->pdat) == *pdat;
+	}
+
+	/*new stuff*/
+	boost::shared_ptr<std::vector<unsigned char> > pdat;
+	BinaryBlob(void)
+		: pdat(new std::vector<unsigned char>()) {}
+	void append(unsigned char n){
+		copy_on_write();
+		pdat->push_back(n);
+	}
+	unsigned char& operator[](size_t i){
+		return (*pdat)[i];
+	}
+	unsigned char const& operator[](size_t i) const{
+		return (*pdat)[i];
+	}
 };
 
 #endif //TYPES_H

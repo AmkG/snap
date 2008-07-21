@@ -12,6 +12,7 @@ void variables_init(void){
 	SYMATOM = globals->lookup("sym");
 	FNATOM = globals->lookup("fn");
 	INTATOM = globals->lookup("int");
+	BINATOM = globals->lookup("binary");
 	INTERNALATOM = globals->lookup("internally-used");
 	WRITEATOM = globals->lookup("write");
 	READ1ATOM = globals->lookup("read1");
