@@ -248,7 +248,6 @@ class Executor;
 
 class Closure : public Generic {
 private:
-	boost::shared_ptr<Executor> cd;
 	/*possibly add a parallel vector of variable name atoms for
 	debugging?
 	*/
@@ -280,7 +279,8 @@ public:
 	Closure(boost::shared_ptr<Executor> c, size_t s);
 
 	/*new stuff*/
-	Executor const& code(void) {return *cd;};
+	Executor& code(void) {return *cd;};
+	boost::shared_ptr<Executor> cd;
 	/*WARNING
 	arc2c references closure values starting at index 1 (index 0
 	is the function's code itself, and is never used in practice).
