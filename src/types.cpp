@@ -84,6 +84,12 @@ Closure::Closure(Executor* c, size_t s)
 Closure::Closure(boost::shared_ptr<Executor> c, size_t s)
 	: Generic(), cd(c), vars(s) {}
 
+KClosure::KClosure(Executor* c, size_t s)
+	: Closure(c, s), nonreusable(0) {}
+
+KClosure::KClosure(boost::shared_ptr<Executor> c, size_t s)
+	: Closure(c, s), nonreusable(0) {}
+
 ArcBytecodeSequence::ArcBytecodeSequence()
 	: Generic(), seq(new BytecodeSequence()) {}
 
