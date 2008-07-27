@@ -82,6 +82,7 @@ DECLARE_BYTECODES
 	A_BYTECODE(cdr_clos_push)
 	A_BYTECODE(check_vars)
 	A_BYTECODE(closure)
+	A_BYTECODE(closure_ref)
 	A_BYTECODE(cons)
 	A_BYTECODE(b_continue)
 	A_BYTECODE(continue_local)

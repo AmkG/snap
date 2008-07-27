@@ -116,6 +116,10 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					}
 					stack.push(nclos);
 				} NEXT_BYTECODE;
+				BYTECODE(closure_ref):
+				{INTPARAM(N);
+					bytecode_closure_ref(stack, clos, N);
+				} NEXT_BYTECODE;
 				BYTECODE(cons):
 					bytecode_cons(proc,stack);
 				NEXT_BYTECODE;
@@ -691,6 +695,7 @@ initialize:
 	bytetbassign("cdr-clos-push", THE_BYTECODE_LABEL(cdr_clos_push));
 	bytetbassign("check-vars", THE_BYTECODE_LABEL(check_vars));
 	bytetbassign("closure", THE_BYTECODE_LABEL(closure));
+	bytetbassign("closure-ref", THE_BYTECODE_LABEL(closure_ref));
 	bytetbassign("cons", THE_BYTECODE_LABEL(cons));
 	bytetbassign("continue", THE_BYTECODE_LABEL(b_continue));
 	bytetbassign("continue-local", THE_BYTECODE_LABEL(continue_local));

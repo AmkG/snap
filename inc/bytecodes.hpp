@@ -71,6 +71,9 @@ inline void bytecode_check_vars(ProcessStack& stack, int N){
 			"Function called with incorrect number of parameters");
 	}
 }
+inline void bytecode_closure_ref(ProcessStack& stack, Closure& clos, int N){
+	stack.push(clos[N]);
+}
 inline void bytecode_global(Process& proc, ProcessStack& stack,
 		boost::shared_ptr<Atom> S){
 	stack.push(proc.get(S));
