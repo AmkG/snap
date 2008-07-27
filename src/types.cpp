@@ -99,7 +99,7 @@ void ArcBytecodeSequence::append(Bytecode* b){
 
 /*DEBUG CODE*/
 #include<iostream>
-#define INDENT(ind)	for(size_t i = 0; i < ind; ++i) std::cout << "\t"
+#define INDENT(ind)	for(size_t __i = 0; __i < ind; ++__i) std::cout << "\t"
 void Cons::probe(size_t ind){
 	INDENT(ind); std::cout << "CONS cell@" <<
 			std::hex << ((size_t)(this)) << std::endl;
@@ -174,12 +174,12 @@ void BinaryBlob::probe(size_t ind){
 	INDENT(ind); std::cout << "BINARY @" << std::hex << ((size_t) this) <<
 			" referring to:" << ((size_t) pdat.get()) <<
 			std::endl;
-	for(size_t i = 0; i < pdat->size; ++i){
+	for(size_t i = 0; i < pdat->size(); ++i){
 		INDENT(ind+1); std::cout << (*pdat)[i] << std::endl;
 	}
 }
 
-void SemispacePackage(size_t ind){
+void SemispacePackage::probe(size_t ind){
 	INDENT(ind); std::cout << "PACKAGE @" << std::hex << ((size_t) this) <<
 			std::endl;
 	INDENT(ind); std::cout << "Semispace @" << ((size_t) ns.get()) <<
