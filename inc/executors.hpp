@@ -131,7 +131,7 @@ typedef void* _bytecode_label;
 	ArcExecutor const* e =\
 		static_cast<ArcExecutor const*>(&clos.code());\
 	Bytecode* current_bytecode = &*e->b->head; \
-	enum _e_bytecode_label bpc; NEXT_BYTECODE;
+	enum _e_bytecode_label bpc; GOTO_SEQUENCE(e->b);
 #define BYTECODE_GOTO(x) goto *x
 #define BYTECODE(x) bpc = BYTECODE_ENUM(x); PASTE_SYMBOLS(label_b_, x)
 #define THE_BYTECODE_LABEL(x) &&PASTE_SYMBOLS(label_b_, x)
@@ -153,7 +153,7 @@ typedef enum _e_bytecode_label _bytecode_label;
 	ArcExecutor const* e =\
 		static_cast<ArcExecutor const*>(&clos.code());\
 	Bytecode* current_bytecode = &*e->b->head; \
-	enum _e_bytecode_label bpc; NEXT_BYTECODE; \
+	enum _e_bytecode_label bpc; GOTO_SEQUENCE(e->b); \
 	bytecode_switch: switch(bpc)
 #define BYTECODE(x) case BYTECODE_ENUM(x)
 #define THE_BYTECODE_LABEL(x) BYTECODE_ENUM(x)
@@ -173,9 +173,6 @@ typedef enum _e_bytecode_label _bytecode_label;
 	BYTECODE_GOTO(current_bytecode->l);}
 
 #define GOTO_SEQUENCE(S) { current_bytecode = &*S->head;\
-	BYTECODE_GOTO(current_bytecode->l);}
-
-#define GOTO_BYTECODE(x) { current_bytecode = (x);\
 	BYTECODE_GOTO(current_bytecode->l);}
 
 class Executor{
