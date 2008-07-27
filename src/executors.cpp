@@ -195,7 +195,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					KClosure* nclos =
 						dynamic_cast<KClosure*>(
 							stack[0]);
-					if(!nclos || !nclos->reusable){
+					if(!nclos || !nclos->reusable()){
 						nclos =
 						new(proc) KClosure(
 							THE_ARC_EXECUTOR(
@@ -205,7 +205,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 							//current closure
 							clos.size());
 					} else {
-						nclos->code().reset(
+						nclos->cd.reset(
 							THE_ARC_EXECUTOR(
 								arc_executor,
 								S));
@@ -629,7 +629,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 		{	Pid* pp = static_cast<Pid*>(stack[2]);
 			SemispacePackage* sp =
 				static_cast<SemispacePackage*>(stack[3]);
-			bool rv = pp->hproc->pproc->receive(sp->ns, sp->gs);
+			bool rv = pp->hproc->pproc->receive(sp->ns, sp->gp);
 			if(rv){
 				stack.push(stack[1]);
 				stack.push(proc.nilobj());

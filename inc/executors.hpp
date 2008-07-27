@@ -61,7 +61,7 @@ DECLARE_EXECUTORS
 	AN_EXECUTOR(spawn)
 	AN_EXECUTOR(spawn_helper)
 	AN_EXECUTOR(send)
-	AN_EXECUTOR(actual_send)
+	AN_EXECUTOR(send_actual)
 	AN_EXECUTOR(probe)
 	AN_EXECUTOR(bif_dispatch)
 END_DECLARE_EXECUTORS
@@ -172,7 +172,7 @@ typedef enum _e_bytecode_label _bytecode_label;
 	BYTECODE_GOTO(current_bytecode->l);}
 
 #define GOTO_SEQUENCE(S) { current_bytecode = &*S->head;\
-	BYTECODE_GOTO(current_bytecode->l)}
+	BYTECODE_GOTO(current_bytecode->l);}
 
 #define GOTO_BYTECODE(x) { current_bytecode = (x);\
 	BYTECODE_GOTO(current_bytecode->l);}

@@ -279,7 +279,7 @@ public:
 	Closure(boost::shared_ptr<Executor> c, size_t s);
 
 	/*new stuff*/
-	Executor& code(void) {return *cd;};
+	Executor const& code(void) {return *cd;};
 	boost::shared_ptr<Executor> cd;
 	/*WARNING
 	arc2c references closure values starting at index 1 (index 0
