@@ -288,6 +288,38 @@ public:
 	*/
 	Generic* & operator[](int i) {return vars[i];}
 	Generic* const & operator[](int i) const {return vars[i];}
+	size_t size(void) const {return vars.size();}
+};
+
+/*closure type for continuations*/
+class KClosure : public Closure {
+private:
+	bool nonreusable;
+	//NOTE!  In the future we may need to add some sort of
+	//continuation guarding feature
+protected:
+	KClosure(KClosure const& o)
+		: Closure(o), nonreusable(o.nonreusable){}
+public:
+	/*standard stuff*/
+	GENERIC_STANDARD_DEFINITIONS(KClosure)
+	virtual void probe(size_t);
+
+	KClosure(Executor* c, size_t s);
+	KClosure(boost::shared_ptr<Executor> c, size_t s);
+
+	/*new stuff*/
+	bool reusable(void) const {return !nonreusable;}
+	void banreuse(void) {
+		if(nonreusable) return;
+		nonreusable = 1;
+		for(size_t i = 0; i < size(); ++i){
+			KClosure* kp = dynamic_cast<KClosure*>((*this)[i]);
+			if(kp){
+				kp->banreuse();
+			}
+		}
+	}
 };
 
 class Integer : public Generic {

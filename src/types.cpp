@@ -125,6 +125,13 @@ void Closure::probe(size_t ind){
 	INDENT(ind); std::cout << "}" << std::endl;
 }
 
+void KClosure::probe(size_t ind){
+	Closure::probe(ind);
+	INDENT(ind); std::cout << "(" <<
+			(nonreusable ? "" : "reusable ") <<
+			"continuation)" << std::endl;
+}
+
 void Integer::probe(size_t ind){
 	INDENT(ind); std::cout << "INTEGER: " << std::dec << val <<
 			" @" << std::hex << ((size_t)(this)) << std::endl;
@@ -169,7 +176,7 @@ void BinaryBlob::probe(size_t ind){
 void SemispacePackage(size_t ind){
 	INDENT(ind); std::cout << "PACKAGE @" << std::hex << ((size_t) this) <<
 			std::endl;
-	INDENT(ind); std::cout << "Semispace:" << ((size_t) ns.get()) <<
+	INDENT(ind); std::cout << "Semispace @" << ((size_t) ns.get()) <<
 			std::endl;
 	gp->probe(ind+1);
 }
