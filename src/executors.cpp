@@ -165,10 +165,11 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					return process_dead;
 				} NEXT_BYTECODE;
 				BYTECODE(b_if):
-					Generic* gp = stack.top(); stack.pop();
+				{	Generic* gp = stack.top(); stack.pop();
 					if(gp->istrue()){SEQPARAM(S);
 						GOTO_SEQUENCE(S);
 					}
+				}
 				NEXT_BYTECODE;
 				BYTECODE(if_local):
 				{INTSEQPARAM(N,S);
