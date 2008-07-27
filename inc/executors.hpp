@@ -72,6 +72,7 @@ END_DECLARE_EXECUTORS
 #define END_DECLARE_BYTECODES __null_bytecode };
 DECLARE_BYTECODES
 	A_BYTECODE(apply)
+	A_BYTECODE(apply_invert_k)
 	A_BYTECODE(apply_list)
 	A_BYTECODE(car)
 	A_BYTECODE(car_local_push)
@@ -93,6 +94,8 @@ DECLARE_BYTECODES
 	A_BYTECODE(b_if)
 	A_BYTECODE(if_local)
 	A_BYTECODE(b_int)
+	A_BYTECODE(k_closure)
+	A_BYTECODE(k_closure_reuse)
 	A_BYTECODE(local)
 	A_BYTECODE(rep)
 	A_BYTECODE(rep_local_push)
@@ -167,6 +170,9 @@ typedef enum _e_bytecode_label _bytecode_label;
 
 #define NEXT_BYTECODE { current_bytecode = &*current_bytecode->next;\
 	BYTECODE_GOTO(current_bytecode->l);}
+
+#define GOTO_SEQUENCE(S) { current_bytecode = &*S->head;\
+	BYTECODE_GOTO(current_bytecode->l)}
 
 #define GOTO_BYTECODE(x) { current_bytecode = (x);\
 	BYTECODE_GOTO(current_bytecode->l);}

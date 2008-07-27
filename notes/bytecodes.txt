@@ -55,6 +55,27 @@ Bytecodes:
 	; 1 (i.e. the function itself is counted among
 	; the parameters)
 
+(apply-invert-k N)
+	(withs (k             (stack!pop)
+	        (fn . params) (rev:map [stack!pop] (range 1 N)))
+	  (apply fn k (cdr params)))
+	; calls the function or other applicable object
+	; with the specified number of parameters, minus
+	; 1.  However, the first parameter 'k is really
+	; on the top of the stack; its position in the
+	; stack call is filled with dummy data, which
+	; this bytecode will replace with the stack top.
+	;
+	; Basically the expected stack top for a function
+	; taking two parameters is:
+	;   {f <dummy> p1 p2 k}
+	;
+	; This bytecode is used when compiling a
+	; continuation that reuses its closure structure;
+	; the continuation cannot be modified before the
+	; other parameters are calculated, so the real
+	; continuation must be pushed after the parameters
+
 apply-list
 	(withs (l (stack!pop)
 	        k (stack!pop)
@@ -89,7 +110,7 @@ cdr
 
 (closure N . seq)
 	(let params (rev:map [stack!pop] (range 1 N))
-	  (create-closure (compile-seq seq) params))
+	  (stack!push (create-closure (compile-seq seq) params)))
 	; creates a function object whose bytecode sequence
 	; is seq, and encloses the top N entries of the stack
 	; The closure's enclosed variables are 0-indexed.
@@ -165,6 +186,25 @@ halt
 
 (int N)
 	(stack!push (coerce N 'int))
+
+(k-closure N . seq)
+	(let params (rev:map [stack!pop] (range 1N))
+          (stack!push (create-k-closure (compile-seq seq) params)))
+	; creates a closure object that is identified as a
+	; potentially reusable continuation closure;
+	; otherwise similar to closure
+
+(k-closure-reuse N . seq)
+	(let params (rev:map [stack!pop] (range 1N))
+          (stack!push
+	    (let clos stack.0
+	      (if clos!reusable
+	          (do (on p params (= clos.index p))
+	              (= clos!code (compile-seq seq))
+	              clos)
+	          (create-k-closure (compile-seq-seq) params)))))
+	; reuses the current closure if it is marked
+	; reusable; otherwise same as k-closure
 
 (local N)
 	(stack!push stack.N)

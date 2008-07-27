@@ -52,6 +52,12 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				{INTPARAM(N);
 					stack.restack(N);
 				} /***/ NEXT_EXECUTOR; /***/
+				BYTECODE(apply_invert_k):
+				{INTPARAM(N);
+					Generic* k = stack.top(); stack.pop();
+					stack.top(N-1) = k;
+					stack.restack(N);
+				} /***/ NEXT_EXECUTOR; /***/
 				BYTECODE(apply_list):
 					Generic* tmp;
 					stack.restack(3);
@@ -157,18 +163,58 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				BYTECODE(b_if):
 					Generic* gp = stack.top(); stack.pop();
 					if(gp->istrue()){SEQPARAM(S);
-						GOTO_BYTECODE(&*S->head);
+						GOTO_SEQUENCE(S);
 					}
 				NEXT_BYTECODE;
 				BYTECODE(if_local):
 				{INTSEQPARAM(N,S);
 					if(stack[N]->istrue()){
-						GOTO_BYTECODE(&*S->head);
+						GOTO_SEQUENCE(S);
 					}
 				} NEXT_BYTECODE;
 				BYTECODE(b_int):
 				{INTPARAM(N);
 					bytecode_int(proc, stack, N);
+				} NEXT_BYTECODE;
+				BYTECODE(k_closure):
+				{INTSEQPARAM(N,S);
+					KClosure* nclos =
+						new(proc) KClosure(
+							THE_ARC_EXECUTOR(
+								arc_executor,
+								S),
+							N);
+					for(int i = N; i ; --i){
+						(*nclos)[i - 1] = stack.top();
+						stack.pop();
+					}
+					stack.push(nclos);
+				} NEXT_BYTECODE;
+				BYTECODE(k_closure_reuse):
+				{INTSEQPARAM(N,S);
+					KClosure* nclos =
+						dynamic_cast<KClosure*>(
+							stack[0]);
+					if(!nclos || !nclos->reusable){
+						nclos =
+						new(proc) KClosure(
+							THE_ARC_EXECUTOR(
+								arc_executor,
+								S),
+							//Use the size of the
+							//current closure
+							clos.size());
+					} else {
+						nclos->code().reset(
+							THE_ARC_EXECUTOR(
+								arc_executor,
+								S));
+					}
+					for(int i = N; i ; --i){
+						(*nclos)[i - 1] = stack.top();
+						stack.pop();
+					}
+					stack.push(nclos);
 				} NEXT_BYTECODE;
 				BYTECODE(local):
 				{INTPARAM(N);
@@ -257,6 +303,10 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 		EXECUTOR(ccc):
 		{	Closure* c = new(proc)
 				Closure(THE_EXECUTOR(ccc_helper), 1);
+			KClosure* k = dynamic_cast<KClosure*>(stack[1]);
+			if(k){
+				k->banreuse();
+			}
 			(*c)[0] = stack[1/*k*/];
 			stack[0] = stack[2/*f*/];
 			stack[2] = c;
@@ -285,6 +335,10 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 			stack.push(stack[2]);
 			stack[2] = bseq;
 		} NEXT_EXECUTOR;
+		/*NOTE: Although this violates the letter of the
+		coding conventions (don't exceed 80 cols/line),
+		it's OK: it's just a transcription of Arc code
+		*/
 		/* (fn (self k b l)
 		     (if (no l)
 		         (k b)
@@ -627,6 +681,7 @@ initialize:
 	biftbassign("probe", THE_EXECUTOR(probe));
 	/*bytecodes*/
 	bytetbassign("apply", THE_BYTECODE_LABEL(apply));
+	bytetbassign("apply-invert-k", THE_BYTECODE_LABEL(apply_invert_k));
 	bytetbassign("apply-list", THE_BYTECODE_LABEL(apply_list));
 	bytetbassign("car", THE_BYTECODE_LABEL(car));
 	bytetbassign("car-local-push", THE_BYTECODE_LABEL(car_local_push));
@@ -648,6 +703,8 @@ initialize:
 	bytetbassign("if", THE_BYTECODE_LABEL(b_if));
 	bytetbassign("if-local", THE_BYTECODE_LABEL(if_local));
 	bytetbassign("int", THE_BYTECODE_LABEL(b_int));
+	bytetbassign("k-closure", THE_BYTECODE_LABEL(k_closure));
+	bytetbassign("k-closure-reuse", THE_BYTECODE_LABEL(k_closure_reuse));
 	bytetbassign("local", THE_BYTECODE_LABEL(local));
 	bytetbassign("rep", THE_BYTECODE_LABEL(rep));
 	bytetbassign("rep-local-push", THE_BYTECODE_LABEL(rep_local_push));
