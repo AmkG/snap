@@ -209,6 +209,40 @@ halt
 (local N)
 	(stack!push stack.N)
 
+reducto
+	; the most complex single bytecode in SNAP
+	; this bytecode is used to implement variadic
+	; functions that just apply a certain function
+	; on pairs of its parameters and an accumulator
+	; e.g. (+ a b c d)
+	;   => (<base>+ (<base>+ (<base>+ a b) c) d)
+	; this bytecode expects a particular closure
+	; with 3 elements: clos[0] is a thunk that
+	; accepts no arc parameters (in this case it
+	; accepts a continuation), clos[1] is a
+	; function that accepts a single parameter,
+	; clos[2] is the function used to traverse
+	; multiple parameters
+	(with (clos stack.0
+	       L    (len stack))
+	  (if
+	    (is L 2)
+	      (clos.0 stack.1)
+	    (is L 3)
+	      (clos.1 stack.1 stack.2)
+	    (is L 4)
+	      (clos.2 stack.1 stack.2 stack.3)
+	    ; else
+	      (let I 3
+	        (clos.2
+	          (afn (a)
+	            (++ I)
+	            (if (is (+ I 1) L)
+	                (clos.2 stack.1 a stack.I)
+	                (clos.2 self a stack.I)))
+	          stack.2 stack.3))))
+	; please see more detailed description
+
 rep
 	(= stack!top (type stack!top))
 

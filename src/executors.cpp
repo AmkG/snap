@@ -42,16 +42,40 @@ static void bytetbassign(char const* s, _bytecode_label l){
 }
 
 ProcessStatus execute(Process& proc, size_t reductions, bool init){
+	/*REMINDER
+	All allocations of Generic objects on the
+	Process proc *will* invalidate any pointers
+	and references to Generic objects in that
+	process.
+	*/
 	ProcessStack& stack = proc.stack;
 	if(init) goto initialize;
 	DISPATCH_EXECUTORS {
 		EXECUTOR(arc_executor):
-		arc_executor_top://must be named exactly so, and must exist
+		/*label must be named exactly so, and
+		must exist (executor dispatching
+		special-cases arc_executor; this will
+		hopefully speed up dispatch slightly
+		for some processors)
+		*/
+		arc_executor_top:
 		{	DISPATCH_BYTECODES{
 				BYTECODE(apply):
 				{INTPARAM(N);
 					stack.restack(N);
 				} /***/ NEXT_EXECUTOR; /***/
+				/*Used by a continuation that would
+				like to reuse its closure if possible.
+				It can't reuse its closure too early
+				because the arguments to the next
+				function are likely to depend on the
+				closure entries, so it must first
+				compute the arguments, then compute
+				the values for closure, then finally
+				construct the closure.  This means
+				that the continuation gets pushed
+				last; this bytecode inverts the k
+				*/
 				BYTECODE(apply_invert_k):
 				{INTPARAM(N);
 					Generic* k = stack.top(); stack.pop();
@@ -230,6 +254,63 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				{INTPARAM(N);
 					bytecode_local(stack, N);
 				} NEXT_BYTECODE;
+				/*reducto is a bytecode to *efficiently*
+				implement the common reduction functions,
+				such as '+.  This bytecode avoids
+				allocating new space when called with 2
+				Arc arguments or less, and only allocates
+				a reusable continuation closure that is
+				used an array otherwise
+				See also the executor reducto_continuation.
+				*/
+				BYTECODE(reducto):
+				{CLOSUREREF;
+					/*determine #params*/
+					if(stack.size() < 2){
+						throw ArcError("apply",
+							"Insufficient number "
+							"of parameters to "
+							"variadic function");
+					}
+					size_t params = stack.size() - 2;
+					if(params < 3){
+						// simple and quick dispatch
+						// for common case
+						stack[0] = clos[params];
+					} else {
+						stack[0] = clos[2]; // f2
+						size_t saved_params =
+							params - 2;
+						KClosure& kclos =
+							*new(proc)
+							KClosure(
+			THE_EXECUTOR(reducto_continuation),
+			saved_params + 3
+							);
+						// clos is now invalid
+						kclos[0] = stack[0]; // f2
+						kclos[1] = stack[1];
+						/*** placeholder ***/
+						kclos[2] = stack[1];
+						for(size_t i = saved_params +
+							3;
+						    i > 3;
+						    --i){
+							kclos[i - 1] =
+								stack.top();
+							stack.pop();
+						}
+						/*save closure*/
+						stack[1] = &kclos;
+						Integer* Np =
+							new(proc) Integer(3);
+						// kclos is now invalid
+						KClosure& kkclos =
+							*static_cast
+							<KClosure*>(stack[1]);
+						kkclos[2] = Np;
+					}
+				} /***/ NEXT_EXECUTOR; /***/
 				BYTECODE(rep):
 					bytecode_<&Generic::rep>(stack);
 				NEXT_BYTECODE;
@@ -588,6 +669,74 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 			stack.restack(1);
 			return process_dead;
 		NEXT_EXECUTOR;
+		/*this implements the 3-argument or more case
+		of the reducto bytecode.  reducto is used to
+		efficiently implement a function that
+		performs reduction, and avoids allocating
+		cons cells for the arguments.
+		*/
+		EXECUTOR(reducto_continuation):
+		{CLOSUREREF;
+			Integer* Np =
+				static_cast<Integer*>(clos[2]);
+			int N = Np->val;
+			int NN = N + 1; // next N
+			stack.push(clos[0]);
+			if(NN == clos.size()){
+				// final iteration
+				stack.push(clos[1]);
+				stack.push(stack[1]);
+				stack.push(clos[N]);
+				stack.restack(4);
+			} else {
+				/*dynamic_cast because it is possible for
+				the program to reconstruct a continuation
+				using an ordinary, non-continuation
+				Closure
+				*/
+				KClosure* pkclos =
+					dynamic_cast<KClosure*>(&clos);
+				if(pkclos && pkclos->reusable()){
+					// a reusable continuation
+					Np->val++; // Np is also reusable
+					stack.push(pkclos);
+					stack.push(stack[1]);
+					stack.push(clos[N]);
+					stack.restack(4);
+				} else {
+					KClosure& nclos =
+						*new(proc)
+						KClosure(
+			THE_EXECUTOR(reducto_continuation),
+			// save only necessary
+			clos.size() - NN + 3
+						);
+					// Np, pkclos and clos are now invalid
+					{CLOSUREREF; //revalidate clos
+						nclos[0] = clos[0];
+						nclos[1] = clos[1];
+						/*** placeholder! ***/
+						nclos[2] = clos[1];
+						for(int j = 0;
+						    j < clos.size() - NN;
+						    ++j){
+							nclos[3 + j] =
+								clos[NN + j];
+						}
+						stack.push(&nclos);
+						stack.push(stack[1]);
+						stack.push(clos[N]);
+						stack.restack(4);
+					} // clos is now invalid again
+					Integer* Np = new(proc) Integer(3);
+					// nclos is now invalid
+					KClosure& kkclos =
+						*static_cast<KClosure*>(
+							stack[1]);
+					kkclos[2] = Np;
+				}
+			}
+		} NEXT_EXECUTOR;
 		/*
 		(fn (self k f) ; f is a (fn (self k))
 		  ...)
@@ -728,6 +877,7 @@ initialize:
 	bytetbassign("k-closure", THE_BYTECODE_LABEL(k_closure));
 	bytetbassign("k-closure-reuse", THE_BYTECODE_LABEL(k_closure_reuse));
 	bytetbassign("local", THE_BYTECODE_LABEL(local));
+	bytetbassign("reducto", THE_BYTECODE_LABEL(reducto));
 	bytetbassign("rep", THE_BYTECODE_LABEL(rep));
 	bytetbassign("rep-local-push", THE_BYTECODE_LABEL(rep_local_push));
 	bytetbassign("rep-clos-push", THE_BYTECODE_LABEL(rep_clos_push));

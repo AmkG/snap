@@ -36,6 +36,7 @@ inline void bytecode_local_push_(ProcessStack& stack, int N){
 template<Generic* (Generic::*MF)(void)>
 inline void bytecode_clos_push_(ProcessStack& stack, Closure& clos, int N){
 	stack.push(((clos[N])->*MF)());
+	// clos is now invalid
 }
 
 template<Generic* (Generic::*MF)(Process&)>
@@ -53,6 +54,7 @@ template<Generic* (Generic::*MF)(Process&)>
 inline void bytecode_clos_push_(Process& proc, ProcessStack& stack,
 		Closure& clos, int N){
 	stack.push(((clos[N])->*MF)(proc));
+	// clos is now invalid
 }
 
 /*---------------------------------------------------------------------------*/
