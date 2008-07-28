@@ -50,22 +50,192 @@ int main(int argc, const char* argv[]){
 void construct_test(Process& proc){
 /*
 ((check-vars 2)
- (global (quote $))
+ (sym (quote y)) 2
+ (sym (quote probe)) 3
+ (sym (quote hmm)) 4
+ (sym (quote x)) 5
+ (sym (quote ccc)) 6
  (closure 0
-          (check-vars 2)
-          (sym (quote foo))
-          (int 1)
-          cons
-          (global-set 'temp)
-          (global 'temp)
-          continue)
- (sym (quote halt))
+          (variadic 2)
+          (continue-local 2))
+ (local 7)
+ (global-set (quote list))
+ (global (quote $))
+ (local 1)
+ (local 6)
+ (local 4)
+ (local 3)
+ (local 5)
+ (local 2)
+ (k-closure 6
+            (check-vars 2)
+            (global (quote list))
+            (local 0)
+            (closure-ref 4) 'x
+            (closure-ref 5) 'y
+            (local 1)       probe
+            (closure-ref 0) k
+            (closure-ref 1) 'ccc
+            (closure-ref 2) 'hmm
+            (closure-ref 3) 'probe
+            (k-closure-reuse 5
+                             (closure-ref 0)
+                             (local 0)
+                             (local 1)
+                             (closure-ref 1) k
+                             (closure-ref 2) 'ccc
+                             (closure-ref 3) 'hmm
+                             (closure-ref 4) 'probe
+                             (k-closure-reuse 4
+                                              (global (quote $))
+                                              (local 0)
+                                              (closure-ref 3)
+                                              (closure-ref 0)
+                                              (closure-ref 3)
+                                              (closure-ref 1)
+                                              (closure-ref 2)
+                                              (k-closure-reuse 4
+                                                               (local 1)
+                                                               (local 0)
+                                                               (closure-ref 3)
+                                                               (closure-ref 0)
+                                                               (closure-ref 1)
+                                                               (closure-ref 2)
+                                                               (k-closure-reuse 3
+                                                                                (global (quote $))
+                                                                                (local 0)
+                                                                                (closure-ref 2)
+                                                                                (closure-ref 0)
+                                                                                (closure-ref 1)
+                                                                                (k-closure-reuse 2
+                                                                                                 (closure-ref 1)
+                                                                                                 (closure 1
+                                                                                                          (check-vars 3)
+                                                                                                          (global (quote $))
+                                                                                                          (local 1)
+                                                                                                          (local 2)
+                                                                                                          (k-closure 2
+                                                                                                                     (check-vars 2)
+                                                                                                                     (local 1)
+                                                                                                                     (closure-ref 0)
+                                                                                                                     (closure-ref 1)
+                                                                                                                     (apply 3))
+                                                                                                          (closure-ref 0)
+                                                                                                          (apply 3))
+                                                                                                 (local 1)
+                                                                                                 (closure-ref 0)
+                                                                                                 (local 2)
+                                                                                                 (apply 3))
+                                                                                (apply-invert-k 3))
+                                                               (apply-invert-k 3))
+                                              (apply-invert-k 3))
+                             (apply-invert-k 3))
+            (apply-invert-k 4))
+ (local 3)
  (apply 3))
 */
 	ProcessStack& stack = proc.stack;
 	bytecode_sym(proc,stack,
 		globals->lookup("check-vars"));
 	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("sym"));
+	bytecode_sym(proc,stack,
+		globals->lookup("quote"));
+	bytecode_sym(proc,stack,
+		globals->lookup("y"));
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("sym"));
+	bytecode_sym(proc,stack,
+		globals->lookup("quote"));
+	bytecode_sym(proc,stack,
+		globals->lookup("probe"));
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("sym"));
+	bytecode_sym(proc,stack,
+		globals->lookup("quote"));
+	bytecode_sym(proc,stack,
+		globals->lookup("hmm"));
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("sym"));
+	bytecode_sym(proc,stack,
+		globals->lookup("quote"));
+	bytecode_sym(proc,stack,
+		globals->lookup("x"));
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("sym"));
+	bytecode_sym(proc,stack,
+		globals->lookup("quote"));
+	bytecode_sym(proc,stack,
+		globals->lookup("ccc"));
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure"));
+	bytecode_int(proc,stack,0);
+	bytecode_sym(proc,stack,
+		globals->lookup("variadic"));
+	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("continue-local"));
+	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,7);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("global-set"));
+	bytecode_sym(proc,stack,
+		globals->lookup("quote"));
+	bytecode_sym(proc,stack,
+		globals->lookup("list"));
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
 	bytecode_sym(proc,stack,NILATOM);
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
@@ -82,8 +252,44 @@ void construct_test(Process& proc){
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
 	bytecode_sym(proc,stack,
-		globals->lookup("closure"));
-	bytecode_int(proc,stack,0);
+		globals->lookup("local"));
+	bytecode_int(proc,stack,1);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,6);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,4);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,5);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("k-closure"));
+	bytecode_int(proc,stack,6);
 	bytecode_sym(proc,stack,
 		globals->lookup("check-vars"));
 	bytecode_int(proc,stack,2);
@@ -91,11 +297,11 @@ void construct_test(Process& proc){
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
 	bytecode_sym(proc,stack,
-		globals->lookup("sym"));
+		globals->lookup("global"));
 	bytecode_sym(proc,stack,
 		globals->lookup("quote"));
 	bytecode_sym(proc,stack,
-		globals->lookup("foo"));
+		globals->lookup("list"));
 	bytecode_sym(proc,stack,NILATOM);
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
@@ -103,32 +309,293 @@ void construct_test(Process& proc){
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
 	bytecode_sym(proc,stack,
-		globals->lookup("int"));
+		globals->lookup("local"));
+	bytecode_int(proc,stack,0);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,4);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,5);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
 	bytecode_int(proc,stack,1);
 	bytecode_sym(proc,stack,NILATOM);
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
 	bytecode_sym(proc,stack,
-		globals->lookup("cons"));
-	bytecode_sym(proc,stack,
-		globals->lookup("continue"));
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,0);
 	bytecode_sym(proc,stack,NILATOM);
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
-	bytecode_cons(proc,stack);
-	bytecode_cons(proc,stack);
-	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,1);
+	bytecode_sym(proc,stack,NILATOM);
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
 	bytecode_sym(proc,stack,
-		globals->lookup("sym"));
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("k-closure-reuse"));
+	bytecode_int(proc,stack,5);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,0);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,0);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,1);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,1);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,4);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("k-closure-reuse"));
+	bytecode_int(proc,stack,4);
+	bytecode_sym(proc,stack,
+		globals->lookup("global"));
 	bytecode_sym(proc,stack,
 		globals->lookup("quote"));
 	bytecode_sym(proc,stack,
-		globals->lookup("halt"));
+		globals->lookup("$"));
 	bytecode_sym(proc,stack,NILATOM);
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,0);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,0);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,1);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("k-closure-reuse"));
+	bytecode_int(proc,stack,4);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,1);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,0);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,0);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,1);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("k-closure-reuse"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,
+		globals->lookup("global"));
+	bytecode_sym(proc,stack,
+		globals->lookup("quote"));
+	bytecode_sym(proc,stack,
+		globals->lookup("$"));
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,0);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,0);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,1);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("k-closure-reuse"));
+	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,1);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure"));
+	bytecode_int(proc,stack,1);
+	bytecode_sym(proc,stack,
+		globals->lookup("check-vars"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("global"));
+	bytecode_sym(proc,stack,
+		globals->lookup("quote"));
+	bytecode_sym(proc,stack,
+		globals->lookup("$"));
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,1);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("k-closure"));
+	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,
+		globals->lookup("check-vars"));
+	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,1);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,0);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,1);
 	bytecode_sym(proc,stack,NILATOM);
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
@@ -139,6 +606,185 @@ void construct_test(Process& proc){
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
 	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,0);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("apply"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,1);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("closure-ref"));
+	bytecode_int(proc,stack,0);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,2);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("apply"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("apply-invert-k"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("apply-invert-k"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("apply-invert-k"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("apply-invert-k"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("apply-invert-k"));
+	bytecode_int(proc,stack,4);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("local"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,
+		globals->lookup("apply"));
+	bytecode_int(proc,stack,3);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_sym(proc,stack,NILATOM);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
+	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
 	bytecode_cons(proc,stack);
