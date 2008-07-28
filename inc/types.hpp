@@ -323,8 +323,6 @@ public:
 };
 
 class Integer : public Generic {
-private:
-	int val;
 protected:
 	Integer(Integer const& o) : Generic(), val(o.val){}
 public:
@@ -343,6 +341,7 @@ public:
 	virtual void probe(size_t);
 
 	/*new stuff*/
+	int val;
 	int integer(void){return val;}
 	Integer(int x) : Generic(), val(x) {}
 };
