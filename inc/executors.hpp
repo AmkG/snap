@@ -127,9 +127,9 @@ typedef void* _executor_label;
 
 typedef void* _bytecode_label;
 #define DISPATCH_BYTECODES \
-	Closure& clos = *static_cast<Closure*>(proc.stack[0]);\
 	ArcExecutor const* e =\
-		static_cast<ArcExecutor const*>(&clos.code());\
+		static_cast<ArcExecutor const*>(\
+			&static_cast<Closure*>(stack[0])->code());\
 	Bytecode* current_bytecode = &*e->b->head; \
 	enum _e_bytecode_label bpc; GOTO_SEQUENCE(e->b);
 #define BYTECODE_GOTO(x) goto *x
@@ -149,9 +149,9 @@ typedef enum _e_executor_label _executor_label;
 typedef enum _e_bytecode_label _bytecode_label;
 #define BYTECODE_GOTO(x) {bpc = (x); goto bytecode_switch;}
 #define DISPATCH_BYTECODES \
-	Closure& clos = *static_cast<Closure*>(proc.stack[0]);\
 	ArcExecutor const* e =\
-		static_cast<ArcExecutor const*>(&clos.code());\
+		static_cast<ArcExecutor const*>(\
+			&static_cast<Closure*>(stack[0])->code());\
 	Bytecode* current_bytecode = &*e->b->head; \
 	enum _e_bytecode_label bpc; GOTO_SEQUENCE(e->b); \
 	bytecode_switch: switch(bpc)
@@ -168,6 +168,8 @@ typedef enum _e_bytecode_label _bytecode_label;
 	/*TODO: insert check that c is not NULL; if NULL, lookup in call* */\
 	if(c->code().l == THE_EXECUTOR_LABEL(arc_executor)) goto arc_executor_top;\
 	EXECUTOR_GOTO((c->code()).l);} else {return process_running;}
+
+#define CLOSUREREF Closure& clos = *static_cast<Closure*>(stack[0])
 
 #define NEXT_BYTECODE { current_bytecode = &*current_bytecode->next;\
 	BYTECODE_GOTO(current_bytecode->l);}

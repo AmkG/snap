@@ -47,7 +47,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 	DISPATCH_EXECUTORS {
 		EXECUTOR(arc_executor):
 		arc_executor_top://must be named exactly so, and must exist
-		{	DISPATCH_BYTECODES{//provides the Closure clos
+		{	DISPATCH_BYTECODES{
 				BYTECODE(apply):
 				{INTPARAM(N);
 					stack.restack(N);
@@ -66,6 +66,9 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 						tmp = stack.top();
 						bytecode_<&Generic::car>(
 							stack);
+						// we don't expect car to
+						// allocate, so tmp should
+						// still be valid
 						stack.push(tmp);
 						bytecode_<&Generic::cdr>(
 							stack);
@@ -81,7 +84,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 						stack,N);
 				} NEXT_BYTECODE;
 				BYTECODE(car_clos_push):
-				{INTPARAM(N);
+				{INTPARAM(N);CLOSUREREF;
 					bytecode_clos_push_<&Generic::car>(
 						stack,clos,N);
 				} NEXT_BYTECODE;
@@ -94,7 +97,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 						stack,N);
 				} NEXT_BYTECODE;
 				BYTECODE(cdr_clos_push):
-				{INTPARAM(N);
+				{INTPARAM(N);CLOSUREREF;
 					bytecode_clos_push_<&Generic::cdr>(
 						stack,clos,N);
 				} NEXT_BYTECODE;
@@ -117,7 +120,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					stack.push(nclos);
 				} NEXT_BYTECODE;
 				BYTECODE(closure_ref):
-				{INTPARAM(N);
+				{INTPARAM(N);CLOSUREREF;
 					bytecode_closure_ref(stack, clos, N);
 				} NEXT_BYTECODE;
 				BYTECODE(cons):
@@ -134,7 +137,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					stack.restack(2);
 				} /***/ NEXT_EXECUTOR; /***/
 				BYTECODE(continue_on_clos):
-				{INTPARAM(N);
+				{INTPARAM(N);CLOSUREREF;
 					Generic* gp = stack.top();
 					stack.top() = clos[N];
 					stack.push(gp);
@@ -159,7 +162,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					return process_dead;
 				} NEXT_BYTECODE;
 				BYTECODE(halt_clos_push):
-				{INTPARAM(N);
+				{INTPARAM(N);CLOSUREREF;
 					stack.push(clos[N]);
 					stack.restack(1);
 					return process_dead;
@@ -201,6 +204,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 						dynamic_cast<KClosure*>(
 							stack[0]);
 					if(!nclos || !nclos->reusable()){
+						CLOSUREREF;
 						nclos =
 						new(proc) KClosure(
 							THE_ARC_EXECUTOR(
@@ -209,6 +213,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 							//Use the size of the
 							//current closure
 							clos.size());
+						//clos is now invalid
 					} else {
 						nclos->cd.reset(
 							THE_ARC_EXECUTOR(
@@ -234,7 +239,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 						stack,N);
 				} NEXT_BYTECODE;
 				BYTECODE(rep_clos_push):
-				{INTPARAM(N);
+				{INTPARAM(N);CLOSUREREF;
 					bytecode_clos_push_<&Generic::rep>(
 						stack,clos,N);
 				} NEXT_BYTECODE;
@@ -252,7 +257,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 						proc, stack, N);
 				} NEXT_BYTECODE;
 				BYTECODE(sv_clos_push):
-				{INTPARAM(N);
+				{INTPARAM(N);CLOSUREREF;
 					bytecode_clos_push_
 						<&Generic::make_sv>(
 						proc, stack, clos, N);
@@ -268,7 +273,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 						stack, N);
 				} NEXT_BYTECODE;
 				BYTECODE(sv_ref_clos_push):
-				{INTPARAM(N);
+				{INTPARAM(N);CLOSUREREF;
 					bytecode_clos_push_
 						<&Generic::sv_ref>(
 						stack, clos, N);
@@ -290,7 +295,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 						proc, stack, N);
 				} NEXT_BYTECODE;
 				BYTECODE(type_clos_push):
-				{INTPARAM(N);
+				{INTPARAM(N);CLOSUREREF;
 					bytecode_clos_push_
 						<&Generic::type>(
 						proc, stack, clos, N);
@@ -328,9 +333,10 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 		EXECUTOR(compile):
 		{	Closure* c = new(proc)
 				Closure(THE_EXECUTOR(compile_helper), 0);
+			stack[0] = c;
 			ArcBytecodeSequence* bseq = new(proc)
 				ArcBytecodeSequence();
-			stack[0] = c;
+			// c is no invalid
 			/*just do type checking*/
 			if(stack[2]->istrue()){
 				Cons* cp = expect_type<Cons>(stack[2],
@@ -420,6 +426,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 						if(stack[6]->istrue()){
 							/*IntSeq*/
 							Closure* clos = new(proc) Closure(THE_EXECUTOR(compile_intseq_bytecode), 6);
+							// b is now invalid
 							for(int i = 0; i < 6; ++i){
 								(*clos)[i] = stack[i];
 							}
@@ -427,6 +434,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 							stack[3] = stack[0];
 							stack[4] = clos; // have to save this first!
 							stack[5] = b = new(proc) ArcBytecodeSequence(); // make sure to reassign b
+							//allocated values are now invalid!
 							stack.restack(4);
 							if(--reductions) goto compile_helper_loop; else return process_running;
 						} else {
@@ -482,11 +490,13 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 						stack[5] = params;
 						stack.pop();
 						Closure* clos = new(proc) Closure(THE_EXECUTOR(compile_seq_bytecode), 5);
+						// b is no invalid
 						for(int i = 0; i < 5; ++i){
 							(*clos)[i] = stack[i];
 						}
 						stack[1] = clos; // Have to save this first!
 						stack[2] = b = new(proc) ArcBytecodeSequence(); // make sure to reassign b
+						//variables not in stack are now invalid
 						stack[3] = stack.top(); stack.pop();
 						if(--reductions) goto compile_helper_loop; else return process_running;
 					}
@@ -504,26 +514,25 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 		    ((%closure-ref clos 0) (%closure-ref clos 1) (%closure-ref clos 2) (%closure-ref clos 3))))
 		*/
 		EXECUTOR(compile_intseq_bytecode):
-		{	Closure* clos =
-				static_cast<Closure*>(stack[0]);
+		{CLOSUREREF;
 			ArcBytecodeSequence* subseq =
 				static_cast<ArcBytecodeSequence*>(stack[1]);
 			/*(let ...)*/
 			ArcBytecodeSequence* b =
 				static_cast<ArcBytecodeSequence*>(
-					(*clos)[2]);
+					clos[2]);
 			/*the type of c wasn't checked in the first place*/
-			Sym* c = expect_type<Sym>((*clos)[4],
+			Sym* c = expect_type<Sym>(clos[4],
 				"compile",
 				"Expected bytecode symbol "
 				"in int-seq bytecode form");
 			Integer* param =
 				static_cast<Integer*>(
-					(*clos)[5]);
+					clos[5]);
 			b->append(new IntSeqBytecode(bytecodelookup(c->a), param->integer(), subseq->seq));
 			/*push the closure elements*/
 			for(int i = 0; i < 4; ++i){
-				stack.push((*clos)[i]);
+				stack.push(clos[i]);
 			}
 			stack.restack(4);
 		} NEXT_EXECUTOR;
@@ -536,23 +545,22 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 		    ((%closure-ref clos 0) (%closure-ref clos 1) (%closure-ref clos 2) (%closure-ref clos 3))))
 		*/
 		EXECUTOR(compile_seq_bytecode):
-		{	Closure* clos =
-				dynamic_cast<Closure*>(stack[0]);
+		{CLOSUREREF;
 			ArcBytecodeSequence* subseq =
 				dynamic_cast<ArcBytecodeSequence*>(stack[1]);
 			/*(let ...)*/
 			ArcBytecodeSequence* b =
 				dynamic_cast<ArcBytecodeSequence*>(
-					(*clos)[2]);
+					clos[2]);
 			/*the type of c wasn't checked in the first place*/
-			Sym* c = expect_type<Sym>((*clos)[4],
+			Sym* c = expect_type<Sym>(clos[4],
 				"compile",
 				"Expected bytecode symbol "
 				"in seq bytecode form");
 			b->append(new SeqBytecode(bytecodelookup(c->a), subseq->seq));
 			/*push the closure elements*/
 			for(int i = 0; i < 4; ++i){
-				stack.push((*clos)[i]);
+				stack.push(clos[i]);
 			}
 			stack.restack(4);
 		} NEXT_EXECUTOR;
@@ -564,11 +572,15 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 		EXECUTOR(to_free_fun):
 		{	ArcBytecodeSequence* b =
 				expect_type<ArcBytecodeSequence>(stack.top());
-			Closure* clos =
+			boost::shared_ptr<BytecodeSequence> pb =
+				b->seq;
+			Closure* nclos =
+				// might invalidate b
 				new(proc) Closure(
-					THE_ARC_EXECUTOR(arc_executor, b->seq),
+					THE_ARC_EXECUTOR(arc_executor, pb),
 					0);
-			stack[2] = clos;
+			// b is now invalid
+			stack[2] = nclos;
 			stack.restack(2);
 		} NEXT_EXECUTOR;
 		EXECUTOR(halting_continuation):
@@ -593,6 +605,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 			boost::shared_ptr<ProcessHandle> nh =
 				NewArcProcess(ns,gp);
 			Pid* npid = new(proc) Pid(nh);
+			// hclos is now invalid
 			stack[2] = npid;
 			runsystem->schedule(nh);
 			stack.restack(2);
@@ -606,12 +619,13 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 		executor for a newly-spawned process.
 		*/
 		EXECUTOR(spawn_helper):
-		{	Closure* clos = static_cast<Closure*>(stack[0]);
-			stack[0] = (*clos)[0];
+		{CLOSUREREF;
+			stack[0] = clos[0];
 			Closure* nclos =
 				new(proc) Closure(
 					THE_EXECUTOR(halting_continuation),
 					0);
+			//clos is now invalid
 			stack.push(nclos);
 		} NEXT_EXECUTOR;
 		/*
@@ -625,11 +639,12 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 			Generic* gp = stack[3];
 			boost::shared_ptr<Semispace> ns =
 				proc.to_new_semispace(gp);
+			// gp is now within ns
 			stack[3] = new(proc) SemispacePackage(ns,gp);
 			stack[0] = new(proc) Closure(
 					THE_EXECUTOR(send_actual),
 					0);
-		} /** FALL THROUGH! **/
+		} /*** FALL THROUGH! ***/
 		EXECUTOR(send_actual):
 		{	Pid* pp = static_cast<Pid*>(stack[2]);
 			SemispacePackage* sp =
@@ -667,6 +682,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 			if(i != biftb.end()){
 				stack.top() = new(proc)
 					Closure(i->second,0);
+				// s is now invalid
 			} else {
 				stack.top() = proc.nilobj();
 			}
