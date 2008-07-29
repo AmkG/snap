@@ -47,6 +47,13 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 	Process proc *will* invalidate any pointers
 	and references to Generic objects in that
 	process.
+	i.e. new(proc) Anything() will *always*
+	invalidate any existing pointers.
+	(technically it will only do so if a GC
+	is triggered but hey, burned once, burned
+	for all eternity)
+	(oh and yeah: proc.nilobj() and proc.tobj()
+	are both potentially allocating)
 	*/
 	ProcessStack& stack = proc.stack;
 	if(init) goto initialize;
@@ -100,6 +107,11 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					stack.pop();
 				/***/ NEXT_EXECUTOR; /***/
 				BYTECODE(car):
+					/*exact implementation is in
+					inc/bytecodes.hpp ; we can
+					actually change the interpreter
+					system.
+					*/
 					bytecode_<&Generic::car>(stack);
 				NEXT_BYTECODE;
 				BYTECODE(car_local_push):
@@ -150,16 +162,30 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				BYTECODE(cons):
 					bytecode_cons(proc,stack);
 				NEXT_BYTECODE;
+				/*implements the common case
+				where we just return a value
+				to our continuation.
+				*/
+				/*"continue" might conflict with C++ keyword*/
 				BYTECODE(b_continue):
 					stack.top(2) = stack[1];
 					stack.restack(2);
 				/***/ NEXT_EXECUTOR; /***/
+				/*implements the case where we
+				just return a local variable
+				(probably computed by a
+				primitive) to our continuation
+				*/
 				BYTECODE(continue_local):
 				{INTPARAM(N);
 					stack.push(stack[N]);
 					stack.top(2) = stack[1];
 					stack.restack(2);
 				} /***/ NEXT_EXECUTOR; /***/
+				/*handles the case where the
+				continuation we want to return
+				to is in our own closure.
+				*/
 				BYTECODE(continue_on_clos):
 				{INTPARAM(N);CLOSUREREF;
 					Generic* gp = stack.top();
@@ -196,8 +222,12 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					if(gp->istrue()){SEQPARAM(S);
 						GOTO_SEQUENCE(S);
 					}
-				}
-				NEXT_BYTECODE;
+				} NEXT_BYTECODE;
+				/*we expect this to be much more
+				common due to CPS conversion; in
+				fact we don't expect a plain 'if
+				bytecode at all...
+				*/
 				BYTECODE(if_local):
 				{INTSEQPARAM(N,S);
 					if(stack[N]->istrue()){
@@ -210,18 +240,26 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				} NEXT_BYTECODE;
 				BYTECODE(k_closure):
 				{INTSEQPARAM(N,S);
-					KClosure* nclos =
-						new(proc) KClosure(
+					KClosure& nclos =
+						*new(proc) KClosure(
 							THE_ARC_EXECUTOR(
 								arc_executor,
 								S),
 							N);
 					for(int i = N; i ; --i){
-						(*nclos)[i - 1] = stack.top();
+						nclos[i - 1] = stack.top();
 						stack.pop();
 					}
-					stack.push(nclos);
+					stack.push(&nclos);
 				} NEXT_BYTECODE;
+				/*attempts to reuse the current
+				continuation closure.  Falls back
+				to allocating a new KClosure if
+				the closure isn't a continuation
+				(for example due to serialization)
+				or if it can't be reused (due to
+				'ccc).
+				*/
 				BYTECODE(k_closure_reuse):
 				{INTSEQPARAM(N,S);
 					KClosure* nclos =
@@ -266,6 +304,15 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				BYTECODE(reducto):
 				{CLOSUREREF;
 					/*determine #params*/
+					/*we have two hidden arguments,
+					the current closure and the
+					current continuation
+					This shouldn't be callable without
+					at least those two parameters,
+					but better paranoid than sorry
+					(theoretically possible in a buggy
+					bytecode sequence, for example)
+					*/
 					if(stack.size() < 2){
 						throw ArcError("apply",
 							"Insufficient number "
@@ -274,9 +321,15 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					}
 					size_t params = stack.size() - 2;
 					if(params < 3){
-						// simple and quick dispatch
-						// for common case
+						/*simple and quick dispatch
+						for common case
+						*/
 						stack[0] = clos[params];
+						/*don't disturb the other
+						parameters; the point is
+						to be efficient for the
+						common case
+						*/
 					} else {
 						stack[0] = clos[2]; // f2
 						size_t saved_params =
@@ -838,11 +891,19 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 			stack.restack(2);
 		} NEXT_EXECUTOR;
 	}
+	// should be unreachable
 	return process_dead;
+
+/*So why isn't this, say, a separate function?  Well,
+because I originally had this impression that labels
+were inaccessible outside of the function where they
+were defined, and now I'm too lazy to move it out of
+here
+*/
 initialize:
 	/*atoms*/
 	QUOTEATOM = globals->lookup("quote");
-	/*built-in functions*/
+	/*built-in functions accessible via $*/
 	biftbassign("ccc", THE_EXECUTOR(ccc));
 	biftbassign("bytecoder", THE_EXECUTOR(compile));
 	biftbassign("bytecode-to-free-fun", THE_EXECUTOR(to_free_fun));
