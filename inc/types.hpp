@@ -189,6 +189,11 @@ public:
 	container type) should be stored first in a
 	member of the root set of the process, such
 	as the process stack.
+
+	This is also the reason why a and d aren't
+	private or protected - they can't be safely
+	initialized by the ctor, so they must be
+	initialized afterwards.
 	*/
 	Cons(void) : Generic() {};
 	virtual ~Cons(){};
