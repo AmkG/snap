@@ -167,6 +167,29 @@ public:
 	Generic* a;
 	Generic* d;
 
+	/*
+	NOTE!  Although it might make sense to define
+	Cons(Generic* a, Generic* d), it won't work
+	properly.  The problem is that the expected
+	use case is something like this:
+		gp = new(proc) Cons( ... );
+	However, the new operator is an allocating
+	operation, and the allocating operation might
+	trigger a GC.  And we're using a copying GC.
+	A copying GC means that if copying occurs,
+	pointers become invalidated.
+
+	This means that if we had passed in Generic
+	pointers, those pointers don't get modified
+	by the GC (the GC isn't *that* sophisticated,
+	besides the GC is for the convenience of the
+	Arc programmer, not the C++ implementeer).
+	This also means that any pointers that we
+	would like to put in Cons (or any other
+	container type) should be stored first in a
+	member of the root set of the process, such
+	as the process stack.
+	*/
 	Cons(void) : Generic() {};
 	virtual ~Cons(){};
 
