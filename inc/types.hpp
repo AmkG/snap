@@ -269,6 +269,9 @@ public:
 
 class Executor;
 
+/*closure structures shouldn't be
+modified after they are constructed
+*/
 class Closure : public Generic {
 private:
 	/*possibly add a parallel vector of variable name atoms for
@@ -315,6 +318,15 @@ public:
 };
 
 /*closure type for continuations*/
+/*Unlike the Closure class from which it
+is derived, KClosure is mutable, as long
+as its reusable() member function returns
+true.  If you would like to mutate the
+KClosure but its reusable() member
+function returns false, you must create a
+new KClosure yourself and copy each
+entry.
+*/
 class KClosure : public Closure {
 private:
 	bool nonreusable;
