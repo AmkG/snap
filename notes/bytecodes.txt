@@ -269,7 +269,7 @@ sv-ref
 (sv-ref-local-push N)
 	(stack!push (%sharedvar-read stack.N))
 
-(sv-ref-clos-push)
+(sv-ref-clos-push N)
 	(stack!push (%sharedvar-read (stack.0 N)))
 
 sv-set
