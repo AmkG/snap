@@ -159,6 +159,21 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				{INTPARAM(N);CLOSUREREF;
 					bytecode_closure_ref(stack, clos, N);
 				} NEXT_BYTECODE;
+				BYTECODE(composeo):
+				{CLOSUREREF;
+					/*destructure closure*/
+					stack.push(clos[0]);
+					stack[0] = clos[1];
+					// clos is now no longer safe to use
+					KClosure& kclos =
+						*new(proc)
+						KClosure(
+		THE_EXECUTOR(composeo_continuation), 2);
+					// clos is now invalid
+					kclos[0] = stack[1];
+					kclos[1] = stack.top(); stack.pop();
+					stack[1] = kclos;
+				} /***/ NEXT_EXECUTOR; /***/
 				BYTECODE(cons):
 					bytecode_cons(proc,stack);
 				NEXT_BYTECODE;
@@ -757,6 +772,11 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					stack.push(clos[N]);
 					stack.restack(4);
 				} else {
+					/*TODO: instead create a closure
+					with only a reference to this
+					closure and an index number, to
+					reduce memory allocation.
+					*/
 					KClosure& nclos =
 						*new(proc)
 						KClosure(
@@ -789,6 +809,18 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					kkclos[2] = Np;
 				}
 			}
+		} NEXT_EXECUTOR;
+		/*
+		this executor implements the return from the first
+		(inner) function of a composed pair and calls the
+		second function in the pair.
+		*/
+		EXECUTOR(composeo_continuation):
+		{CLOSUREREF;
+			stack.push(clos[1]);
+			stack.push(clos[0]);
+			stack.push(stack[1]);
+			stack.restack(3);
 		} NEXT_EXECUTOR;
 		/*
 		(fn (self k f) ; f is a (fn (self k))
@@ -923,6 +955,7 @@ initialize:
 	bytetbassign("check-vars", THE_BYTECODE_LABEL(check_vars));
 	bytetbassign("closure", THE_BYTECODE_LABEL(closure));
 	bytetbassign("closure-ref", THE_BYTECODE_LABEL(closure_ref));
+	bytetbassign("composeo", THE_BYTECODE_LABEL(composeo));
 	bytetbassign("cons", THE_BYTECODE_LABEL(cons));
 	bytetbassign("continue", THE_BYTECODE_LABEL(b_continue));
 	bytetbassign("continue-local", THE_BYTECODE_LABEL(continue_local));
