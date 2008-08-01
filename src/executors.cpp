@@ -172,7 +172,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					// clos is now invalid
 					kclos[0] = stack[1];
 					kclos[1] = stack.top(); stack.pop();
-					stack[1] = kclos;
+					stack[1] = &kclos;
 				} /***/ NEXT_EXECUTOR; /***/
 				BYTECODE(cons):
 					bytecode_cons(proc,stack);
@@ -303,6 +303,12 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					}
 					stack.push(nclos);
 				} NEXT_BYTECODE;
+				BYTECODE(lit_nil):
+					bytecode_lit_nil(proc, stack);
+				NEXT_BYTECODE;
+				BYTECODE(lit_t):
+					bytecode_lit_t(proc, stack);
+				NEXT_BYTECODE;
 				BYTECODE(local):
 				{INTPARAM(N);
 					bytecode_local(stack, N);
@@ -970,6 +976,8 @@ initialize:
 	bytetbassign("int", THE_BYTECODE_LABEL(b_int));
 	bytetbassign("k-closure", THE_BYTECODE_LABEL(k_closure));
 	bytetbassign("k-closure-reuse", THE_BYTECODE_LABEL(k_closure_reuse));
+	bytetbassign("lit-nil", THE_BYTECODE_LABEL(lit_nil));
+	bytetbassign("lit-t", THE_BYTECODE_LABEL(lit_t));
 	bytetbassign("local", THE_BYTECODE_LABEL(local));
 	bytetbassign("reducto", THE_BYTECODE_LABEL(reducto));
 	bytetbassign("rep", THE_BYTECODE_LABEL(rep));

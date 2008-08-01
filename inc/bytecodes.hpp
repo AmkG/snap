@@ -85,6 +85,12 @@ inline void bytecode_int(Process& proc, ProcessStack& stack, int N){
 		new(proc) Integer(N)
 	);
 }
+inline void bytecode_lit_nil(Process&proc, ProcessStack& stack){
+	stack.push(proc.nilobj());
+}
+inline void bytecode_lit_t(Process&proc, ProcessStack& stack){
+	stack.push(proc.tobj());
+}
 inline void bytecode_local(ProcessStack& stack, int N){
 	stack.push(stack[N]);
 }

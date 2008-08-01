@@ -100,6 +100,8 @@ DECLARE_BYTECODES
 	A_BYTECODE(b_int)
 	A_BYTECODE(k_closure)
 	A_BYTECODE(k_closure_reuse)
+	A_BYTECODE(lit_nil)
+	A_BYTECODE(lit_t)
 	A_BYTECODE(local)
 	A_BYTECODE(reducto)
 	A_BYTECODE(rep)
