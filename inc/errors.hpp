@@ -14,7 +14,7 @@ public:
 	explicit ArcError(char const * a, char const* s) :
 		std::runtime_error("Arc Error"),
 		type(globals->lookup(a)),
-		msg(a){};
+		msg(s){};
 	virtual const char * what() const throw(){
 		return msg.c_str();
 	}
