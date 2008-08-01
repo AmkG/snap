@@ -27,7 +27,7 @@
           (fn (params)
             (mappend
               (fn (p)
-                (if ((orf aprim aref aset aquote) p)
+                (if ((orf aprim aref aset aquote alit) p)
                     (bytecodegen p env)
                     (do (prn "----unexpected in tail-call apply")
                         (ppr-sexp:source p)
@@ -261,6 +261,10 @@
           (if
             (isa val 'int)
               `( (int ,val))
+            (is val t)
+              `( lit-t )
+            (no val)
+              `( lit-nil )
             ; else
               (do (prn "----unsupported literal type")
                   (ppr-sexp:source ast)
