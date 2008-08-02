@@ -57,14 +57,6 @@ public:
 	}
 };
 
-static void biftbassign(char const* s, Executor* e){
-	biftb[&*globals->lookup(s)].reset(e);
-}
-
-static void bytetbassign(char const* s, _bytecode_label l){
-	bytetb[&*globals->lookup(s)] = l;
-}
-
 ProcessStatus execute(Process& proc, size_t reductions, bool init){
 	/*REMINDER
 	All allocations of Generic objects on the
