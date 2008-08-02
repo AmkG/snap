@@ -33,6 +33,30 @@ static _bytecode_label bytecodelookup(boost::shared_ptr<Atom> a){
 	}
 }
 
+class InitialAssignments {
+public:
+	InitialAssignments const& operator()(
+			char const* s,
+			Executor* e) const {
+		biftb[globals->lookup(s).get()].reset(e);
+		return *this;
+	}
+	InitialAssignments const& operator()(
+			char const* s,
+			_bytecode_label l) const{
+		bytetb[globals->lookup(s).get()] = l;
+		return *this;
+	}
+	InitialAssignments const& operator()(
+			char const* s,
+			Process& proc,
+			Executor* e) const{
+		proc.assign(globals->lookup(s), 
+			new(proc) Closure(e, 0));
+		return *this;
+	}
+};
+
 static void biftbassign(char const* s, Executor* e){
 	biftb[&*globals->lookup(s)].reset(e);
 }
@@ -941,75 +965,75 @@ here
 initialize:
 	/*atoms*/
 	QUOTEATOM = globals->lookup("quote");
+
+	InitialAssignments()
 	/*built-in functions accessible via $*/
-	biftbassign("ccc", THE_EXECUTOR(ccc));
-	biftbassign("bytecoder", THE_EXECUTOR(compile));
-	biftbassign("bytecode-to-free-fun", THE_EXECUTOR(to_free_fun));
-	biftbassign("halt", THE_EXECUTOR(halting_continuation));
-	biftbassign("spawn", THE_EXECUTOR(spawn));
-	biftbassign("probe", THE_EXECUTOR(probe));
+		("ccc",			THE_EXECUTOR(ccc))
+		("bytecoder",		THE_EXECUTOR(compile))
+		("bytecode-to-free-fun",THE_EXECUTOR(to_free_fun))
+		("halt",		THE_EXECUTOR(halting_continuation))
+		("spawn",		THE_EXECUTOR(spawn))
+		("probe",		THE_EXECUTOR(probe))
 	/*bytecodes*/
-	bytetbassign("apply", THE_BYTECODE_LABEL(apply));
-	bytetbassign("apply-invert-k", THE_BYTECODE_LABEL(apply_invert_k));
-	bytetbassign("apply-list", THE_BYTECODE_LABEL(apply_list));
-	bytetbassign("car", THE_BYTECODE_LABEL(car));
-	bytetbassign("car-local-push", THE_BYTECODE_LABEL(car_local_push));
-	bytetbassign("car-clos-push", THE_BYTECODE_LABEL(car_clos_push));
-	bytetbassign("cdr", THE_BYTECODE_LABEL(cdr));
-	bytetbassign("cdr-local-push", THE_BYTECODE_LABEL(cdr_local_push));
-	bytetbassign("cdr-clos-push", THE_BYTECODE_LABEL(cdr_clos_push));
-	bytetbassign("check-vars", THE_BYTECODE_LABEL(check_vars));
-	bytetbassign("closure", THE_BYTECODE_LABEL(closure));
-	bytetbassign("closure-ref", THE_BYTECODE_LABEL(closure_ref));
-	bytetbassign("composeo", THE_BYTECODE_LABEL(composeo));
-	bytetbassign("cons", THE_BYTECODE_LABEL(cons));
-	bytetbassign("continue", THE_BYTECODE_LABEL(b_continue));
-	bytetbassign("continue-local", THE_BYTECODE_LABEL(continue_local));
-	bytetbassign("continue-on-clos", THE_BYTECODE_LABEL(continue_on_clos));
-	bytetbassign("global", THE_BYTECODE_LABEL(global));
-	bytetbassign("global-set", THE_BYTECODE_LABEL(global_set));
-	bytetbassign("halt", THE_BYTECODE_LABEL(halt));
-	bytetbassign("halt-local-push", THE_BYTECODE_LABEL(halt_local_push));
-	bytetbassign("halt-clos-push", THE_BYTECODE_LABEL(halt_clos_push));
-	bytetbassign("if", THE_BYTECODE_LABEL(b_if));
-	bytetbassign("if-local", THE_BYTECODE_LABEL(if_local));
-	bytetbassign("int", THE_BYTECODE_LABEL(b_int));
-	bytetbassign("k-closure", THE_BYTECODE_LABEL(k_closure));
-	bytetbassign("k-closure-reuse", THE_BYTECODE_LABEL(k_closure_reuse));
-	bytetbassign("lit-nil", THE_BYTECODE_LABEL(lit_nil));
-	bytetbassign("lit-t", THE_BYTECODE_LABEL(lit_t));
-	bytetbassign("local", THE_BYTECODE_LABEL(local));
-	bytetbassign("reducto", THE_BYTECODE_LABEL(reducto));
-	bytetbassign("rep", THE_BYTECODE_LABEL(rep));
-	bytetbassign("rep-local-push", THE_BYTECODE_LABEL(rep_local_push));
-	bytetbassign("rep-clos-push", THE_BYTECODE_LABEL(rep_clos_push));
-	bytetbassign("sv", THE_BYTECODE_LABEL(sv));
-	bytetbassign("sv-local-push", THE_BYTECODE_LABEL(sv_local_push));
-	bytetbassign("sv-clos-push", THE_BYTECODE_LABEL(sv_clos_push));
-	bytetbassign("sv-ref", THE_BYTECODE_LABEL(sv_ref));
-	bytetbassign("sv-ref-local-push",
-		THE_BYTECODE_LABEL(sv_ref_local_push));
-	bytetbassign("sv-ref-clos-push",
-		THE_BYTECODE_LABEL(sv_ref_clos_push));
-	bytetbassign("sym", THE_BYTECODE_LABEL(sym));
-	bytetbassign("tag", THE_BYTECODE_LABEL(tag));
-	bytetbassign("type", THE_BYTECODE_LABEL(type));
-	bytetbassign("type-local-push", THE_BYTECODE_LABEL(type_local_push));
-	bytetbassign("type-clos-push", THE_BYTECODE_LABEL(type_clos_push));
-	bytetbassign("variadic", THE_BYTECODE_LABEL(variadic));
+		("apply",		THE_BYTECODE_LABEL(apply))
+		("apply-invert-k",	THE_BYTECODE_LABEL(apply_invert_k))
+		("apply-list",		THE_BYTECODE_LABEL(apply_list))
+		("car",			THE_BYTECODE_LABEL(car))
+		("car-local-push",	THE_BYTECODE_LABEL(car_local_push))
+		("car-clos-push",	THE_BYTECODE_LABEL(car_clos_push))
+		("cdr",			THE_BYTECODE_LABEL(cdr))
+		("cdr-local-push",	THE_BYTECODE_LABEL(cdr_local_push))
+		("cdr-clos-push",	THE_BYTECODE_LABEL(cdr_clos_push))
+		("check-vars",		THE_BYTECODE_LABEL(check_vars))
+		("closure",		THE_BYTECODE_LABEL(closure))
+		("closure-ref",		THE_BYTECODE_LABEL(closure_ref))
+		("composeo",		THE_BYTECODE_LABEL(composeo))
+		("cons",		THE_BYTECODE_LABEL(cons))
+		("continue",		THE_BYTECODE_LABEL(b_continue))
+		("continue-local",	THE_BYTECODE_LABEL(continue_local))
+		("continue-on-clos",	THE_BYTECODE_LABEL(continue_on_clos))
+		("global",		THE_BYTECODE_LABEL(global))
+		("global-set",		THE_BYTECODE_LABEL(global_set))
+		("halt",		THE_BYTECODE_LABEL(halt))
+		("halt-local-push",	THE_BYTECODE_LABEL(halt_local_push))
+		("halt-clos-push",	THE_BYTECODE_LABEL(halt_clos_push))
+		("if",			THE_BYTECODE_LABEL(b_if))
+		("if-local",		THE_BYTECODE_LABEL(if_local))
+		("int",			THE_BYTECODE_LABEL(b_int))
+		("k-closure",		THE_BYTECODE_LABEL(k_closure))
+		("k-closure-reuse",	THE_BYTECODE_LABEL(k_closure_reuse))
+		("lit-nil",		THE_BYTECODE_LABEL(lit_nil))
+		("lit-t",		THE_BYTECODE_LABEL(lit_t))
+		("local",		THE_BYTECODE_LABEL(local))
+		("reducto",		THE_BYTECODE_LABEL(reducto))
+		("rep",			THE_BYTECODE_LABEL(rep))
+		("rep-local-push",	THE_BYTECODE_LABEL(rep_local_push))
+		("rep-clos-push",	THE_BYTECODE_LABEL(rep_clos_push))
+		("sv",			THE_BYTECODE_LABEL(sv))
+		("sv-local-push",	THE_BYTECODE_LABEL(sv_local_push))
+		("sv-clos-push",	THE_BYTECODE_LABEL(sv_clos_push))
+		("sv-ref",		THE_BYTECODE_LABEL(sv_ref))
+		("sv-ref-local-push",	THE_BYTECODE_LABEL(sv_ref_local_push))
+		("sv-ref-clos-push",	THE_BYTECODE_LABEL(sv_ref_clos_push))
+		("sym",			THE_BYTECODE_LABEL(sym))
+		("tag",			THE_BYTECODE_LABEL(tag))
+		("type",		THE_BYTECODE_LABEL(type))
+		("type-local-push",	THE_BYTECODE_LABEL(type_local_push))
+		("type-clos-push",	THE_BYTECODE_LABEL(type_clos_push))
+		("variadic",		THE_BYTECODE_LABEL(variadic))
+
 	/*assign bultin global*/
-	proc.assign(globals->lookup("$"),
-		new(proc) Closure(THE_EXECUTOR(bif_dispatch), 0));
+		("$",			proc, THE_EXECUTOR(bif_dispatch))
 	/*these globals are used only during initialization.  After
 	initialization these globals may be overwritten by user
 	program.
 	*/
-	proc.assign(globals->lookup("<snap>compile</snap>"),
-		new(proc) Closure(THE_EXECUTOR(compile), 0));
-	proc.assign(globals->lookup("<snap>halt</snap>"),
-		new(proc) Closure(THE_EXECUTOR(halting_continuation), 0));
-	proc.assign(globals->lookup("<snap>to-free-fun</snap>"),
-		new(proc) Closure(THE_EXECUTOR(to_free_fun), 0));
+		("<snap>compile</snap>",proc, THE_EXECUTOR(compile))
+		("<snap>halt</snap>",	proc,
+			THE_EXECUTOR(halting_continuation))
+		("<snap>to-free-fun</snap>",
+					proc, THE_EXECUTOR(to_free_fun))
+	;/*end initializer*/
 	return process_running;
 }
 
