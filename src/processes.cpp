@@ -67,7 +67,7 @@ Generic* Process::get(boost::shared_ptr<Atom> a){
 		nsv = globals->get(a);
 		ns = nsv.first;// a new Semispace just for us
 		src = nsv.second;
-		if(!ns) throw ArcError("eval",
+		if(!ns) throw ArcError("symeval",
 					"Unbound variable");
 		{/*insert locking of our own other_spaces*/
 			other_spaces.push_back(ns);
