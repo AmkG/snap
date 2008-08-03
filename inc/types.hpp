@@ -272,54 +272,49 @@ public:
 	boost::shared_ptr<Atom> a;
 };
 
+class Heap;
 class Executor;
+class Closure;
+class KClosure;
+Closure* NewClosure(Heap&, Executor*, size_t);
+Closure* NewClosure(Heap&, boost::shared_ptr<Executor>, size_t);
+KClosure* NewKClosure(Heap&, Executor*, size_t);
+KClosure* NewKClosure(Heap&, boost::shared_ptr<Executor>, size_t);
 
 /*closure structures shouldn't be
 modified after they are constructed
 */
 class Closure : public Generic {
-private:
-	/*possibly add a parallel vector of variable name atoms for
-	debugging?
-	*/
-	std::vector<Generic*> vars;
 protected:
-	Closure(Closure const& o) : Generic(), cd(o.cd), vars(o.vars) {}
+	Closure(Closure const& o)
+		: Generic(), cd(o.cd){}
+	boost::shared_ptr<Executor> cd;
+
+	Closure(boost::shared_ptr<Executor> c);
+
 public:
 	/*standard stuff*/
 	virtual size_t hash(void) const{
 		return (size_t) &*cd;
 	}
-	virtual Closure* clone(Semispace& sp) const{
-		return new(sp) Closure(*this);
-	}
-	virtual size_t get_size(void) const{
-		return sizeof(Closure);
-	}
 	virtual void probe(size_t);
 	virtual boost::shared_ptr<Atom> type_atom(void) const {return FNATOM;};
 
-	/*overrideable stuff*/
-	virtual void get_refs(std::stack<Generic**>& s){
-		for(size_t i = 0; i < vars.size(); ++i){
-			s.push(&vars[i]);
-		}
-	}
-
-	Closure(Executor* c, size_t s);
-	Closure(boost::shared_ptr<Executor> c, size_t s);
-
 	/*new stuff*/
 	Executor const& code(void) {return *cd;};
-	boost::shared_ptr<Executor> cd;
 	/*WARNING
 	arc2c references closure values starting at index 1 (index 0
 	is the function's code itself, and is never used in practice).
 	We will have to translate the numbers properly for those cases
 	*/
-	Generic* & operator[](int i) {return vars[i];}
-	Generic* const & operator[](int i) const {return vars[i];}
-	size_t size(void) const {return vars.size();}
+	virtual Generic* & operator[](int) =0;
+	virtual Generic* const & operator[](int) const =0;
+	virtual size_t size(void) const =0;
+
+	virtual ~Closure(){}
+
+	friend Closure* NewClosure(Heap&, Executor*, size_t);
+	friend Closure* NewClosure(Heap&, boost::shared_ptr<Executor>, size_t);
 };
 
 /*closure type for continuations*/
@@ -335,20 +330,18 @@ entry.
 class KClosure : public Closure {
 private:
 	bool nonreusable;
-	//NOTE!  In the future we may need to add some sort of
-	//continuation guarding feature
 protected:
 	KClosure(KClosure const& o)
 		: Closure(o), nonreusable(o.nonreusable){}
+
+	KClosure(boost::shared_ptr<Executor> c);
+
 public:
 	/*standard stuff*/
-	GENERIC_STANDARD_DEFINITIONS(KClosure)
 	virtual void probe(size_t);
 
-	KClosure(Executor* c, size_t s);
-	KClosure(boost::shared_ptr<Executor> c, size_t s);
-
 	/*new stuff*/
+	Executor& code(void) {return *cd;};
 	bool reusable(void) const {return !nonreusable;}
 	void banreuse(void) {
 		if(nonreusable) return;
@@ -360,6 +353,12 @@ public:
 			}
 		}
 	}
+
+	virtual ~KClosure(){}
+
+	friend KClosure* NewKClosure(Heap&, Executor*, size_t);
+	friend KClosure* NewKClosure(
+			Heap&, boost::shared_ptr<Executor>, size_t);
 };
 
 class Integer : public Generic {
