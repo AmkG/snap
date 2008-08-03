@@ -98,6 +98,7 @@ void ArcBytecodeSequence::append(Bytecode* b){
 #include<iostream>
 #define INDENT(ind)	for(size_t __i = 0; __i < ind; ++__i) std::cout << "\t"
 
+/*TODO: think if moving closure implementations elsewhere is better*/
 /*Closure implementations*/
 template<typename C>
 class EmptyClosure : public C {
@@ -216,6 +217,12 @@ static C* NewClosureImpl(
 	switch(sz){
 	case 0:	return new(hp) EmptyClosure<C>(c);
 	case 1: return new(hp) ClosureArray<C,1>(c);
+	case 2: return new(hp) ClosureArray<C,2>(c);
+	case 3: return new(hp) ClosureArray<C,3>(c);
+	case 4: return new(hp) ClosureArray<C,4>(c);
+	case 5: return new(hp) ClosureArray<C,5>(c);
+	case 6: return new(hp) ClosureArray<C,6>(c);
+	case 7: return new(hp) ClosureArray<C,7>(c);
 	default:
 		return new(hp) ClosureVector<C>(c,sz);
 	}
