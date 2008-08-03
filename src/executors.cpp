@@ -453,6 +453,9 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				{ATOMPARAM(S);
 					bytecode_sym(proc, stack, S);
 				} NEXT_BYTECODE;
+				BYTECODE(symeval):
+					bytecode_symeval(proc, stack);
+				NEXT_BYTECODE;
 				BYTECODE(type):
 					bytecode_<&Generic::type>(
 						proc, stack);
@@ -1006,6 +1009,7 @@ initialize:
 		("sv-ref-local-push",	THE_BYTECODE_LABEL(sv_ref_local_push))
 		("sv-ref-clos-push",	THE_BYTECODE_LABEL(sv_ref_clos_push))
 		("sym",			THE_BYTECODE_LABEL(sym))
+		("symeval",		THE_BYTECODE_LABEL(symeval))
 		("tag",			THE_BYTECODE_LABEL(tag))
 		("type",		THE_BYTECODE_LABEL(type))
 		("type-local-push",	THE_BYTECODE_LABEL(type_local_push))

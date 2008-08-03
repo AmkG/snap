@@ -115,6 +115,7 @@ DECLARE_BYTECODES
 	A_BYTECODE(sv_ref_clos_push)
 	A_BYTECODE(sv_set)
 	A_BYTECODE(sym)
+	A_BYTECODE(symeval)
 	A_BYTECODE(tag)
 	A_BYTECODE(type)
 	A_BYTECODE(type_local_push)

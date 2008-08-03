@@ -114,6 +114,14 @@ inline void bytecode_sym(Process& proc, ProcessStack& stack,
 		new(proc) Sym(S)
 	);
 }
+inline void bytecode_symeval(Process& proc, ProcessStack& stack){
+	Sym* sp = dynamic_cast<Sym*>(stack.top());
+	if(sp == NULL){
+		throw ArcError("symeval",
+			"Expected an object of type 'sym");
+	}
+	stack.top() = proc.get(sp->a);
+}
 inline void bytecode_tag(Process& proc, ProcessStack& stack){
 	/*have to check that the current type tag isn't
 	the same as the given type tag
