@@ -137,8 +137,6 @@ size_t Heap::get_total_heap_size(void) const{
 	return sz;
 }
 
-#include<cstdio>
-
 /*used internally by GC*/
 static void copy_set(std::stack<Generic**>& tocopy,
 		ToPointerLock& toptrs,
