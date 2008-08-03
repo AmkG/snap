@@ -98,8 +98,10 @@ void ArcBytecodeSequence::append(Bytecode* b){
 #include<iostream>
 #define INDENT(ind)	for(size_t __i = 0; __i < ind; ++__i) std::cout << "\t"
 
-/*TODO: think if moving closure implementations elsewhere is better*/
 /*Closure implementations*/
+/*TODO: think if moving closure implementations elsewhere is better*/
+
+/*implements a free closure (no captured variables)*/
 template<typename C>
 class EmptyClosure : public C {
 protected:
@@ -127,6 +129,10 @@ public:
 	virtual ~EmptyClosure<C>(){}
 };
 
+/*implements a closure using an array
+- has the drawback that we need to specify the
+  array size at C++ compile time
+*/
 template<typename C, size_t N>
 class ClosureArray : public C {
 private:
@@ -172,6 +178,12 @@ public:
 	virtual ~ClosureArray<C,N>(){}
 };
 
+/*implements a closure using a std::vector
+- has the drawback that the actual memory area
+  will probably be allocated using some form
+  of malloc(), essentially bypassing our
+  memory manager.
+*/
 template<typename C>
 class ClosureVector : public C {
 private:
@@ -182,6 +194,11 @@ protected:
 public:
 	/*standard stuff*/
 	GENERIC_STANDARD_DEFINITIONS(ClosureVector<C>)
+	/*I *think* this bit has to be declared here, because
+	it's in a templated class, but if it's not necessary,
+	it would be better at the end, together with the
+	other probe() functions.
+	*/
 	virtual void probe(size_t ind){
 		C::probe(ind);
 		INDENT(ind); std::cout << "{" << std::endl;
@@ -211,10 +228,14 @@ public:
 };
 
 /*Factory functions*/
+/*constructs a Closure of the given size with the given Executor
+The constructed Closure may be any of the above implementations.
+*/
 template<typename C>
 static C* NewClosureImpl(
 		Heap& hp, boost::shared_ptr<Executor> c, size_t sz) {
 	switch(sz){
+	/*Use statically-determined sizes as much as possible*/
 	case 0:	return new(hp) EmptyClosure<C>(c);
 	case 1: return new(hp) ClosureArray<C,1>(c);
 	case 2: return new(hp) ClosureArray<C,2>(c);
@@ -223,6 +244,7 @@ static C* NewClosureImpl(
 	case 5: return new(hp) ClosureArray<C,5>(c);
 	case 6: return new(hp) ClosureArray<C,6>(c);
 	case 7: return new(hp) ClosureArray<C,7>(c);
+	/*we can't list all sizes though, so fallback on using std::vector*/
 	default:
 		return new(hp) ClosureVector<C>(c,sz);
 	}
@@ -233,6 +255,9 @@ Closure* NewClosure(Heap& hp, Executor* c, size_t sz) {
 Closure* NewClosure(Heap& hp, boost::shared_ptr<Executor> c, size_t sz) {
 	return NewClosureImpl<Closure>(hp, c, sz);
 }
+/*TODO: make these allocate in the LIFO allocation structure, when that
+is implemented
+*/
 KClosure* NewKClosure(Heap& hp, Executor* c, size_t sz) {
 	return NewKClosure(hp, boost::shared_ptr<Executor>(c), sz);
 }
