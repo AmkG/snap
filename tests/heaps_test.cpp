@@ -1,4 +1,5 @@
 #include"variables.hpp"
+#include"phandles.hpp"
 #include"processes.hpp"
 #include"bytecodes.hpp"
 #include<iostream>
@@ -7,7 +8,8 @@ int main(int argc, const char* argv[]){
 	variables_init();
 
 	/*tests!*/
-	Process proc;
+	boost::shared_ptr<ProcessHandle> hproc = NewArcProcess();
+	Process& proc=*(static_cast<Process*>(hproc->pproc.get()));
 	ProcessStack& stack = proc.stack;
 	/*allocate stuff*/
 	//(cons 'bar ...)
