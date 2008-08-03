@@ -341,7 +341,7 @@ public:
 	virtual void probe(size_t);
 
 	/*new stuff*/
-	Executor& code(void) {return *cd;};
+	void codereset(Executor* ncd);
 	bool reusable(void) const {return !nonreusable;}
 	void banreuse(void) {
 		if(nonreusable) return;

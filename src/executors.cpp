@@ -52,7 +52,7 @@ public:
 			Process& proc,
 			Executor* e) const{
 		proc.assign(globals->lookup(s), 
-			new(proc) Closure(e, 0));
+			NewClosure(proc, e, 0));
 		return *this;
 	}
 };
@@ -160,7 +160,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				BYTECODE(closure):
 				{INTSEQPARAM(N,S);
 					Closure* nclos =
-						new(proc) Closure(
+						NewClosure(proc,
 							THE_ARC_EXECUTOR(
 								arc_executor,
 								S),
@@ -182,8 +182,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					stack[0] = clos[1];
 					// clos is now no longer safe to use
 					KClosure& kclos =
-						*new(proc)
-						KClosure(
+						*NewKClosure(proc,
 		THE_EXECUTOR(composeo_continuation), 2);
 					// clos is now invalid
 					kclos[0] = stack[1];
@@ -272,7 +271,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				BYTECODE(k_closure):
 				{INTSEQPARAM(N,S);
 					KClosure& nclos =
-						*new(proc) KClosure(
+						*NewKClosure(proc,
 							THE_ARC_EXECUTOR(
 								arc_executor,
 								S),
@@ -299,7 +298,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					if(!nclos || !nclos->reusable()){
 						CLOSUREREF;
 						nclos =
-						new(proc) KClosure(
+						NewKClosure(proc,
 							THE_ARC_EXECUTOR(
 								arc_executor,
 								S),
@@ -308,7 +307,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 							clos.size());
 						//clos is now invalid
 					} else {
-						nclos->cd.reset(
+						nclos->codereset(
 							THE_ARC_EXECUTOR(
 								arc_executor,
 								S));
@@ -372,8 +371,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 						size_t saved_params =
 							params - 2;
 						KClosure& kclos =
-							*new(proc)
-							KClosure(
+							*NewKClosure(proc,
 			THE_EXECUTOR(reducto_continuation),
 			saved_params + 3
 							);
@@ -482,8 +480,8 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 		  (f k (fn (_ r) (k r))))
 		*/
 		EXECUTOR(ccc):
-		{	Closure* c = new(proc)
-				Closure(THE_EXECUTOR(ccc_helper), 1);
+		{	Closure* c =
+				NewClosure(proc, THE_EXECUTOR(ccc_helper), 1);
 			KClosure* k = dynamic_cast<KClosure*>(stack[1]);
 			if(k){
 				k->banreuse();
@@ -502,8 +500,9 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 		    (compile_helper k (%empty-bytecode-sequence) l))
 		*/
 		EXECUTOR(compile):
-		{	Closure* c = new(proc)
-				Closure(THE_EXECUTOR(compile_helper), 0);
+		{	Closure* c =
+				NewClosure(
+					proc, THE_EXECUTOR(compile_helper), 0);
 			stack[0] = c;
 			ArcBytecodeSequence* bseq = new(proc)
 				ArcBytecodeSequence();
@@ -596,7 +595,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 						/*check if params is null*/
 						if(stack[6]->istrue()){
 							/*IntSeq*/
-							Closure* clos = new(proc) Closure(THE_EXECUTOR(compile_intseq_bytecode), 6);
+							Closure* clos = NewClosure(proc, THE_EXECUTOR(compile_intseq_bytecode), 6);
 							// b is now invalid
 							for(int i = 0; i < 6; ++i){
 								(*clos)[i] = stack[i];
@@ -660,7 +659,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 						*/
 						stack[5] = params;
 						stack.pop();
-						Closure* clos = new(proc) Closure(THE_EXECUTOR(compile_seq_bytecode), 5);
+						Closure* clos = NewClosure(proc, THE_EXECUTOR(compile_seq_bytecode), 5);
 						// b is no invalid
 						for(int i = 0; i < 5; ++i){
 							(*clos)[i] = stack[i];
@@ -747,7 +746,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				b->seq;
 			Closure* nclos =
 				// might invalidate b
-				new(proc) Closure(
+				NewClosure(proc,
 					THE_ARC_EXECUTOR(arc_executor, pb),
 					0);
 			// b is now invalid
@@ -800,8 +799,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					reduce memory allocation.
 					*/
 					KClosure& nclos =
-						*new(proc)
-						KClosure(
+						*NewKClosure(proc,
 			THE_EXECUTOR(reducto_continuation),
 			// save only necessary
 			clos.size() - NN + 3
@@ -849,7 +847,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 		  ...)
 		*/
 		EXECUTOR(spawn):
-		{	Closure* hclos = new(proc) Closure(
+		{	Closure* hclos = NewClosure(proc,
 					THE_EXECUTOR(spawn_helper),
 					1);
 			(*hclos)[0] = stack[2];
@@ -878,7 +876,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 		{CLOSUREREF;
 			stack[0] = clos[0];
 			Closure* nclos =
-				new(proc) Closure(
+				NewClosure(proc,
 					THE_EXECUTOR(halting_continuation),
 					0);
 			//clos is now invalid
@@ -897,7 +895,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				proc.to_new_semispace(gp);
 			// gp is now within ns
 			stack[3] = new(proc) SemispacePackage(ns,gp);
-			stack[0] = new(proc) Closure(
+			stack[0] = NewClosure(proc,
 					THE_EXECUTOR(send_actual),
 					0);
 		} /*** FALL THROUGH! ***/
@@ -936,8 +934,8 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				boost::shared_ptr<Executor> >::iterator i =
 				biftb.find(&s->atom());
 			if(i != biftb.end()){
-				stack.top() = new(proc)
-					Closure(i->second,0);
+				stack.top() =
+					NewClosure(proc, i->second, 0);
 				// s is now invalid
 			} else {
 				stack.top() = proc.nilobj();

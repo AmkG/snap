@@ -84,6 +84,10 @@ Closure::Closure(boost::shared_ptr<Executor> c)
 KClosure::KClosure(boost::shared_ptr<Executor> c)
 	: Closure(c), nonreusable(0) {}
 
+void KClosure::codereset(Executor* ncd){
+	cd.reset(ncd);
+}
+
 ArcBytecodeSequence::ArcBytecodeSequence()
 	: Generic(), seq(new BytecodeSequence()) {}
 
