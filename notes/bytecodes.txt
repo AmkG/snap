@@ -281,6 +281,9 @@ sv-set
 (sym 'S)
 	(stack!push (sym S))
 
+symeval
+	(= stack!top (symeval stack!top))
+
 tag
 	(givens R (stack!pop)
 	        T (stack!pop)

@@ -242,6 +242,8 @@
               (w/local-push (car ast!subx) 'sv-ref)
             %sharedvar-write
               (direct-compile ast!subx 'sv-set)
+            %symeval
+              (direct-compile ast!subx 'symeval)
             ; default primitive
               (do (prn "----unsupported primitive")
                   (ppr-sexp:source ast)
