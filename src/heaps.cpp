@@ -46,13 +46,16 @@ void Semispace::resize(size_t nsize){
 	max = nsize;
 }
 
-/*potentially unsafe; if something in this ctor
-throws an exception, then the malloc'ed mem might
-not be properly freed.  Maybe use a scoped_ptr
-or other smart pointer for mem instead?
-*/
-Semispace::Semispace(size_t sz) : prev_alloc(0), max(sz), mem(malloc(sz)){
-	allocpt = mem;
+Semispace::Semispace(size_t sz) : prev_alloc(0), max(sz){
+	mem = 0;
+	try{
+		mem = malloc(sz);
+		if(!mem) throw std::bad_alloc();
+		allocpt = mem;
+	} catch(...){
+		if(mem) free(mem);
+		throw;
+	}
 }
 
 Semispace::~Semispace(){
