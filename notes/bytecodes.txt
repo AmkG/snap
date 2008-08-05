@@ -123,6 +123,16 @@ cdr
 (closure-ref N)
 	(stack!push (stack.0 N))
 
+composeo
+	(withs (clos stack.0
+	        f    clos.0
+	        g    clos.1
+	        ps   (map stack (range 2 (len stack))))
+	  (apply g (fn (r) (f stack.1 r))
+	    ps))
+	; similar to reducto, this bytecode implements higher-order
+	; functions
+
 cons
 	(withs (d (stack!pop)
 	        a (stack!pop))
@@ -145,6 +155,10 @@ continue
 	; the intent is that for a nested continuation to
 	; finally continue to the enclosed continuation
 	; (i.e. for a 'do form to finally continue)
+	;
+	; NOTE.  This bytecode will attempt to free the
+	; current closure if it is a reusable continuation
+	; closure.
 
 (global 'S)
 	(eval S)
@@ -188,11 +202,20 @@ halt
 	(stack!push (coerce N 'int))
 
 (k-closure N . seq)
-	(let params (rev:map [stack!pop] (range 1N))
+	(let params (rev:map [stack!pop] (range 1 N))
           (stack!push (create-k-closure (compile-seq seq) params)))
 	; creates a closure object that is identified as a
 	; potentially reusable continuation closure;
 	; otherwise similar to closure
+
+(k-closure-recreate N . seq)
+	; highly similar to k-closure above, except that if the
+	; current closure (stack[0]) is itself a continuation closure
+	; that is still reusable, it will be freed before a new
+	; k-closure is created.
+	(let params (rev:map [stack!pop] (range 1 N))
+	  (= stack.0 nil) ; current closure is potentially freed!
+          (stack!push (create-k-closure (compile-seq seq) params)))
 
 (k-closure-reuse N . seq)
 	(let params (rev:map [stack!pop] (range 1N))

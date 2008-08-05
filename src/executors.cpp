@@ -57,6 +57,14 @@ public:
 	}
 };
 
+/*attempts to*/
+static void attempt_kclos_dealloc(Heap& hp, Generic* gp) {
+	KClosure* kp = dynamic_cast<KClosure*>(gp);
+	if(kp == NULL) return;
+	if(!kp->reusable()) return;
+	hp.lifo().normal_dealloc(gp);
+}
+
 ProcessStatus execute(Process& proc, size_t reductions, bool init){
 	/*REMINDER
 	All allocations of Generic objects on the
@@ -221,6 +229,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					Generic* gp = stack.top();
 					stack.top() = clos[N];
 					stack.push(gp);
+					attempt_kclos_dealloc(proc, stack[0]);
 					stack.restack(2);
 				} /***/ NEXT_EXECUTOR; /***/
 				BYTECODE(global):
@@ -269,6 +278,7 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					bytecode_int(proc, stack, N);
 				} NEXT_BYTECODE;
 				BYTECODE(k_closure):
+				k_closure_perform_create:
 				{INTSEQPARAM(N,S);
 					KClosure& nclos =
 						*NewKClosure(proc,
@@ -282,6 +292,11 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 					}
 					stack.push(&nclos);
 				} NEXT_BYTECODE;
+				BYTECODE(k_closure_recreate):
+					attempt_kclos_dealloc(proc, stack[0]);
+					/*put a random object in stack[0]*/
+					stack[0] = stack[1];
+				/****/ goto k_closure_perform_create; /****/
 				/*attempts to reuse the current
 				continuation closure.  Falls back
 				to allocating a new KClosure if
@@ -779,6 +794,8 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				stack.push(clos[1]);
 				stack.push(stack[1]);
 				stack.push(clos[N]);
+				attempt_kclos_dealloc(proc, stack[0]);
+				//clos is now invalid
 				stack.restack(4);
 			} else {
 				/*dynamic_cast because it is possible for
@@ -843,6 +860,8 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 			stack.push(clos[1]);
 			stack.push(clos[0]);
 			stack.push(stack[1]);
+			attempt_kclos_dealloc(proc, stack[0]);
+			// clos is now invalid
 			stack.restack(3);
 		} NEXT_EXECUTOR;
 		/*
@@ -994,6 +1013,7 @@ initialize:
 		("if-local",		THE_BYTECODE_LABEL(if_local))
 		("int",			THE_BYTECODE_LABEL(b_int))
 		("k-closure",		THE_BYTECODE_LABEL(k_closure))
+		("k-closure-recreate",	THE_BYTECODE_LABEL(k_closure_recreate))
 		("k-closure-reuse",	THE_BYTECODE_LABEL(k_closure_reuse))
 		("lit-nil",		THE_BYTECODE_LABEL(lit_nil))
 		("lit-t",		THE_BYTECODE_LABEL(lit_t))
