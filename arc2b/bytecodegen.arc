@@ -10,7 +10,9 @@
                    (and (aref s-var) (is 0 (env s-var!var))))))
           is-closure-ref-0
           (fn (ast)
-            (and (aprim ast) (is ast!op '%closure-ref) (is ((cadr ast!subx) 'val) 0)))
+            (and (aprim ast)
+                 (is ast!op '%closure-ref)
+                 (is ((cadr ast!subx) 'val) 0)))
           is-cont-type
           (fn (asts)
             (if (is (len asts) 2)
@@ -51,7 +53,8 @@
               (is-closure-ref-self param)
                  ; closure values in arc2c are numbered from 1->N, but
                  ; in snap are numbered 0->N-1
-                 `( (,(sym:string op '-clos-push) ,(- ((cadr param!subx) 'val) 1)))
+                 `( (,(sym:string op '-clos-push)
+                     ,(- ((cadr param!subx) 'val) 1)))
               ; else
                  `( ,@(bytecodegen param env)
                     ,op)))
@@ -127,16 +130,6 @@
               ; ignore f: the base system will handle this for us
               (if (is-closure-ref-0 f)
                   (if
-                    ; check if continuation-type (first param is ref
-                    ; to local[1], and two params (continuation and
-                    ; return-value) only)
-                    (is-cont-type params)
-                      ; now check if return value is a variable reference
-                      (let (k rv) params
-                        (if (and (aref rv) (~aglobal rv!var))
-                            `( (continue-local ,(env rv!var)))
-                            `( ,@(bytecodegen rv env)
-                               continue)))
                     ; check if continuation-type where continuation is a
                     ; closure-ref (first param is ref to self[N], and two
                     ; params only)
@@ -147,12 +140,10 @@
                            ; snap does not, so convert closure.N to
                            ; (closure (- N 1))
                            (continue-on-clos ,(- ((cadr k!subx) 'val) 1))))
-                    ; check if current function is a continuation,
+                    ; check if current function is a continuation and
                     ; if we need to create a continuation for this
-                    ; call, and if we can reuse this continuation's
-                    ; closure structure
-                    (and cont-clos (is-continuation:cadr params)
-                         (>= cont-clos (- (len ((cadr params) 'subx)) 1)))
+                    ; call
+                    (and cont-clos (is-continuation:cadr params))
                       (withs ((f k . params) params
                               ; k-fn = the lambda for the continuation
                               ; k-closed = the closed variables of the
@@ -162,12 +153,26 @@
                            (local 0) ; placeholder for k
                            ,@(mappend [bytecodegen _ env] params)
                            ,@(mappend [bytecodegen _ env] k-closed)
-                           (k-closure-reuse ,(len k-closed)
+                           (,(if (>= cont-clos
+                                     (- (len k!subx) 1))
+                               'k-closure-reuse
+                               'k-closure-recreate)
+                             ,(len k-closed)
                              ,@(bytecodegen
                                  (car k-fn!subx)
                                  (f-environment k-fn!params)
-                                 cont-clos))
+                                 (max cont-clos (len k-closed))))
                            (apply-invert-k ,(+ 2 (len params)))))
+                    ; check if return-type call (first param is ref
+                    ; to local[1], and two params (continuation and
+                    ; return-value) only)
+                    (is-cont-type params)
+                      ; now check if return value is a variable reference
+                      (let (k rv) params
+                        (if (and (aref rv) (~aglobal rv!var))
+                            `( (continue-local ,(env rv!var)))
+                            `( ,@(bytecodegen rv env)
+                               continue)))
                     ; ordinary apply
                        ; NOTE! assumes that subexpressions here cannot
                        ; be 'let forms
