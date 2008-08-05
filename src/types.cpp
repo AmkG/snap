@@ -231,9 +231,9 @@ public:
 /*constructs a Closure of the given size with the given Executor
 The constructed Closure may be any of the above implementations.
 */
-template<typename C>
+template<typename C, typename A>
 static C* NewClosureImpl(
-		Heap& hp, boost::shared_ptr<Executor> c, size_t sz) {
+		A hp, boost::shared_ptr<Executor> c, size_t sz) {
 	switch(sz){
 	/*Use statically-determined sizes as much as possible*/
 	case 0:	return new(hp) EmptyClosure<C>(c);
@@ -253,16 +253,13 @@ Closure* NewClosure(Heap& hp, Executor* c, size_t sz) {
 	return NewClosure(hp, boost::shared_ptr<Executor>(c), sz);
 }
 Closure* NewClosure(Heap& hp, boost::shared_ptr<Executor> c, size_t sz) {
-	return NewClosureImpl<Closure>(hp, c, sz);
+	return NewClosureImpl<Closure,Heap&>(hp, c, sz);
 }
-/*TODO: make these allocate in the LIFO allocation structure, when that
-is implemented
-*/
 KClosure* NewKClosure(Heap& hp, Executor* c, size_t sz) {
 	return NewKClosure(hp, boost::shared_ptr<Executor>(c), sz);
 }
 KClosure* NewKClosure(Heap& hp, boost::shared_ptr<Executor> c, size_t sz) {
-	return NewClosureImpl<KClosure>(hp, c, sz);
+	return NewClosureImpl<KClosure,LifoHeap>(hp.lifo(), c, sz);
 }
 
 /*DEBUG CODE*/

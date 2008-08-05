@@ -4,7 +4,7 @@
 #include<cstring>
 
 /*-----------------------------------------------------------------------------
-Semispaces
+Semispace
 -----------------------------------------------------------------------------*/
 
 static ptrdiff_t moveallreferences(void* mem, void* allocpt, void* nmem){
@@ -125,18 +125,72 @@ std::pair<boost::shared_ptr<Semispace>, Generic* >
 }
 
 /*-----------------------------------------------------------------------------
-Heaps
+LifoSemispace
+-----------------------------------------------------------------------------*/
+
+LifoSemispace::LifoSemispace(size_t sz) {
+	mem = 0;
+	try{
+		mem = malloc(sz);
+		if(mem == NULL) throw std::bad_alloc();
+		allocpt = end = ((char*) mem) + sz;
+		prevalloc = 0;
+	}catch(...){
+		if(mem) free(mem);
+		throw;
+	}
+}
+
+LifoSemispace::~LifoSemispace(){
+	while(allocpt < end){
+		normal_dealloc((Generic*) allocpt);
+	}
+	free(mem);
+}
+
+void* LifoSemispace::alloc(size_t sz){
+	/*assertion; shouldn't trigger*/
+	if(!can_fit(sz)) throw std::bad_alloc();
+	allocpt = ((char*)allocpt) - sz;
+	prevalloc = sz;
+	return allocpt;
+}
+
+/*this should only get called on a failed construction*/
+void LifoSemispace::dealloc(void* pt){
+	if(pt != allocpt) throw std::bad_alloc();
+	allocpt = ((char*)allocpt) + prevalloc;
+	prevalloc = 0;
+}
+
+/*this should get called after the object is fully constructed*/
+void LifoSemispace::normal_dealloc(Generic* pt){
+	if(pt != allocpt) return; // do nothing if we can't trivially pop off
+	/*get the size of the object*/
+	size_t sz = pt->get_size();
+	/*destroy*/
+	pt->~Generic();
+	allocpt = ((char*)allocpt) + sz;
+}
+
+bool LifoSemispace::can_fit(size_t sz) const {
+	return (((char*)allocpt) - sz) >= (char*)mem;
+}
+
+/*-----------------------------------------------------------------------------
+Heap
 -----------------------------------------------------------------------------*/
 
 /*preconditions:
 other_spaces must be locked!
 */
 size_t Heap::get_total_heap_size(void) const{
-	size_t sz = s->size();
+	size_t sz = s->used();
 	std::vector<boost::shared_ptr<Semispace> >::const_iterator i;
 	for(i = other_spaces.begin(); i != other_spaces.end(); ++i){
-		sz += (*i)->size();
+		sz += (*i)->used();
 	}
+	sz += ls->used();
 	return sz;
 }
 
@@ -161,13 +215,18 @@ static void copy_set(std::stack<Generic**>& tocopy,
 }
 
 /*explicit recursion copy*/
-void Heap::GC(size_t insurance){
+void Heap::GC(size_t insurance, bool from_lifo){
 	/*insert mutex locking of other_spaces here*/
 
-	size_t sz = get_total_heap_size() + insurance;
+	/*calculate sizes*/
+	size_t sz = get_total_heap_size();
+	size_t lsz = ls->size();
+	if(from_lifo)	lsz += insurance * 2;
+	else		sz += insurance;
 	if(tight){ sz = sz * 2;}
 
 	boost::scoped_ptr<Semispace> ns(new Semispace(sz));
+	boost::scoped_ptr<LifoSemispace> nls(new LifoSemispace(lsz));
 	ToPointerLock toptrs;
 	std::stack<Generic**> tocopy;
 
@@ -175,13 +234,15 @@ void Heap::GC(size_t insurance){
 	copy_set(tocopy, toptrs, *ns);
 
 	s.swap(ns); //shouldn't throw
+	ls.swap(nls);
 	/*successful GC, don't bother clearing*/
 	toptrs.good();
 	other_spaces.clear();
 	ns.reset();
 
 	/*determine if resizing necessary*/
-	size_t used = s->used() + insurance;
+	size_t used = s->used();
+	if(!from_lifo) used += insurance;
 	tight = 0;
 	if(used <= sz / 4){
 		s->resize(sz / 2);
@@ -201,6 +262,19 @@ void* Heap::alloc(size_t sz){
 }
 void Heap::dealloc(void* check){
 	s->dealloc(check);
+}
+
+void* Heap::lifo_alloc(size_t sz){
+	if(!ls->can_fit(sz)){
+		GC(sz, 1);
+	}
+	return ls->alloc(sz);
+}
+void Heap::lifo_dealloc(void* check){
+	ls->dealloc(check);
+}
+void Heap::lifo_normal_dealloc(Generic* gp){
+	ls->normal_dealloc(gp);
 }
 
 boost::shared_ptr<Semispace> Heap::to_new_semispace(Generic*& gp) const {
