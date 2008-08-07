@@ -57,7 +57,9 @@ public:
 	}
 };
 
-/*attempts to*/
+/*attempts to deallocate the specified object if it's a reusable
+continuation closure
+*/
 static void attempt_kclos_dealloc(Heap& hp, Generic* gp) {
 	KClosure* kp = dynamic_cast<KClosure*>(gp);
 	if(kp == NULL) return;
@@ -111,6 +113,16 @@ ProcessStatus execute(Process& proc, size_t reductions, bool init){
 				{INTPARAM(N);
 					Generic* k = stack.top(); stack.pop();
 					stack.top(N-1) = k;
+					stack.restack(N);
+				} /***/ NEXT_EXECUTOR; /***/
+				/*Used by a continuation that will
+				perform an otherwise ordinary call;
+				this tries to release the current
+				closure if possible
+				*/
+				BYTECODE(apply_k_release):
+				{INTPARAM(N);
+					attempt_kclos_dealloc(proc, stack[0]);
 					stack.restack(N);
 				} /***/ NEXT_EXECUTOR; /***/
 				BYTECODE(apply_list):
@@ -989,6 +1001,7 @@ initialize:
 	/*bytecodes*/
 		("apply",		THE_BYTECODE_LABEL(apply))
 		("apply-invert-k",	THE_BYTECODE_LABEL(apply_invert_k))
+		("apply-k-release",	THE_BYTECODE_LABEL(apply_k_release))
 		("apply-list",		THE_BYTECODE_LABEL(apply_list))
 		("car",			THE_BYTECODE_LABEL(car))
 		("car-local-push",	THE_BYTECODE_LABEL(car_local_push))

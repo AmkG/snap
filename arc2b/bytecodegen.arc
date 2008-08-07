@@ -151,7 +151,7 @@
                               (k-fn . k-closed) k!subx)
                         `( ,@(bytecodegen f env)
                            (local 0) ; placeholder for k
-                           ,@(mappend [bytecodegen _ env] params)
+                           ,@(apply-pushall params)
                            ,@(mappend [bytecodegen _ env] k-closed)
                            (,(if (>= cont-clos
                                      (- (len k!subx) 1))
@@ -163,6 +163,12 @@
                                  (f-environment k-fn!params)
                                  (max cont-clos (len k-closed))))
                            (apply-invert-k ,(+ 2 (len params)))))
+                    ; check if continuation anyway - continuations
+                    ; that don't reuse or recreate their closures
+                    ; should use apply-k-release
+                    cont-clos
+                      `( ,@(apply-pushall params)
+                         (apply-k-release ,(len params)))
                     ; check if return-type call (first param is ref
                     ; to local[1], and two params (continuation and
                     ; return-value) only)

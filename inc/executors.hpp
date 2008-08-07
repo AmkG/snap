@@ -76,6 +76,7 @@ DECLARE_BYTECODES
 	A_BYTECODE(apply)
 	A_BYTECODE(apply_invert_k)
 	A_BYTECODE(apply_list)
+	A_BYTECODE(apply_k_release)
 	A_BYTECODE(car)
 	A_BYTECODE(car_local_push)
 	A_BYTECODE(car_clos_push)

@@ -76,6 +76,14 @@ Bytecodes:
 	; other parameters are calculated, so the real
 	; continuation must be pushed after the parameters
 
+(apply-k-release N)
+	(let (fn . params)
+	     (rev:map [stack!pop] (range 1 N))
+	  (try-free stack.0)
+	  (apply fn params))
+	; similar to apply, but attempts to free the current
+	; closure if it's a reusable continuation closure.
+
 apply-list
 	(withs (l (stack!pop)
 	        k (stack!pop)
