@@ -107,21 +107,5 @@ public:
 		boost::shared_ptr<Semispace>, Generic*);
 };
 
-/*handles all the i/o in the system*/
-/*intended to be Singleton (using informal Singleton pattern)*/
-/*NOTE!  Please instantiate this object only once*/
-class AsyncPortSet;
-class AsyncPort;
-class CentralIOProcess : public ProcessBase {
-private:
-	boost::scoped_ptr<AsyncPortSet> ports;
-	std::map<boost::shared_ptr<AsyncPort>,
-		boost::shared_ptr<ProcessBase> > polling_set;
-	unsigned int state;
-public:
-	bool receive(boost::shared_ptr<Semispace>, Generic*);
-	ProcessStatus run(void);
-};
-
 #endif //PROCESS_H
 
