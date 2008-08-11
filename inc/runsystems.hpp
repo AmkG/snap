@@ -3,9 +3,10 @@
 
 #include<boost/shared_ptr.hpp>
 
-class ProcessHandle;
 class Runsystem;
 Runsystem* NewRunsystem(void);
+
+class ProcessHandle;
 
 class Runsystem {
 public:
@@ -14,6 +15,10 @@ public:
 	//runs all scheduled processes, then returns when all
 	//have completed
 	virtual void run(void) =0;
+	//determines if only one process is currently running
+	//if called from the currently running process,
+	//determines if that process is unique.
+	virtual bool singleprocess(void) const =0;
 	virtual ~Runsystem(){}
 };
 

@@ -28,6 +28,9 @@ public:
 			Q.pop();
 		}
 	}
+	virtual bool singleprocess(void) const {
+		return Q.size() == 1;
+	}
 	virtual ~SingleWorkerRunsystem(){}
 };
 
