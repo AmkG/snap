@@ -274,8 +274,10 @@ public:
 
 class Heap;
 class Executor;
+
 class Closure;
 class KClosure;
+/*Factory functions for closures*/
 Closure* NewClosure(Heap&, Executor*, size_t);
 Closure* NewClosure(Heap&, boost::shared_ptr<Executor>, size_t);
 KClosure* NewKClosure(Heap&, Executor*, size_t);
@@ -306,6 +308,8 @@ public:
 	arc2c references closure values starting at index 1 (index 0
 	is the function's code itself, and is never used in practice).
 	We will have to translate the numbers properly for those cases
+	NOTE: this translation is done in the compiler, specifically
+	arc2b/bytecodegen.arc
 	*/
 	virtual Generic* & operator[](int) =0;
 	virtual Generic* const & operator[](int) const =0;
