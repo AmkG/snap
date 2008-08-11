@@ -2,10 +2,12 @@
 #include"variables.hpp"
 #include"atoms.hpp"
 #include"runsystems.hpp"
+#include"ioprocesses.hpp"
 
 void variables_init(void){
 	globals.reset(new Globals());
 	runsystem.reset(NewRunsystem());
+	centralio.reset(new ProcessHandle(NewCentralIOProcess()));
 	NILATOM = globals->lookup("nil");
 	TATOM = globals->lookup("t");
 	CONSATOM = globals->lookup("cons");

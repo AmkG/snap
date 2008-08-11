@@ -18,6 +18,7 @@
 class Atom;
 class Globals;
 class Runsystem;
+class ProcessHandle;
 
 /*These are constant after initialization*/
 EXTERN boost::shared_ptr<Atom> NILATOM;		//'nil
@@ -37,6 +38,7 @@ EXTERN boost::shared_ptr<Atom> EOLATOM;		//'eol
 /*Should really be Singleton but let's not bother with that*/
 EXTERN boost::scoped_ptr<Globals> globals;
 EXTERN boost::scoped_ptr<Runsystem> runsystem;
+EXTERN boost::scoped_ptr<ProcessHandle> centralio;
 
 void variables_init(void);
 
