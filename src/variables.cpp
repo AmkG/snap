@@ -22,5 +22,7 @@ void variables_init(void){
 	READ1ATOM = globals->lookup("read1");
 	ERRATOM = globals->lookup("err");
 	EOLATOM = globals->lookup("eol");
+	INPUTATOM = globals->lookup("input");
+	OUTPUTATOM = globals->lookup("output");
 }
 

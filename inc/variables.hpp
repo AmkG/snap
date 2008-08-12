@@ -34,6 +34,8 @@ EXTERN boost::shared_ptr<Atom> WRITEATOM;	//'write
 EXTERN boost::shared_ptr<Atom> READ1ATOM;	//'read1
 EXTERN boost::shared_ptr<Atom> ERRATOM;		//'err
 EXTERN boost::shared_ptr<Atom> EOLATOM;		//'eol
+EXTERN boost::shared_ptr<Atom> INPUTATOM;	//'input
+EXTERN boost::shared_ptr<Atom> OUTPUTATOM;	//'output
 
 /*Should really be Singleton but let's not bother with that*/
 EXTERN boost::scoped_ptr<Globals> globals;
