@@ -40,7 +40,7 @@ EXTERN boost::shared_ptr<Atom> OUTPUTATOM;	//'output
 /*Should really be Singleton but let's not bother with that*/
 EXTERN boost::scoped_ptr<Globals> globals;
 EXTERN boost::scoped_ptr<Runsystem> runsystem;
-EXTERN boost::scoped_ptr<ProcessHandle> centralio;
+EXTERN boost::shared_ptr<ProcessHandle> centralio;
 
 void variables_init(void);
 
