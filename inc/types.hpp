@@ -264,10 +264,10 @@ public:
 	virtual Generic* car(void);
 	virtual Generic* cdr(void);
 
+	/*new stuff*/
 	Sym(boost::shared_ptr<Atom> const& na) : Generic(), a(na){};
 	virtual ~Sym(){};
 
-	/*new stuff*/
 	Atom& atom(void){return *a;};
 	boost::shared_ptr<Atom> a;
 };
@@ -387,6 +387,8 @@ public:
 	int val;
 	int integer(void){return val;}
 	Integer(int x) : Generic(), val(x) {}
+
+	virtual ~Integer(){}
 };
 
 class BytecodeSequence;
@@ -418,6 +420,8 @@ public:
 	void append(Bytecode* b);
 	boost::shared_ptr<BytecodeSequence> seq;
 	ArcBytecodeSequence(void);
+
+	virtual ~ArcBytecodeSequence(){}
 };
 
 /*created by 'annotate*/
@@ -456,6 +460,8 @@ public:
 	Generic* type_o;
 	Generic* rep_o;
 	Tagged(void) : Generic() {}
+
+	virtual ~Tagged(){}
 };
 
 class SharedVar : public Generic {
@@ -479,6 +485,8 @@ public:
 	/*new stuff*/
 	Generic* val;
 	SharedVar(void) : Generic() {}
+
+	virtual ~SharedVar(){}
 };
 
 class ProcessHandle;
@@ -510,6 +518,8 @@ public:
 	boost::shared_ptr<ProcessHandle> hproc;
 	Pid(boost::shared_ptr<ProcessHandle> p)
 		: Generic(), hproc(p) {}
+
+	virtual ~Pid(){}
 };
 
 class BinaryBlob : public Generic{
@@ -555,6 +565,8 @@ public:
 	unsigned char const& operator[](size_t i) const{
 		return (*pdat)[i];
 	}
+
+	virtual ~BinaryBlob(){}
 };
 
 /*object that conceptually contains an object that may be
@@ -579,6 +591,68 @@ public:
 	Generic* gp; //NOTE!  Should point within the attached semispace
 	SemispacePackage(boost::shared_ptr<Semispace> nns, Generic* ngp)
 		: Generic(), ns(nns), gp(ngp) {}
+
+	virtual ~SemispacePackage(){}
+};
+
+/*Opaque datatype to be used internally by
+central I/O process
+*/
+class PortData;
+
+class Input : public Generic {
+protected:
+	Input(Input const & o)
+		: Generic(), impl(o.impl) {}
+public:
+	virtual size_t hash(void) const {
+		return (size_t) impl.get();
+	}
+	GENERIC_STANDARD_DEFINITIONS(Input)
+	virtual boost::shared_ptr<Atom> type_atom(void) const {
+		return INPUTATOM;
+	};
+	virtual void probe(size_t);
+
+	/*overrideable stuff*/
+	virtual bool is(Generic const* gp){
+		if(gp == this) return 1;
+		Input* ip = dynamic_cast<Input*>(gp);
+		if(ip == NULL) return 0;
+		return ip->impl == impl;
+	}
+
+	/*new stuff*/
+	boost::shared_ptr<PortData> impl;
+	virtual ~Input(){}
+};
+
+class Output : public Generic {
+protected:
+	Output(Output const & o)
+		: Generic(), impl(o.impl) {}
+public:
+	virtual size_t hash(void) const {
+		return (size_t) impl.get();
+	}
+	GENERIC_STANDARD_DEFINITIONS(Output)
+	virtual boost::shared_ptr<Atom> type_atom(void) const {
+		return OUTPUTATOM;
+	}
+	virtual void probe(size_t);
+
+	/*overrideable stuff*/
+	virtual bool is(Generic const* gp){
+		if(gp == this) return 1;
+		Output* op = dynamic_cast<Output*>(gp);
+		if(op == NULL) return 0;
+		return op->impl == impl;
+	}
+
+	/*new stuff*/
+	boost::shared_ptr<PortData> impl;
+	virtual ~Output(){}
+
 };
 
 #endif //TYPES_H
