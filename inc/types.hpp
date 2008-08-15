@@ -143,11 +143,11 @@ public:
 
 	/*overridden stuff*/
 	/*comparisons*/
-	virtual bool iso(Generic*gp) const{
+	virtual bool iso(Generic const* gp) const{
 		if(is(gp)) {
 			return 1;
 		} else {
-			Cons* cp = dynamic_cast<Cons*>(gp);
+			Cons const* cp = dynamic_cast<Cons const*>(gp);
 			if(cp != NULL){
 				return a->iso(cp->a) && d->iso(cp->d);
 			} else return 0;
@@ -247,9 +247,9 @@ public:
 	virtual boost::shared_ptr<Atom> type_atom(void) const {return SYMATOM;};
 
 	/*overrideable stuff*/
-	virtual bool is(Generic* gp) const{
+	virtual bool is(Generic const* gp) const{
 		if(gp == this) return 1;
-		Sym* sp = dynamic_cast<Sym*>(gp);
+		Sym const* sp = dynamic_cast<Sym const*>(gp);
 		if(sp != NULL){
 			return sp->a == a;
 		} else return 0;
@@ -507,9 +507,9 @@ public:
 	};
 
 	/*overridable stuff*/
-	virtual bool is(Generic* o) const {
+	virtual bool is(Generic const* o) const {
 		if(o == this) return 1;
-		Pid* po = dynamic_cast<Pid*>(o);
+		Pid const* po = dynamic_cast<Pid const*>(o);
 		if(po == NULL) return 0;
 		return po->hproc == hproc;
 	}
@@ -615,9 +615,9 @@ public:
 	virtual void probe(size_t);
 
 	/*overrideable stuff*/
-	virtual bool is(Generic const* gp){
+	virtual bool is(Generic const* gp) const {
 		if(gp == this) return 1;
-		Input* ip = dynamic_cast<Input*>(gp);
+		Input const* ip = dynamic_cast<Input const*>(gp);
 		if(ip == NULL) return 0;
 		return ip->impl == impl;
 	}
@@ -642,9 +642,9 @@ public:
 	virtual void probe(size_t);
 
 	/*overrideable stuff*/
-	virtual bool is(Generic const* gp){
+	virtual bool is(Generic const* gp) const {
 		if(gp == this) return 1;
-		Output* op = dynamic_cast<Output*>(gp);
+		Output const* op = dynamic_cast<Output const*>(gp);
 		if(op == NULL) return 0;
 		return op->impl == impl;
 	}
