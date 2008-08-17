@@ -4,13 +4,15 @@
 #include<boost/scoped_ptr.hpp>
 #include<vector>
 #include<utility>
-#include<set>
+#include<stack>
 
 #include"processes.hpp"
 
 class PortData; /*abstract port data class*/
 
 class CentralIOToDo;
+
+class IOAction; /*TODO: design this class!*/
 
 /*abstract base*/
 class CentralIO {
@@ -43,12 +45,14 @@ private:
 	bool waiting;
 
 	typedef std::pair<boost::shared_ptr<Semispace>, Generic* > message;
+	typedef std::pair<boost::shared_ptr<ProcessHandle>, message> response;
 
 	/*received queue*/
 	std::vector<message> rcv_queue;//protect with lock
 	/*to-do list*/
-	std::set<IOAction> todo;
+	std::vector<IOAction> todo;
 	/*for commission*/
+	std::vector<response> snd_queue;
 public:
 	virtual bool receive(boost::shared_ptr<Semispace>, Generic*);
 	virtual ProcessStatus run(void);
@@ -66,6 +70,8 @@ private:
 	CentralIOProcess* proc;
 public:
 	explicit CentralIOToDo(CentralIOProcess* p) : proc(p){}
+	IOAction get(void);
+	void respond(IOAction);
 };
 
 #endif //IOPROCESSES_H

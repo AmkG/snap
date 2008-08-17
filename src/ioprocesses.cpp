@@ -6,7 +6,7 @@
 bool CentralIOProcess::receive(
 		boost::shared_ptr<Semispace> sp, Generic* gp) {
 	/*insert trylock here, if trylock fails, return false*/
-	rcv_queue.push_back(message(sp, gp));
+	rcv_queue.push(message(sp, gp));
 	if(waiting) {
 		runsystem->schedule(handle->mypid());
 		waiting = 0;
@@ -15,8 +15,8 @@ bool CentralIOProcess::receive(
 
 /*
 1. parse each entry in the receive queue
-2. detect if we are the only process running.  If we are call
-   the CentralIO::wait(), otherwise just CentralIO::poll()
+2. detect if we are the only process running.  If we are, call
+   CentralIO::wait(), otherwise just CentralIO::poll()
    2.a. CentralIO should then create responses for requests
         that were processed (e.g. have data, or have some
         error event)
@@ -27,6 +27,41 @@ bool CentralIOProcess::receive(
    and return process_waiting
 */
 ProcessStatus CentralIOProcess::run(void) {
-
+	/*1*/
+	{/*insert trylock here*/
+		/*if (trylock.succeeded())*/ {
+			/*TODO: parse*/
+		}
+	}
+	/*2*/
+	if(runsystem->singleprocess()){
+		impl->wait(CentralIOToDo(this));
+	} else	impl->poll(CentralIOToDo(this));
+	/*3*/
+	/*try sending to each process*/
+	std::vector<response>::iterator i, to;
+	for( i = to = snd_queue.begin(); i != snd_queue.end(); ++i){
+		response& curr = *i;
+		message& msg = curr.second;
+		if(curr.first->pproc->receive(msg.first, msg.second)){
+			/*successful send; will get deleted, do nothing*/
+		} else {
+			/*unsucessful send; move*/
+			*to = *i;
+			++to;
+		}
+	}
+	snd_queue.erase(to, i);
+	/*4*/
+	/*check that todo and snd_queue are empty*/
+	if(todo.empty() && snd_queue.empty()) {
+		/*insert trylock, if trylock fails, return process_running*/
+		if(rcv_queue.empty()) {
+			/*now return process_waiting*/
+			waiting = 1;
+			return process_waiting;
+		}
+	}
+	return process_running;
 }
 
