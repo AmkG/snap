@@ -5,6 +5,7 @@
 #include<vector>
 #include<utility>
 #include<stack>
+#include<string>
 
 #include"processes.hpp"
 
@@ -12,7 +13,26 @@ class PortData; /*abstract port data class*/
 
 class CentralIOToDo;
 
-class IOAction; /*TODO: design this class!*/
+class IOAction {
+public:
+	enum ioactions {
+		ioaction_read,		/*read some bytes*/
+		ioaction_write,		/*write some bytes*/
+		ioaction_stdin,		/*get PortData for stdin*/
+		ioaction_stdout,	/*get PortData for stdout*/
+		ioaction_stderr,	/*get PortData for stderr*/
+		ioaction_open,		/*open a filesystem file*/
+		ioaction_close,		/*close a PortData*/
+		ioaction_server,	/*create a server at port*/
+		ioaction_listen,	/*listen on a server PortData*/
+		ioaction_sleep,		/*wait a particular amount of time*/
+		ioaction_system		/*start another OS process and wait*/
+	} action;
+	boost::shared_ptr<PortData> port;
+	boost::shared_ptr<std::vector<char> > data;
+	int num;
+	std::string str;
+};
 
 /*abstract base*/
 class CentralIO {
@@ -28,10 +48,10 @@ public:
 	done.
 	*/
 	virtual void wait(CentralIOToDo) =0;
-	/*gets various standard I/O ports*/
-	virtual boost::shared_ptr<PortData> get_stdin(void) =0;
-	virtual boost::shared_ptr<PortData> get_stdout(void) =0;
-	virtual boost::shared_ptr<PortData> get_stderr(void) =0;
+	/*determine if there are any pending request: returns
+	true if no pending requests
+	*/
+	virtual bool empty(void) =0;
 	virtual ~CentralIO();
 };
 
@@ -72,6 +92,7 @@ public:
 	explicit CentralIOToDo(CentralIOProcess* p) : proc(p){}
 	IOAction get(void);
 	void respond(IOAction);
+	void error(IOAction, std::string);
 };
 
 #endif //IOPROCESSES_H
