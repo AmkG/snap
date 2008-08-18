@@ -2,11 +2,13 @@
 */
 #include"ioprocesses.hpp"
 #include"variables.hpp"
+#include"phandles.hpp"
+#include"runsystems.hpp"
 
 bool CentralIOProcess::receive(
 		boost::shared_ptr<Semispace> sp, Generic* gp) {
 	/*insert trylock here, if trylock fails, return false*/
-	rcv_queue.push(message(sp, gp));
+	rcv_queue.push_back(message(sp, gp));
 	if(waiting) {
 		runsystem->schedule(handle->mypid());
 		waiting = 0;

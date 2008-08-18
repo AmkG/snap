@@ -33,7 +33,7 @@ public:
 	virtual boost::shared_ptr<PortData> get_stdout(void) =0;
 	virtual boost::shared_ptr<PortData> get_stderr(void) =0;
 	virtual ~CentralIO();
-}
+};
 
 CentralIO* NewCentralIO(void);
 
