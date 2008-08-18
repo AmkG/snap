@@ -57,6 +57,10 @@ public:
 
 CentralIO* NewCentralIO(void);
 
+class CentralIOProcess;
+
+CentralIOProcess* NewCentralIOProcess(void);
+
 /*PImpl*/
 class CentralIOProcess : public ProcessBase {
 private:
@@ -73,6 +77,10 @@ private:
 	std::vector<IOAction> todo;
 	/*for commission*/
 	std::vector<response> snd_queue;
+
+	/*ctor*/
+	CentralIOProcess() : waiting(1) {}
+
 public:
 	virtual bool receive(boost::shared_ptr<Semispace>, Generic*);
 	virtual ProcessStatus run(void);
@@ -81,9 +89,8 @@ public:
 	CentralIOProcess() : impl(NewCentralIO()), waiting(0) {}
 
 	friend class CentralIOToDo;
+	friend CentralIOProcess* NewCentralIOProcess(void);
 };
-
-CentralIOProcess* NewCentralIOProcess(void);
 
 class CentralIOToDo {
 private:

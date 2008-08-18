@@ -55,8 +55,8 @@ ProcessStatus CentralIOProcess::run(void) {
 	}
 	snd_queue.erase(to, i);
 	/*4*/
-	/*check that todo and snd_queue are empty*/
-	if(todo.empty() && snd_queue.empty()) {
+	/*check that everything is empty*/
+	if(impl->empty() && todo.empty() && snd_queue.empty()) {
 		/*insert trylock, if trylock fails, return process_running*/
 		if(rcv_queue.empty()) {
 			/*now return process_waiting*/
