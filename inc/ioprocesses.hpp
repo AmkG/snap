@@ -13,21 +13,23 @@ class PortData; /*abstract port data class*/
 
 class CentralIOToDo;
 
+enum IOActionType {
+	ioaction_read,		/*read some bytes*/
+	ioaction_write,		/*write some bytes*/
+	ioaction_stdin,		/*get PortData for stdin*/
+	ioaction_stdout,	/*get PortData for stdout*/
+	ioaction_stderr,	/*get PortData for stderr*/
+	ioaction_open,		/*open a filesystem file*/
+	ioaction_close,		/*close a PortData*/
+	ioaction_server,	/*create a server at port*/
+	ioaction_listen,	/*listen on a server PortData*/
+	ioaction_sleep,		/*wait a particular amount of time*/
+	ioaction_system		/*start another OS process and wait*/
+};
+
 class IOAction {
 public:
-	enum ioactions {
-		ioaction_read,		/*read some bytes*/
-		ioaction_write,		/*write some bytes*/
-		ioaction_stdin,		/*get PortData for stdin*/
-		ioaction_stdout,	/*get PortData for stdout*/
-		ioaction_stderr,	/*get PortData for stderr*/
-		ioaction_open,		/*open a filesystem file*/
-		ioaction_close,		/*close a PortData*/
-		ioaction_server,	/*create a server at port*/
-		ioaction_listen,	/*listen on a server PortData*/
-		ioaction_sleep,		/*wait a particular amount of time*/
-		ioaction_system		/*start another OS process and wait*/
-	} action;
+	IOActionType action;
 	boost::shared_ptr<PortData> port;
 	boost::shared_ptr<std::vector<char> > data;
 	int num;
@@ -97,6 +99,7 @@ private:
 	CentralIOProcess* proc;
 public:
 	explicit CentralIOToDo(CentralIOProcess* p) : proc(p){}
+	bool empty(void);
 	IOAction get(void);
 	void respond(IOAction);
 	void error(IOAction, std::string);
