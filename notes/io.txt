@@ -1,0 +1,46 @@
+
+The I/O subsystem is represented by its own process.
+This process accepts various I/O related commands.
+
+The central I/O process parses the commands and feeds
+them to another object, the central I/O object.  This
+central I/O object is dependent on the exact
+implementation.
+
+Arc-side I/O objects are really annotated PID's.
+The processes handled by the PID's themselves handle
+an opaque "basic" I/O object.  These opaque objects
+are passed to the central I/O process via message;
+the central I/O process itself does not know the
+format of the basic I/O object.  The format of the
+I/O objects is dependent on the central I/O object.
+
+The message sent to the central I/O process is a
+command of one of the following forms:
+
+('read tag pid portdata)
+	; reads from the I/O object
+	; response data is a 'binary object
+
+('write tag pid portdata data)
+	; writes data to the I/O object
+	; data is a 'binary object
+	; response data is a 'binary object containing the
+	; remaining data that was not yet written.
+
+('open tag pid file)
+	; opens a file on the filesystem
+	; file is a 'string
+	; response data is a portdata object
+
+Message replies can be either a 'response or a 'err
+response:
+
+('err ,tag e)
+	; specifies an error e occured
+
+('response ,tag data)
+	; specifies that the request succeeded.
+	; the exact format of data above depends on
+	; the command
+
