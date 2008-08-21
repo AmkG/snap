@@ -600,59 +600,28 @@ central I/O process
 */
 class PortData;
 
-class Input : public Generic {
+class ArcPortData : public Generic {
 protected:
-	Input(Input const & o)
+	ArcPortData(ArcPortData const & o)
 		: Generic(), impl(o.impl) {}
 public:
 	virtual size_t hash(void) const {
 		return (size_t) impl.get();
 	}
-	GENERIC_STANDARD_DEFINITIONS(Input)
-	virtual boost::shared_ptr<Atom> type_atom(void) const {
-		return INPUTATOM;
-	};
+	GENERIC_STANDARD_DEFINITIONS(ArcPortData)
 	virtual void probe(size_t);
 
 	/*overrideable stuff*/
 	virtual bool is(Generic const* gp) const {
 		if(gp == this) return 1;
-		Input const* ip = dynamic_cast<Input const*>(gp);
+		ArcPortData const* ip = dynamic_cast<ArcPortData const*>(gp);
 		if(ip == NULL) return 0;
 		return ip->impl == impl;
 	}
 
 	/*new stuff*/
 	boost::shared_ptr<PortData> impl;
-	virtual ~Input(){}
-};
-
-class Output : public Generic {
-protected:
-	Output(Output const & o)
-		: Generic(), impl(o.impl) {}
-public:
-	virtual size_t hash(void) const {
-		return (size_t) impl.get();
-	}
-	GENERIC_STANDARD_DEFINITIONS(Output)
-	virtual boost::shared_ptr<Atom> type_atom(void) const {
-		return OUTPUTATOM;
-	}
-	virtual void probe(size_t);
-
-	/*overrideable stuff*/
-	virtual bool is(Generic const* gp) const {
-		if(gp == this) return 1;
-		Output const* op = dynamic_cast<Output const*>(gp);
-		if(op == NULL) return 0;
-		return op->impl == impl;
-	}
-
-	/*new stuff*/
-	boost::shared_ptr<PortData> impl;
-	virtual ~Output(){}
-
+	virtual ~ArcPortData(){}
 };
 
 #endif //TYPES_H
