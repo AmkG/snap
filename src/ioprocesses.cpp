@@ -5,6 +5,10 @@
 #include"phandles.hpp"
 #include"runsystems.hpp"
 
+/*-----------------------------------------------------------------------------
+CentralIOProcess
+-----------------------------------------------------------------------------*/
+
 bool CentralIOProcess::receive(
 		boost::shared_ptr<Semispace> sp, Generic* gp) {
 	/*insert trylock here, if trylock fails, return false*/
@@ -66,4 +70,9 @@ ProcessStatus CentralIOProcess::run(void) {
 	}
 	return process_running;
 }
+
+/*-----------------------------------------------------------------------------
+CentralIOToDo
+-----------------------------------------------------------------------------*/
+
 

@@ -31,7 +31,7 @@ class IOAction {
 public:
 	IOActionType action;
 	boost::shared_ptr<PortData> port;
-	boost::shared_ptr<std::vector<char> > data;
+	boost::shared_ptr<std::vector<unsigned char> > data;
 	int num;
 	std::string str;
 };
@@ -54,7 +54,7 @@ public:
 	true if no pending requests
 	*/
 	virtual bool empty(void) =0;
-	virtual ~CentralIO();
+	virtual ~CentralIO(){}
 };
 
 CentralIO* NewCentralIO(void);
@@ -94,12 +94,15 @@ public:
 	friend CentralIOProcess* NewCentralIOProcess(void);
 };
 
+/*TODO: think of best way to do this*/
 class CentralIOToDo {
 private:
 	CentralIOProcess* proc;
 public:
 	explicit CentralIOToDo(CentralIOProcess* p) : proc(p){}
-	bool empty(void);
+	bool empty(void){
+		return proc->todo.empty();
+	}
 	IOAction get(void);
 	void respond(IOAction);
 	void error(IOAction, std::string);
