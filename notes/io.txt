@@ -43,6 +43,18 @@ command of one of the following forms:
 	;     32 - don't create if present
 	; response data is a portdata object
 
+('stdin tag pid)
+	; response data is a portdata object
+	; representing stdin
+
+('stdout tag pid)
+	; response data is a portdata object
+	; representing stdout
+
+('stderr tag pid)
+	; response data is a portdata object
+	; representing stderr
+
 Message replies can be either a 'response or a 'err
 response:
 
