@@ -21,16 +21,26 @@ command of one of the following forms:
 ('read tag pid portdata)
 	; reads from the I/O object
 	; response data is a 'binary object
+	; can respond with 'eof
 
 ('write tag pid portdata data)
 	; writes data to the I/O object
 	; data is a 'binary object
 	; response data is a 'binary object containing the
 	; remaining data that was not yet written.
+	; can respond with 'eof
 
-('open tag pid file)
+('open tag pid file dir)
 	; opens a file on the filesystem
 	; file is a 'string
+	; dir is an integer composed of the
+	;   bitwise or of the following:
+	;     1 - open for reading
+	;     2 - open for writing
+	;     4 - truncate if present
+	;     8 - create if absent
+	;     16 - set file pointer to end
+	;     32 - don't create if present
 	; response data is a portdata object
 
 Message replies can be either a 'response or a 'err
@@ -43,4 +53,11 @@ response:
 	; specifies that the request succeeded.
 	; the exact format of data above depends on
 	; the command
+
+Some requests also have:
+
+('eof ,tag)
+	; specifies that an end of file condition
+	; occured (i.e. EOF on terminal, or closed
+	; other end of pipe)
 
