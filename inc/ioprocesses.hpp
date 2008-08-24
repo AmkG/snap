@@ -28,12 +28,15 @@ enum IOActionType {
 };
 
 class IOAction {
+private:
+	boost::shared_ptr<ProcessHandle> requester;
 public:
 	IOActionType action;
 	boost::shared_ptr<PortData> port;
 	boost::shared_ptr<std::vector<unsigned char> > data;
 	int num;
 	std::string str;
+	friend class CentralIOToDo;
 };
 
 /*abstract base*/
@@ -81,14 +84,12 @@ private:
 	std::vector<response> snd_queue;
 
 	/*ctor*/
-	CentralIOProcess() : waiting(1) {}
+	CentralIOProcess() : impl(NewCentralIO()), waiting(1) {}
 
 public:
 	virtual bool receive(boost::shared_ptr<Semispace>, Generic*);
 	virtual ProcessStatus run(void);
 	virtual ~CentralIOProcess(){}
-
-	CentralIOProcess() : impl(NewCentralIO()), waiting(0) {}
 
 	friend class CentralIOToDo;
 	friend CentralIOProcess* NewCentralIOProcess(void);
@@ -103,9 +104,20 @@ public:
 	bool empty(void){
 		return proc->todo.empty();
 	}
-	IOAction get(void);
+	/*returns an IOAction.  Once an IOAction is released
+	using this, it is the responsibility of the CentralIO
+	object.
+	*/
+	IOAction get(void){
+		IOAction tmp = proc->todo.back();
+		proc->todo.pop_back();
+		return tmp;
+	}
+
+	/*responses to an IOAction*/
 	void respond(IOAction);
 	void error(IOAction, std::string);
+	void eof(IOAction);
 };
 
 #endif //IOPROCESSES_H
