@@ -620,6 +620,8 @@ public:
 	}
 
 	/*new stuff*/
+	ArcPortData(boost::shared_ptr<PortData> o)
+		: impl(o) {}
 	boost::shared_ptr<PortData> impl;
 	virtual ~ArcPortData(){}
 };
