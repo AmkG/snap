@@ -10,7 +10,10 @@
 static variables
 */
 
-boost::shared_ptr<Atom> responseatom;
+static boost::shared_ptr<Atom> responseatom;
+static boost::shared_ptr<Atom> ioatom;
+static boost::shared_ptr<Atom> erratom;
+static boost::shared_ptr<Atom> eofatom;
 
 /*-----------------------------------------------------------------------------
 CentralIOProcess
@@ -80,6 +83,9 @@ ProcessStatus CentralIOProcess::run(void) {
 
 CentralIOProcess* NewCentralIOProcess(void) {
 	responseatom = globals->lookup("response");
+	ioatom = globals->lookup("i/o");
+	erratom = globals->lookup("err");
+	eofatom = globals->lookup("eof");
 	return new CentralIOProcess();
 }
 
@@ -135,8 +141,10 @@ void CentralIOToDo::respond(IOAction io) {
 	switch(io.action){
 	case ioaction_read:
 	case ioaction_write:
-		cp3->a = new(sp) BinaryBlob(*io.data);
-		break;
+	{	BinaryBlob* bp = new(sp) BinaryBlob();
+		cp3->a = bp;
+		bp->pdat = io.data;
+	} break;
 	case ioaction_stdin:
 	case ioaction_stdout:
 	case ioaction_stderr:
@@ -154,6 +162,39 @@ void CentralIOToDo::respond(IOAction io) {
 		cp3->a = cp3->d;
 		break;
 	}
+
+	/*now push it onto the send queue*/
+	proc->snd_queue.push_back(
+		CentralIOProcess::response(
+			io.requester,
+			CentralIOProcess::message(ns, cp1)
+		)
+	);
+}
+
+void CentralIOToDo::error(IOAction io, std::string err) {
+	/*for now, simply use a symbol with the message*/
+	/*TODO: in the future, the error message should be
+	a string, not a symbol
+	*/
+	size_t sz = sizeof(Cons) * 3 + sizeof(Tagged) + sizeof(Sym) * 4
+			+ sizeof(Sym);// error object
+
+	boost::shared_ptr<Semispace> ns(new Semispace(sz));
+	Semispace& sp = *ns;
+
+	Cons* cp1 = new(sp) Cons();
+	cp1->a = new(sp) Sym(erratom);
+	Cons* cp2 = new(sp) Cons();
+	cp1->d = cp2;
+	cp2->a = new(sp) Sym(io.tag);
+	Cons* cp3 = new(sp) Cons();
+	cp2->d = cp3;
+	Tagged* tp = new(sp) Tagged();
+	tp->type_o = new(sp) Sym(ioatom);
+	tp->rep_o = new(sp) Sym(globals->lookup(err)); // replace in the future
+	cp3->a = tp;
+	cp3->d = new(sp) Sym(NILATOM);
 
 	/*now push it onto the send queue*/
 	proc->snd_queue.push_back(
