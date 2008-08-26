@@ -30,6 +30,7 @@ enum IOActionType {
 class IOAction {
 private:
 	boost::shared_ptr<ProcessHandle> requester;
+	boost::shared_ptr<Atom> tag;
 public:
 	IOActionType action;
 	boost::shared_ptr<PortData> port;
