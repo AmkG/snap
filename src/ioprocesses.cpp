@@ -93,6 +93,16 @@ CentralIOProcess* NewCentralIOProcess(void) {
 CentralIOToDo
 -----------------------------------------------------------------------------*/
 
+void CentralIOToDo::send(boost::shared_ptr<ProcessHandle> const& pid,
+		boost::shared_ptr<Semispace> const& ns, Generic* gp) {
+	proc->snd_queue.push_back(
+		CentralIOProcess::response(
+			pid,
+			CentralIOProcess::message(ns, gp)
+		)
+	);
+}
+
 /*responses*/
 
 void CentralIOToDo::respond(IOAction io) {
@@ -164,18 +174,19 @@ void CentralIOToDo::respond(IOAction io) {
 	}
 
 	/*now push it onto the send queue*/
-	proc->snd_queue.push_back(
-		CentralIOProcess::response(
-			io.requester,
-			CentralIOProcess::message(ns, cp1)
-		)
-	);
+	send(io.requester,  ns, cp1);
 }
 
 void CentralIOToDo::error(IOAction io, std::string err) {
 	/*for now, simply use a symbol with the message*/
 	/*TODO: in the future, the error message should be
 	a string, not a symbol
+	*/
+	/*
+	(cons (sym err)
+	      (cons (sym tag)
+	            (cons (annotate (sym 'i/o) data)
+	                  (sym nil))))
 	*/
 	size_t sz = sizeof(Cons) * 3 + sizeof(Tagged) + sizeof(Sym) * 4
 			+ sizeof(Sym);// error object
@@ -197,11 +208,24 @@ void CentralIOToDo::error(IOAction io, std::string err) {
 	cp3->d = new(sp) Sym(NILATOM);
 
 	/*now push it onto the send queue*/
-	proc->snd_queue.push_back(
-		CentralIOProcess::response(
-			io.requester,
-			CentralIOProcess::message(ns, cp1)
-		)
-	);
+	send(io.requester,  ns, cp1);
+}
+
+void CentralIOToDo::eof(IOAction io) {
+	/*(cons (sym 'eof) (cons (sym tag) (sym nil)))*/
+	size_t sz = sizeof(Cons) * 2 + sizeof(Sym) * 3;
+
+	boost::shared_ptr<Semispace> ns(new Semispace(sz));
+	Semispace& sp = *ns;
+
+	Cons* cp1 = new(sp) Cons();
+	cp1->a = new(sp) Sym(eofatom);
+	Cons* cp2 = new(sp) Cons();
+	cp1->d = cp2;
+	cp2->a = new(sp) Sym(io.tag);
+	cp2->d = new(sp) Sym(NILATOM);
+
+	/*now push it onto the send queue*/
+	send(io.requester,  ns, cp1);
 }
 

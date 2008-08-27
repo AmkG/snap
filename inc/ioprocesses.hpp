@@ -100,6 +100,8 @@ public:
 class CentralIOToDo {
 private:
 	CentralIOProcess* proc;
+	void send(boost::shared_ptr<ProcessHandle> const&,
+		boost::shared_ptr<Semispace> const&, Generic*);
 public:
 	explicit CentralIOToDo(CentralIOProcess* p) : proc(p){}
 	bool empty(void){
