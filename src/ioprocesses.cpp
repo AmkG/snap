@@ -21,8 +21,19 @@ typedef std::pair<boost::shared_ptr<ProcessHandle>, message> response;
 /*-----------------------------------------------------------------------------
 CentralIOProcess
 -----------------------------------------------------------------------------*/
+IOAction& CentralIOProcess::add_todo(boost::shared_ptr<Atom>& a,
+		boost::shared_ptr<ProcessHandle>& p) {
+	size_t i = todo.size();
+	todo.resize(i+1);
+	IOAction& io = todo[i];
+	io.tag = a;
+	io.requester = p;
+	return io;
+}
 
 void CentralIOProcess::parse(std::vector<message>& rcv) {
+	/*pre-reserver space on the to-do list*/
+	todo.reserve(todo.size() + rcv.size());
 	std::vector<message>::iterator i;
 	for(i = rcv.begin(); i != rcv.end(); ++i) {
 		Generic* gp = i->second;
@@ -41,6 +52,18 @@ void CentralIOProcess::parse(std::vector<message>& rcv) {
 		if(!pp) continue;
 		/*ignore succeeding cons cells; they might also be data*/
 		/*now parse*/
+		boost::shared_ptr<Atom>& atom = rsp->a;
+		if(atom == globals->lookup("read")) {
+			/*get portdata in cons 4*/
+			Cons* cp4 = dynamic_cast<Cons*>(cp3->d);
+			if(!cp4) continue;
+			ArcPortData* pdp = dynamic_cast<ArcPortData*>(cp4->a);
+			if(!pdp) continue;
+			IOAction& io = add_todo(tsp->a, pp->hproc);
+			io.port = pdp->impl;
+			io.action = ioaction_read;
+		} else if(atom == globals->lookup("write")) {
+		}
 	}
 	rcv.resize(0);
 }

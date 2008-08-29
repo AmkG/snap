@@ -12,6 +12,7 @@
 class PortData; /*abstract port data class*/
 
 class CentralIOToDo;
+class CentralIOProcess;
 
 enum IOActionType {
 	ioaction_read,		/*read some bytes*/
@@ -38,6 +39,7 @@ public:
 	int num;
 	std::string str;
 	friend class CentralIOToDo;
+	friend class CentralIOProcess;
 };
 
 /*abstract base*/
@@ -87,6 +89,8 @@ private:
 	/*ctor*/
 	CentralIOProcess() : impl(NewCentralIO()), waiting(1) {}
 
+	IOAction& add_todo(boost::shared_ptr<Atom>&,
+			boost::shared_ptr<ProcessHandle>&);
 	void parse(std::vector<message>&);
 
 public:
