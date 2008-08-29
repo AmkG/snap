@@ -38,3 +38,16 @@ Tested on Ubuntu 8.04, 64-bit
 unless I accidentally used something GNU-specific, which would be a
 bug.)
 
+
+To test:
+
+Go to the test directory.  Choose any .cpp file.  Assuming you have
+a GNU C++ compiler and the bourne shell on your system:
+
+	./compile_test <testfile>.cpp
+
+This should compile the desired test.  Then run:
+
+	./a.out
+
+
