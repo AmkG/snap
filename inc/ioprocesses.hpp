@@ -87,6 +87,8 @@ private:
 	/*ctor*/
 	CentralIOProcess() : impl(NewCentralIO()), waiting(1) {}
 
+	void parse(std::vector<message>&);
+
 public:
 	virtual bool receive(boost::shared_ptr<Semispace>, Generic*);
 	virtual ProcessStatus run(void);

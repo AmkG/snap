@@ -7,7 +7,7 @@
 #include"types.hpp"
 
 /*
-static variables
+statics
 */
 
 static boost::shared_ptr<Atom> responseatom;
@@ -15,9 +15,35 @@ static boost::shared_ptr<Atom> ioatom;
 static boost::shared_ptr<Atom> erratom;
 static boost::shared_ptr<Atom> eofatom;
 
+typedef std::pair<boost::shared_ptr<Semispace>, Generic* > message;
+typedef std::pair<boost::shared_ptr<ProcessHandle>, message> response;
+
 /*-----------------------------------------------------------------------------
 CentralIOProcess
 -----------------------------------------------------------------------------*/
+
+void CentralIOProcess::parse(std::vector<message>& rcv) {
+	std::vector<message>::iterator i;
+	for(i = rcv.begin(); i != rcv.end(); ++i) {
+		Generic* gp = i->second;
+		/*ignore incorrectly-formatted requests*/
+		Cons* cp1 = dynamic_cast<Cons*>(gp);
+		if(!cp1) continue;
+		Sym* rsp = dynamic_cast<Sym*>(cp1->a);
+		if(!rsp) continue;
+		Cons* cp2 = dynamic_cast<Cons*>(cp1->d);
+		if(!cp2) continue;
+		Sym* tsp = dynamic_cast<Sym*>(cp2->a);
+		if(!tsp) continue;
+		Cons* cp3 = dynamic_cast<Cons*>(cp2->d);
+		if(!cp3) continue;
+		Pid* pp = dynamic_cast<Pid*>(cp3->a);
+		if(!pp) continue;
+		/*ignore succeeding cons cells; they might also be data*/
+		/*now parse*/
+	}
+	rcv.resize(0);
+}
 
 bool CentralIOProcess::receive(
 		boost::shared_ptr<Semispace> sp, Generic* gp) {
@@ -27,6 +53,7 @@ bool CentralIOProcess::receive(
 		runsystem->schedule(handle->mypid());
 		waiting = 0;
 	}
+	return 1;
 }
 
 /*
@@ -44,15 +71,22 @@ bool CentralIOProcess::receive(
 */
 ProcessStatus CentralIOProcess::run(void) {
 	/*1*/
+	std::vector<message> rcv_queue_temp;
 	{/*insert trylock here*/
 		/*if (trylock.succeeded())*/ {
-			/*TODO: parse*/
+			/*just swap, to reduce time that
+			we own the lock
+			*/
+			rcv_queue_temp.swap(rcv_queue);
 		}
 	}
+	parse(rcv_queue_temp);
 	/*2*/
-	if(runsystem->singleprocess()){
-		impl->wait(CentralIOToDo(this));
-	} else	impl->poll(CentralIOToDo(this));
+	if(!impl->empty()) {
+		if(runsystem->singleprocess()) {
+			impl->wait(CentralIOToDo(this));
+		} else	impl->poll(CentralIOToDo(this));
+	}
 	/*3*/
 	/*try sending to each process*/
 	std::vector<response>::iterator i, to;
