@@ -63,6 +63,29 @@ void CentralIOProcess::parse(std::vector<message>& rcv) {
 			io.port = pdp->impl;
 			io.action = ioaction_read;
 		} else if(atom == globals->lookup("write")) {
+			/*get portdata in cons 4*/
+			Cons* cp4 = dynamic_cast<Cons*>(cp3->d);
+			if(!cp4) continue;
+			ArcPortData* pdp = dynamic_cast<ArcPortData*>(cp4->a);
+			if(!pdp) continue;
+			/*get data from cons 5*/
+			Cons* cp5 = dynamic_cast<Cons*>(cp4->d);
+			if(!cp5) continue;
+			BinaryBlob* bp = dynamic_cast<BinaryBlob*>(cp5->a);
+			if(!bp) continue;
+			IOAction& io = add_todo(tsp->a, pp->hproc);
+			io.port = pdp->impl;
+			io.data = bp->pdat;
+			io.action = ioaction_write;
+		} else if(atom == globals->lookup("stdout")) {
+			IOAction& io = add_todo(tsp->a, pp->hproc);
+			io.action = ioaction_stdout;
+		} else if(atom == globals->lookup("stdin")) {
+			IOAction& io = add_todo(tsp->a, pp->hproc);
+			io.action = ioaction_stdin;
+		} else if(atom == globals->lookup("stderr")) {
+			IOAction& io = add_todo(tsp->a, pp->hproc);
+			io.action = ioaction_stderr;
 		}
 	}
 	rcv.resize(0);
