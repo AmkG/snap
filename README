@@ -31,6 +31,7 @@ Requirements for compiling:
 a C++ compiler (tested on g++ 4.2.3)
 
 Boost (tested on 1.34.1)
+http://www.boost.org/users/download/
 
 
 Tested on Ubuntu 8.04, 64-bit
@@ -41,7 +42,7 @@ bug.)
 
 To test:
 
-Go to the test directory.  Choose any .cpp file.  Assuming you have
+Go to the test/ directory.  Choose any .cpp file.  Assuming you have
 a GNU C++ compiler and the bourne shell on your system:
 
 	./compile_test <testfile>.cpp
