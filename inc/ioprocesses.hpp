@@ -59,7 +59,7 @@ public:
 	/*determine if there are any pending request: returns
 	true if no pending requests
 	*/
-	virtual bool empty(void) =0;
+	virtual bool empty(void) const =0;
 	virtual ~CentralIO(){}
 };
 
